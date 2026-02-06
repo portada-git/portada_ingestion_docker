@@ -1,0 +1,24 @@
+2026-02-04 15:26:29 +0000 - dagster - DEBUG - ingestion - 2902c200-f78d-46bc-9df7-f6dcc674fe1c - 6850 - LOGS_CAPTURED - Started capturing logs in process (pid: 6850).
+2026-02-04 15:26:29 +0000 - dagster - DEBUG - ingestion - 2902c200-f78d-46bc-9df7-f6dcc674fe1c - 6850 - ingested_entry_file - STEP_START - Started execution of step "ingested_entry_file".
+2026-02-04 15:26:29 +0000 - dagster - ERROR - ingestion - 2902c200-f78d-46bc-9df7-f6dcc674fe1c - 6850 - ingested_entry_file - STEP_FAILURE - Execution of step "ingested_entry_file" failed.
+
+dagster._core.errors.DagsterExecutionStepExecutionError: Error occurred while executing op "ingested_entry_file"::
+
+AttributeError: 'DagsterRun' object has no attribute 'pipeline_name'
+
+Stack Trace:
+  File "/usr/lib/python3.12/site-packages/dagster/_core/execution/plan/utils.py", line 57, in op_execution_error_boundary
+    yield
+  File "/usr/lib/python3.12/site-packages/dagster/_utils/__init__.py", line 394, in iterate_with_context
+    next_output = next(iterator)
+                  ^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/site-packages/dagster/_core/execution/plan/compute_generator.py", line 135, in _coerce_op_compute_fn_to_iterator
+    result = invoke_compute_fn(
+             ^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/site-packages/dagster/_core/execution/plan/compute_generator.py", line 115, in invoke_compute_fn
+    return fn(context, **args_to_pass) if context_arg_provided else fn(**args_to_pass)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/site-packages/dagster_portada_project/assets/boat_fact_ingestion_assets.py", line 13, in ingested_entry_file
+    job_name = context.run.pipeline_name
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+

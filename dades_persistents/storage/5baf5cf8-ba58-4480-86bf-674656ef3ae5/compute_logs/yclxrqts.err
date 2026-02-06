@@ -1,0 +1,35 @@
+2026-02-04 21:46:13 +0000 - dagster - DEBUG - ingestion - 5baf5cf8-ba58-4480-86bf-674656ef3ae5 - 416 - LOGS_CAPTURED - Started capturing logs in process (pid: 416).
+2026-02-04 21:46:13 +0000 - dagster - DEBUG - ingestion - 5baf5cf8-ba58-4480-86bf-674656ef3ae5 - 416 - raw_entries - STEP_START - Started execution of step "raw_entries".
+2026-02-04 21:46:13 +0000 - dagster - DEBUG - ingestion - 5baf5cf8-ba58-4480-86bf-674656ef3ae5 - raw_entries - Loading file from: /opt/dagster/dagster_home/storage/ingested_entry_file using PickledObjectFilesystemIOManager...
+2026-02-04 21:46:13 +0000 - dagster - DEBUG - ingestion - 5baf5cf8-ba58-4480-86bf-674656ef3ae5 - 416 - raw_entries - LOADED_INPUT - Loaded input "data" using input manager "io_manager", from output "result" of step "ingested_entry_file"
+2026-02-04 21:46:13 +0000 - dagster - DEBUG - ingestion - 5baf5cf8-ba58-4480-86bf-674656ef3ae5 - 416 - raw_entries - STEP_INPUT - Got input "data" of type "Any". (Type check passed).
+Warning: Ignoring non-Spark config property: mapreduce.fileoutputcommitter.algorithm.version
+Ivy Default Cache set to: /home/spark/.ivy2/cache
+The jars for the packages stored in: /home/spark/.ivy2/jars
+io.delta#delta-spark_2.12 added as a dependency
+:: resolving dependencies :: org.apache.spark#spark-submit-parent-3c5e748d-a735-4e73-90ef-dca3d3910aa5;1.0
+	confs: [default]
+	found io.delta#delta-spark_2.12;3.2.1 in central
+	found io.delta#delta-storage;3.2.1 in central
+	found org.antlr#antlr4-runtime;4.9.3 in central
+:: resolution report :: resolve 90ms :: artifacts dl 3ms
+	:: modules in use:
+	io.delta#delta-spark_2.12;3.2.1 from central in [default]
+	io.delta#delta-storage;3.2.1 from central in [default]
+	org.antlr#antlr4-runtime;4.9.3 from central in [default]
+	---------------------------------------------------------------------
+	|                  |            modules            ||   artifacts   |
+	|       conf       | number| search|dwnlded|evicted|| number|dwnlded|
+	---------------------------------------------------------------------
+	|      default     |   3   |   0   |   0   |   0   ||   3   |   0   |
+	---------------------------------------------------------------------
+:: retrieving :: org.apache.spark#spark-submit-parent-3c5e748d-a735-4e73-90ef-dca3d3910aa5
+	confs: [default]
+	0 artifacts copied, 3 already retrieved (0kB/4ms)
+26/02/04 21:46:14 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+26/02/04 21:46:19 WARN SparkStringUtils: Truncated the string representation of a plan since it was too large. This behavior can be adjusted by setting 'spark.sql.debug.maxToStringFields'.
+[Stage 3:====>                                                     (4 + 4) / 50][Stage 3:============>                                            (11 + 4) / 50][Stage 3:======================>                                  (20 + 5) / 50][Stage 3:=====================================>                   (33 + 4) / 50][Stage 3:=================================================>       (43 + 4) / 50]                                                                                [Stage 14:=============================>                            (2 + 2) / 4]                                                                                2026-02-04 21:47:30 +0000 - dagster - DEBUG - ingestion - 5baf5cf8-ba58-4480-86bf-674656ef3ae5 - 416 - raw_entries - STEP_OUTPUT - Yielded output "result" of type "Nothing". (Type check passed).
+2026-02-04 21:47:30 +0000 - dagster - DEBUG - ingestion - 5baf5cf8-ba58-4480-86bf-674656ef3ae5 - 416 - raw_entries - ASSET_MATERIALIZATION - Materialized value raw_entries.
+2026-02-04 21:47:30 +0000 - dagster - DEBUG - ingestion - 5baf5cf8-ba58-4480-86bf-674656ef3ae5 - 416 - raw_entries - STEP_SUCCESS - Finished execution of step "raw_entries" in 1m17s.

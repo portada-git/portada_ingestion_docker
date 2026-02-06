@@ -1,0 +1,34 @@
+2026-02-03 22:36:13 +0000 - dagster - DEBUG - ingestion - d9cfd9f5-fa7c-493b-9c5f-401c8845fe2b - 7511 - LOGS_CAPTURED - Started capturing logs in process (pid: 7511).
+2026-02-03 22:36:13 +0000 - dagster - DEBUG - ingestion - d9cfd9f5-fa7c-493b-9c5f-401c8845fe2b - 7511 - ingested_entry_file - STEP_START - Started execution of step "ingested_entry_file".
+Warning: Ignoring non-Spark config property: mapreduce.fileoutputcommitter.algorithm.version
+Ivy Default Cache set to: /home/spark/.ivy2/cache
+The jars for the packages stored in: /home/spark/.ivy2/jars
+io.delta#delta-spark_2.12 added as a dependency
+:: resolving dependencies :: org.apache.spark#spark-submit-parent-11b03027-1d6b-412b-8d29-cd9e567d6f2a;1.0
+	confs: [default]
+	found io.delta#delta-spark_2.12;3.2.1 in central
+	found io.delta#delta-storage;3.2.1 in central
+	found org.antlr#antlr4-runtime;4.9.3 in central
+:: resolution report :: resolve 97ms :: artifacts dl 4ms
+	:: modules in use:
+	io.delta#delta-spark_2.12;3.2.1 from central in [default]
+	io.delta#delta-storage;3.2.1 from central in [default]
+	org.antlr#antlr4-runtime;4.9.3 from central in [default]
+	---------------------------------------------------------------------
+	|                  |            modules            ||   artifacts   |
+	|       conf       | number| search|dwnlded|evicted|| number|dwnlded|
+	---------------------------------------------------------------------
+	|      default     |   3   |   0   |   0   |   0   ||   3   |   0   |
+	---------------------------------------------------------------------
+:: retrieving :: org.apache.spark#spark-submit-parent-11b03027-1d6b-412b-8d29-cd9e567d6f2a
+	confs: [default]
+	0 artifacts copied, 3 already retrieved (0kB/3ms)
+26/02/03 22:36:14 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+[Stage 0:>                                                          (0 + 4) / 4][Stage 0:============================================>              (3 + 1) / 4]                                                                                2026-02-03 22:36:19 +0000 - dagster - INFO - ingestion - d9cfd9f5-fa7c-493b-9c5f-401c8845fe2b - ingested_entry_file - Llegits 111 registres de /app/ingestion/entry/jcanell4/results_boatdata.extractor.json
+2026-02-03 22:36:19 +0000 - dagster - DEBUG - ingestion - d9cfd9f5-fa7c-493b-9c5f-401c8845fe2b - 7511 - ingested_entry_file - STEP_OUTPUT - Yielded output "result" of type "dict". (Type check passed).
+2026-02-03 22:36:19 +0000 - dagster - DEBUG - ingestion - d9cfd9f5-fa7c-493b-9c5f-401c8845fe2b - ingested_entry_file - Writing file at: /opt/dagster/dagster_home/storage/ingested_entry_file using PickledObjectFilesystemIOManager...
+2026-02-03 22:36:19 +0000 - dagster - DEBUG - ingestion - d9cfd9f5-fa7c-493b-9c5f-401c8845fe2b - 7511 - ingested_entry_file - ASSET_MATERIALIZATION - Materialized value ingested_entry_file.
+2026-02-03 22:36:19 +0000 - dagster - DEBUG - ingestion - d9cfd9f5-fa7c-493b-9c5f-401c8845fe2b - 7511 - ingested_entry_file - HANDLED_OUTPUT - Handled output "result" using IO manager "io_manager"
+2026-02-03 22:36:19 +0000 - dagster - DEBUG - ingestion - d9cfd9f5-fa7c-493b-9c5f-401c8845fe2b - 7511 - ingested_entry_file - STEP_SUCCESS - Finished execution of step "ingested_entry_file" in 6.04s.

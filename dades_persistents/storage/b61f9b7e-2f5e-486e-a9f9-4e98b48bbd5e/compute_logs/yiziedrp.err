@@ -1,0 +1,39 @@
+2026-01-28 17:15:38 +0000 - dagster - DEBUG - ingestion - b61f9b7e-2f5e-486e-a9f9-4e98b48bbd5e - 1244 - LOGS_CAPTURED - Started capturing logs in process (pid: 1244).
+2026-01-28 17:15:39 +0000 - dagster - DEBUG - ingestion - b61f9b7e-2f5e-486e-a9f9-4e98b48bbd5e - 1244 - ingested_entry_file - STEP_START - Started execution of step "ingested_entry_file".
+Ivy Default Cache set to: /root/.ivy2/cache
+The jars for the packages stored in: /root/.ivy2/jars
+io.delta#delta-spark_2.12 added as a dependency
+:: resolving dependencies :: org.apache.spark#spark-submit-parent-fb401975-5317-4a5b-9b22-5f97a8340c96;1.0
+	confs: [default]
+	found io.delta#delta-spark_2.12;3.2.1 in central
+	found io.delta#delta-storage;3.2.1 in central
+	found org.antlr#antlr4-runtime;4.9.3 in central
+downloading https://repo1.maven.org/maven2/io/delta/delta-spark_2.12/3.2.1/delta-spark_2.12-3.2.1.jar ...
+	[SUCCESSFUL ] io.delta#delta-spark_2.12;3.2.1!delta-spark_2.12.jar (158ms)
+downloading https://repo1.maven.org/maven2/io/delta/delta-storage/3.2.1/delta-storage-3.2.1.jar ...
+	[SUCCESSFUL ] io.delta#delta-storage;3.2.1!delta-storage.jar (43ms)
+downloading https://repo1.maven.org/maven2/org/antlr/antlr4-runtime/4.9.3/antlr4-runtime-4.9.3.jar ...
+	[SUCCESSFUL ] org.antlr#antlr4-runtime;4.9.3!antlr4-runtime.jar (46ms)
+:: resolution report :: resolve 1057ms :: artifacts dl 249ms
+	:: modules in use:
+	io.delta#delta-spark_2.12;3.2.1 from central in [default]
+	io.delta#delta-storage;3.2.1 from central in [default]
+	org.antlr#antlr4-runtime;4.9.3 from central in [default]
+	---------------------------------------------------------------------
+	|                  |            modules            ||   artifacts   |
+	|       conf       | number| search|dwnlded|evicted|| number|dwnlded|
+	---------------------------------------------------------------------
+	|      default     |   3   |   3   |   3   |   0   ||   3   |   3   |
+	---------------------------------------------------------------------
+:: retrieving :: org.apache.spark#spark-submit-parent-fb401975-5317-4a5b-9b22-5f97a8340c96
+	confs: [default]
+	3 artifacts copied, 0 already retrieved (6332kB/6ms)
+26/01/28 17:15:41 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+[Stage 0:>                                                        (0 + 16) / 16][Stage 0:=====================================================>   (15 + 1) / 16]                                                                                [Stage 1:=====================================================>   (15 + 1) / 16]                                                                                2026-01-28 17:15:44 +0000 - dagster - INFO - ingestion - b61f9b7e-2f5e-486e-a9f9-4e98b48bbd5e - ingested_entry_file - Llegits 111 registres de /app/vigilar/jcanell4/results_boatdata.extractor_1.json
+2026-01-28 17:15:44 +0000 - dagster - DEBUG - ingestion - b61f9b7e-2f5e-486e-a9f9-4e98b48bbd5e - 1244 - ingested_entry_file - STEP_OUTPUT - Yielded output "result" of type "dict". (Type check passed).
+2026-01-28 17:15:45 +0000 - dagster - DEBUG - ingestion - b61f9b7e-2f5e-486e-a9f9-4e98b48bbd5e - ingested_entry_file - Writing file at: /opt/dagster/dagster_home/storage/ingested_entry_file using PickledObjectFilesystemIOManager...
+2026-01-28 17:15:45 +0000 - dagster - DEBUG - ingestion - b61f9b7e-2f5e-486e-a9f9-4e98b48bbd5e - 1244 - ingested_entry_file - ASSET_MATERIALIZATION - Materialized value ingested_entry_file.
+2026-01-28 17:15:45 +0000 - dagster - DEBUG - ingestion - b61f9b7e-2f5e-486e-a9f9-4e98b48bbd5e - 1244 - ingested_entry_file - HANDLED_OUTPUT - Handled output "result" using IO manager "io_manager"
+2026-01-28 17:15:45 +0000 - dagster - DEBUG - ingestion - b61f9b7e-2f5e-486e-a9f9-4e98b48bbd5e - 1244 - ingested_entry_file - STEP_SUCCESS - Finished execution of step "ingested_entry_file" in 6.28s.

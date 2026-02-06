@@ -1,0 +1,1 @@
+py_portada_file_monitor @ git+https://github.com/portada-git/py_portada_file_monitor.git

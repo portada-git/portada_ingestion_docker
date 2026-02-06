@@ -1,0 +1,12 @@
+# dagster.yaml
+run_launcher:
+  module: dagster.core.launcher
+  class: DefaultRunLauncher
+
+concurrency:
+  runs:
+    tag_concurrency_limits:
+      - key: "process"
+        value: "ingestion"
+        limit: 1 # Només permetrem 1 execució alhora amb el tag 'process'
+
