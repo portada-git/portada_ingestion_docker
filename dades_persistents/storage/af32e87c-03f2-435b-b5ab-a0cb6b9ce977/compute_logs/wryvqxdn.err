@@ -1,0 +1,8 @@
+2026-02-06 10:16:30 +0000 - dagster - DEBUG - ingestion - af32e87c-03f2-435b-b5ab-a0cb6b9ce977 - 10173 - LOGS_CAPTURED - Started capturing logs in process (pid: 10173).
+2026-02-06 10:16:30 +0000 - dagster - DEBUG - ingestion - af32e87c-03f2-435b-b5ab-a0cb6b9ce977 - 10173 - ingested_entry_file - STEP_START - Started execution of step "ingested_entry_file".
+2026-02-06 10:16:41 +0000 - dagster - INFO - ingestion - af32e87c-03f2-435b-b5ab-a0cb6b9ce977 - ingested_entry_file - Llegits 1598 registres de /app/ingestion/ship_entries/admin/1861_traversing_converted.json
+2026-02-06 10:16:41 +0000 - dagster - DEBUG - ingestion - af32e87c-03f2-435b-b5ab-a0cb6b9ce977 - 10173 - ingested_entry_file - STEP_OUTPUT - Yielded output "result" of type "dict". (Type check passed).
+2026-02-06 10:16:41 +0000 - dagster - DEBUG - ingestion - af32e87c-03f2-435b-b5ab-a0cb6b9ce977 - ingested_entry_file - Writing file at: /opt/dagster/dagster_home/storage/ingested_entry_file using PickledObjectFilesystemIOManager...
+2026-02-06 10:16:41 +0000 - dagster - DEBUG - ingestion - af32e87c-03f2-435b-b5ab-a0cb6b9ce977 - 10173 - ingested_entry_file - ASSET_MATERIALIZATION - Materialized value ingested_entry_file.
+2026-02-06 10:16:41 +0000 - dagster - DEBUG - ingestion - af32e87c-03f2-435b-b5ab-a0cb6b9ce977 - 10173 - ingested_entry_file - HANDLED_OUTPUT - Handled output "result" using IO manager "io_manager"
+2026-02-06 10:16:41 +0000 - dagster - DEBUG - ingestion - af32e87c-03f2-435b-b5ab-a0cb6b9ce977 - 10173 - ingested_entry_file - STEP_SUCCESS - Finished execution of step "ingested_entry_file" in 10.9s.

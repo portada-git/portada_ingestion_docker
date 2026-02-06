@@ -11,8 +11,8 @@ import json
 
 router = APIRouter()
 
-# Use the Delta Lake ingest path
-BASE_FILE_PATH = "/app/delta_lake/ingest"
+# Use the ingestion path from environment variable (defaults to /app/ingestion)
+BASE_FILE_PATH = os.getenv("PATH_TO_INGEST", "/app/ingestion")
 
 def get_current_user_name(x_api_key: str = Header(...), r: redis.Redis = Depends(get_redis)):
     """
