@@ -66,7 +66,7 @@ services:
       - "3000:3000"
     volumes:
       - ./dagster:/opt/dagster/app
-      - ./dades_persistents:/opt/dagster/dagster_home
+      - ./dades_persistents:/opt/dagster/dagster_home/storage
       - ./data_layer_config:/opt/dagster/app/data_layer_config
     networks:
       - internal_net
@@ -82,17 +82,13 @@ services:
       - dagster_webserver
     volumes:
       - ./dagster:/opt/dagster/app
-      - ./dades_persistents:/opt/dagster/dagster_home
-      - ./dagster/dagster.yaml:/opt/dagster/dagster_home/dagster.yaml
+      - ./dades_persistents:/opt/dagster/dagster_home/storage
       - ./ingestion_zone:/app/ingestion
       - ./data_layer_config:/opt/dagster/app/data_layer_config
       - ./delta_lake:/app/delta_test
+    networks:
+      - internal_net
 
 networks:
   internal_net:
     driver: bridge
-
-volumes:
-  ingestion_zone:
-  dades_persistents:
-  delta_lake:
