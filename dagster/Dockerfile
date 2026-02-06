@@ -47,12 +47,12 @@ ENV PYSPARK_DRIVER_PYTHON=/usr/bin/python3.12
 RUN ln -sf /usr/bin/python3.12 /usr/bin/python3
 
 # Canviar aquest número per forçar la descàrrega de GitHub
-ARG CACHE_BUST_LIBS=1
+ARG CACHE_BUST_LIBS=2
 # Instal·lem les dependències
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-ARG CACHE_BUST_OWN_LIBS=2
+ARG CACHE_BUST_OWN_LIBS=3
 # Instal·lem les dependències
 COPY own_requirements.txt .
 RUN pip install --no-cache-dir -r own_requirements.txt

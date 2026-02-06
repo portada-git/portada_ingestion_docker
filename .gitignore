@@ -1,3 +1,4 @@
 delta_lake/
 dades_persistents/
 ingestion_zone
+.__pycache__/

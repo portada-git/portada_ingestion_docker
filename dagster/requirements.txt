@@ -3,4 +3,5 @@ delta-spark==3.2.1
 hdfs==2.7.0
 dagster
 dagster-webserver
+redis
 

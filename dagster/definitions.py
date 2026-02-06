@@ -7,7 +7,6 @@ from dagster_pyspark import PySparkResource
 import os
 
 
-
 all_assets = load_assets_from_modules([boat_fact_ingestion_assets])
 
 cfg_path = os.getenv("DATA_LAYER_CONFIG", "config/delta_data_layer_config.json")
@@ -22,3 +21,4 @@ defs = Definitions(
     },
     jobs=[ingestion]
 )
+
