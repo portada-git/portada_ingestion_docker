@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Limpiar Storage de Uploads</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #b91c1c;
+        }
+        .success {
+            background: #10b981;
+        }
+        .success:hover {
+            background: #059669;
+        }
+        .info {
+            background: #3b82f6;
+        }
+        .info:hover {
+            background: #2563eb;
+        }
+        pre {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧹 Limpiar Storage de Uploads</h1>
+        <p>Esta herramienta te permite limpiar el localStorage de las tareas de upload.</p>
+        
+        <div>
+            <button class="info" onclick="showStorage()">Ver Storage Actual</button>
+            <button onclick="clearUploadStorage()">Limpiar Upload Storage</button>
+            <button class="success" onclick="clearAllStorage()">Limpiar Todo el Storage</button>
+        </div>
+        
+        <div id="output"></div>
+    </div>
+
+    <script>
+        function showStorage() {
+            const uploadStorage = localStorage.getItem('upload-storage');
+            const output = document.getElementById('output');
+            
+            if (uploadStorage) {
+                try {
+                    const data = JSON.parse(uploadStorage);
+                    output.innerHTML = '<h3>Upload Storage:</h3><pre>' + 
+                        JSON.stringify(data, null, 2) + '</pre>';
+                } catch (e) {
+                    output.innerHTML = '<p style="color: red;">Error parsing storage: ' + e.message + '</p>';
+                }
+            } else {
+                output.innerHTML = '<p>No hay datos en upload-storage</p>';
+            }
+        }
+
+        function clearUploadStorage() {
+            localStorage.removeItem('upload-storage');
+            document.getElementById('output').innerHTML = 
+                '<p style="color: green;">✅ Upload storage limpiado exitosamente</p>';
+        }
+
+        function clearAllStorage() {
+            localStorage.clear();
+            document.getElementById('output').innerHTML = 
+                '<p style="color: green;">✅ Todo el localStorage ha sido limpiado</p>';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,224 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: system-ui, sans-serif;
+  }
+  
+  body {
+    @apply bg-gray-50 text-gray-900;
+  }
+}
+
+@layer components {
+  /* Unified Button System */
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  
+  .btn-primary {
+    @apply bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 shadow-sm hover:shadow-md;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-500 border border-gray-300;
+  }
+  
+  .btn-success {
+    @apply bg-green-600 text-white hover:bg-green-700 focus:ring-green-500 shadow-sm hover:shadow-md;
+  }
+  
+  .btn-warning {
+    @apply bg-orange-600 text-white hover:bg-orange-700 focus:ring-orange-500 shadow-sm hover:shadow-md;
+  }
+  
+  .btn-danger {
+    @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 shadow-sm hover:shadow-md;
+  }
+  
+  .btn-info {
+    @apply bg-cyan-600 text-white hover:bg-cyan-700 focus:ring-cyan-500 shadow-sm hover:shadow-md;
+  }
+  
+  /* Unified Input System */
+  .input {
+    @apply block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors;
+  }
+  
+  .input-error {
+    @apply border-red-300 focus:ring-red-500 focus:border-red-500;
+  }
+  
+  /* Unified Card System */
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow;
+  }
+  
+  .card-dark {
+    @apply bg-slate-900 border-slate-800 text-white rounded-xl shadow-lg p-6;
+  }
+  
+  .card-header {
+    @apply border-b border-gray-200 pb-4 mb-6;
+  }
+  
+  .card-header-dark {
+    @apply border-b border-slate-800 pb-4 mb-6;
+  }
+  
+  /* Unified Sidebar System */
+  .sidebar-item {
+    @apply flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200;
+  }
+  
+  .sidebar-item-active {
+    @apply bg-blue-100 text-blue-700 shadow-sm;
+  }
+  
+  .sidebar-item-inactive {
+    @apply text-gray-600 hover:bg-gray-50 hover:text-gray-900;
+  }
+  
+  /* Unified Status Colors */
+  .status-pending {
+    @apply bg-yellow-100 text-yellow-800 border-yellow-200;
+  }
+  
+  .status-processing {
+    @apply bg-blue-100 text-blue-800 border-blue-200;
+  }
+  
+  .status-success {
+    @apply bg-green-100 text-green-800 border-green-200;
+  }
+  
+  .status-error {
+    @apply bg-red-100 text-red-800 border-red-200;
+  }
+  
+  .status-paused {
+    @apply bg-gray-100 text-gray-800 border-gray-200;
+  }
+  
+  /* Unified Progress Bars */
+  .progress-bar {
+    @apply w-full bg-gray-200 rounded-full h-2 overflow-hidden;
+  }
+  
+  .progress-fill {
+    @apply h-full rounded-full transition-all duration-300 bg-gradient-to-r from-blue-500 to-cyan-500;
+  }
+  
+  .progress-fill-success {
+    @apply bg-gradient-to-r from-green-500 to-emerald-500;
+  }
+  
+  .progress-fill-warning {
+    @apply bg-gradient-to-r from-orange-500 to-yellow-500;
+  }
+  
+  .progress-fill-error {
+    @apply bg-gradient-to-r from-red-500 to-pink-500;
+  }
+  
+  /* Unified Statistics Cards */
+  .stat-card {
+    @apply text-center p-4 rounded-lg border;
+  }
+  
+  .stat-card-primary {
+    @apply bg-blue-50 border-blue-200;
+  }
+  
+  .stat-card-success {
+    @apply bg-green-50 border-green-200;
+  }
+  
+  .stat-card-warning {
+    @apply bg-orange-50 border-orange-200;
+  }
+  
+  .stat-card-error {
+    @apply bg-red-50 border-red-200;
+  }
+  
+  .stat-card-info {
+    @apply bg-cyan-50 border-cyan-200;
+  }
+  
+  .stat-number {
+    @apply text-2xl font-bold mb-1;
+  }
+  
+  .stat-number-primary {
+    @apply text-blue-600;
+  }
+  
+  .stat-number-success {
+    @apply text-green-600;
+  }
+  
+  .stat-number-warning {
+    @apply text-orange-600;
+  }
+  
+  .stat-number-error {
+    @apply text-red-600;
+  }
+  
+  .stat-number-info {
+    @apply text-cyan-600;
+  }
+  
+  .stat-label {
+    @apply text-sm text-gray-600 font-medium;
+  }
+  
+  /* Unified Table System */
+  .table-container {
+    @apply overflow-hidden rounded-xl border border-gray-200 bg-white;
+  }
+  
+  .table-header {
+    @apply bg-gray-50 border-b border-gray-200 px-6 py-4;
+  }
+  
+  .table-dark {
+    @apply bg-slate-900 border-slate-800;
+  }
+  
+  .table-header-dark {
+    @apply bg-slate-800 border-slate-700 px-6 py-4;
+  }
+  
+  /* Unified Badge System */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border;
+  }
+  
+  .badge-primary {
+    @apply bg-blue-100 text-blue-800 border-blue-200;
+  }
+  
+  .badge-success {
+    @apply bg-green-100 text-green-800 border-green-200;
+  }
+  
+  .badge-warning {
+    @apply bg-orange-100 text-orange-800 border-orange-200;
+  }
+  
+  .badge-error {
+    @apply bg-red-100 text-red-800 border-red-200;
+  }
+  
+  .badge-info {
+    @apply bg-cyan-100 text-cyan-800 border-cyan-200;
+  }
+  
+  .badge-gray {
+    @apply bg-gray-100 text-gray-800 border-gray-200;
+  }
+}

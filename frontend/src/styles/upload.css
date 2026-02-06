@@ -1,0 +1,167 @@
+/* Unified File Upload Styles */
+
+.stat-card {
+  @apply text-center p-4 rounded-lg;
+}
+
+.stat-card-primary {
+  @apply bg-blue-50 border border-blue-200;
+}
+
+.stat-card-warning {
+  @apply bg-yellow-50 border border-yellow-200;
+}
+
+.stat-card-info {
+  @apply bg-purple-50 border border-purple-200;
+}
+
+.stat-card-success {
+  @apply bg-green-50 border border-green-200;
+}
+
+.stat-card-error {
+  @apply bg-red-50 border border-red-200;
+}
+
+.stat-number {
+  @apply text-2xl font-bold mb-1;
+}
+
+.stat-number-primary {
+  @apply text-blue-600;
+}
+
+.stat-number-warning {
+  @apply text-yellow-600;
+}
+
+.stat-number-info {
+  @apply text-purple-600;
+}
+
+.stat-number-success {
+  @apply text-green-600;
+}
+
+.stat-number-error {
+  @apply text-red-600;
+}
+
+.stat-label {
+  @apply text-sm font-medium;
+}
+
+.progress-bar {
+  @apply w-full rounded-full h-3 overflow-hidden;
+}
+
+.progress-fill {
+  @apply h-full transition-all duration-300 rounded-full;
+}
+
+.progress-fill-success {
+  @apply bg-gradient-to-r from-green-500 to-blue-500;
+}
+
+/* Language Selector Styles */
+.language-selector {
+  @apply relative;
+}
+
+.language-dropdown {
+  @apply absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50;
+  @apply opacity-0 invisible transition-all duration-200;
+}
+
+.language-selector:hover .language-dropdown {
+  @apply opacity-100 visible;
+}
+
+.language-option {
+  @apply w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors;
+  @apply flex items-center space-x-3;
+}
+
+.language-option.active {
+  @apply bg-blue-50 text-blue-700;
+}
+
+/* File Upload Animation */
+.upload-zone {
+  @apply transition-all duration-200;
+}
+
+.upload-zone.drag-active {
+  @apply border-blue-400 bg-blue-50 scale-105;
+}
+
+.upload-zone:hover {
+  @apply border-gray-400 bg-gray-50;
+}
+
+/* File List Animations */
+.file-item {
+  @apply transition-all duration-200;
+}
+
+.file-item:hover {
+  @apply bg-gray-50 transform translate-x-1;
+}
+
+/* Status Badge Styles */
+.status-badge {
+  @apply px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.status-pending {
+  @apply bg-gray-100 text-gray-600;
+}
+
+.status-uploading {
+  @apply bg-blue-100 text-blue-600;
+}
+
+.status-success {
+  @apply bg-green-100 text-green-600;
+}
+
+.status-error {
+  @apply bg-red-100 text-red-600;
+}
+
+.status-paused {
+  @apply bg-yellow-100 text-yellow-600;
+}
+
+/* Dark theme for statistics panel */
+.card-dark {
+  @apply bg-slate-900 border border-slate-800 rounded-xl p-6 text-white;
+}
+
+.stats-panel {
+  @apply bg-slate-900 border-slate-800 text-white;
+}
+
+.stats-panel .stat-card {
+  @apply bg-slate-800 border-slate-700;
+}
+
+.stats-panel .stat-label {
+  @apply text-slate-400;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .stat-card {
+    @apply p-3;
+  }
+  
+  .stat-number {
+    @apply text-xl;
+  }
+  
+  .language-dropdown {
+    @apply w-40;
+  }
+}
