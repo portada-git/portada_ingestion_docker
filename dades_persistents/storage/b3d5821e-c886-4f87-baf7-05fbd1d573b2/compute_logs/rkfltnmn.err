@@ -1,8 +1,0 @@
-2026-02-05 23:41:41 +0000 - dagster - DEBUG - ingestion - b3d5821e-c886-4f87-baf7-05fbd1d573b2 - 1419 - LOGS_CAPTURED - Started capturing logs in process (pid: 1419).
-2026-02-05 23:41:41 +0000 - dagster - DEBUG - ingestion - b3d5821e-c886-4f87-baf7-05fbd1d573b2 - 1419 - raw_entries - STEP_START - Started execution of step "raw_entries".
-2026-02-05 23:41:41 +0000 - dagster - DEBUG - ingestion - b3d5821e-c886-4f87-baf7-05fbd1d573b2 - raw_entries - Loading file from: /opt/dagster/dagster_home/storage/ingested_entry_file using PickledObjectFilesystemIOManager...
-2026-02-05 23:41:41 +0000 - dagster - DEBUG - ingestion - b3d5821e-c886-4f87-baf7-05fbd1d573b2 - 1419 - raw_entries - LOADED_INPUT - Loaded input "data" using input manager "io_manager", from output "result" of step "ingested_entry_file"
-2026-02-05 23:41:41 +0000 - dagster - DEBUG - ingestion - b3d5821e-c886-4f87-baf7-05fbd1d573b2 - 1419 - raw_entries - STEP_INPUT - Got input "data" of type "Any". (Type check passed).
-2026-02-05 23:42:27 +0000 - dagster - DEBUG - ingestion - b3d5821e-c886-4f87-baf7-05fbd1d573b2 - 1419 - raw_entries - STEP_OUTPUT - Yielded output "result" of type "Nothing". (Type check passed).
-2026-02-05 23:42:27 +0000 - dagster - DEBUG - ingestion - b3d5821e-c886-4f87-baf7-05fbd1d573b2 - 1419 - raw_entries - ASSET_MATERIALIZATION - Materialized value raw_entries.
-2026-02-05 23:42:27 +0000 - dagster - DEBUG - ingestion - b3d5821e-c886-4f87-baf7-05fbd1d573b2 - 1419 - raw_entries - STEP_SUCCESS - Finished execution of step "raw_entries" in 46.36s.

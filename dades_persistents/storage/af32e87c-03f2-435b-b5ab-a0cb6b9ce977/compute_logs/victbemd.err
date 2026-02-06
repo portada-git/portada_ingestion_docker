@@ -1,5 +1,0 @@
-2026-02-06 10:16:49 +0000 - dagster - DEBUG - ingestion - af32e87c-03f2-435b-b5ab-a0cb6b9ce977 - 10840 - LOGS_CAPTURED - Started capturing logs in process (pid: 10840).
-2026-02-06 10:16:49 +0000 - dagster - DEBUG - ingestion - af32e87c-03f2-435b-b5ab-a0cb6b9ce977 - 10840 - raw_entries - STEP_START - Started execution of step "raw_entries".
-2026-02-06 10:16:50 +0000 - dagster - DEBUG - ingestion - af32e87c-03f2-435b-b5ab-a0cb6b9ce977 - raw_entries - Loading file from: /opt/dagster/dagster_home/storage/ingested_entry_file using PickledObjectFilesystemIOManager...
-2026-02-06 10:16:50 +0000 - dagster - DEBUG - ingestion - af32e87c-03f2-435b-b5ab-a0cb6b9ce977 - 10840 - raw_entries - LOADED_INPUT - Loaded input "data" using input manager "io_manager", from output "result" of step "ingested_entry_file"
-2026-02-06 10:16:50 +0000 - dagster - DEBUG - ingestion - af32e87c-03f2-435b-b5ab-a0cb6b9ce977 - 10840 - raw_entries - STEP_INPUT - Got input "data" of type "Any". (Type check passed).

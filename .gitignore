@@ -1,2 +1,3 @@
-ingestion_zone/
-delta_lake/*
+delta_lake/
+dades_persistents/
+ingestion_zone
