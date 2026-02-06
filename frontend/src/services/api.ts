@@ -245,6 +245,7 @@ class ApiService {
         headers: {
           // Don't set Content-Type for FormData, let browser set it
           'Authorization': this.token ? `Bearer ${this.token}` : '',
+          ...(this.token ? { 'x-api-key': this.token } : {}),
         },
         body: formData,
       };
