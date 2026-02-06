@@ -52,7 +52,7 @@ ARG CACHE_BUST_LIBS=2
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-ARG CACHE_BUST_OWN_LIBS=3
+ARG CACHE_BUST_OWN_LIBS=8
 # Instal·lem les dependències
 COPY own_requirements.txt .
 RUN pip install --no-cache-dir -r own_requirements.txt
@@ -66,6 +66,10 @@ RUN mkdir -p /home/spark/.ivy2/cache /home/spark/.ivy2/jars && \
     chown -R spark:spark /home/spark && \
     chmod -R 775 /home/spark
 
+RUN mkdir -p /opt/dagster/dagster_home && \
+    chown -R spark:spark /opt/dagster/dagster_home && \
+    chmod -R 775 /opt/dagster/dagster_home
+    
 # Per escriure logs o dades a /opt/spark
 RUN chown -R spark:spark /opt/spark
 

@@ -20,7 +20,8 @@ else:
 event_handler = PortadaIngestionEventHandler()
 config_path = os.getenv("DATA_LAYER_CONFIG", config_path)
 path_to_watch =  os.getenv("PATH_TO_WATCH", path_to_watch)
-host = os.getenv("DAGSTER_HOST", "no_host")
+host = os.getenv("DAGSTER_HOST", "localhost")
+
 
 def dagster_process_entry(ruta_fitxer, f_type, user):
     client = DagsterGraphQLClient(hostname=host, port_number=3000)

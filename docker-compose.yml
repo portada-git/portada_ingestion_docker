@@ -50,6 +50,8 @@ services:
       - DAGSTER_HOST=dagster_webserver
       - PATH_TO_WATCH=/app/ingestion
       - DATA_LAYER_CONFIG=/opt/dagster/app/data_layer_config/delta_data_layer_config.json
+      - REDIS_PORT=6379
+      - REDIS_HOST=redis
     depends_on:
       - dagster_webserver
     networks:
@@ -62,11 +64,13 @@ services:
     command: dagster-webserver -h 0.0.0.0 -p 3000 -w workspace.yaml
     environment:
       - DATA_LAYER_CONFIG=/opt/dagster/app/data_layer_config/delta_data_layer_config.json
+      - REDIS_PORT=6379
+      - REDIS_HOST=redis
     ports:
       - "3000:3000"
     volumes:
       - ./dagster:/opt/dagster/app
-      - ./dades_persistents:/opt/dagster/dagster_home/storage
+      - ./dades_persistents:/opt/dagster/dagster_home
       - ./data_layer_config:/opt/dagster/app/data_layer_config
     networks:
       - internal_net
@@ -78,11 +82,13 @@ services:
     command: dagster-daemon run
     environment:
       - DATA_LAYER_CONFIG=/opt/dagster/app/data_layer_config/delta_data_layer_config.json
+      - REDIS_PORT=6379
+      - REDIS_HOST=redis
     depends_on:
       - dagster_webserver
     volumes:
       - ./dagster:/opt/dagster/app
-      - ./dades_persistents:/opt/dagster/dagster_home/storage
+      - ./dades_persistents:/opt/dagster/dagster_home
       - ./ingestion_zone:/app/ingestion
       - ./data_layer_config:/opt/dagster/app/data_layer_config
       - ./delta_lake:/app/delta_test
@@ -92,3 +98,8 @@ services:
 networks:
   internal_net:
     driver: bridge
+
+volumes:
+  ingestion_zone:
+  dades_persistents:
+  delta_lake:
