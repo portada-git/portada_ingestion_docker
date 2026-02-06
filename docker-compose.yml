@@ -83,7 +83,6 @@ services:
     volumes:
       - ./dagster:/opt/dagster/app
       - ./dades_persistents:/opt/dagster/dagster_home
-      - ./dagster/dagster.yaml:/opt/dagster/dagster_home/dagster.yaml
       - ./ingestion_zone:/app/ingestion
       - ./data_layer_config:/opt/dagster/app/data_layer_config
       - ./delta_lake:/app/delta_test
