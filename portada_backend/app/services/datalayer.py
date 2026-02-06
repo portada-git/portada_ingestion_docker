@@ -66,6 +66,19 @@ class DataLayerService:
         layer.start_session()
         return layer
 
+    def _safe_read_log(self, metadata_manager, log_name):
+        # Check if folder exists to avoid [PATH_NOT_FOUND]
+        log_path = os.path.join(self.base_path, "metadata", log_name)
+        if not os.path.exists(log_path):
+            logger.warning(f"Metadata log {log_name} not found at {log_path}")
+            return None
+            
+        try:
+            return metadata_manager.read_log(log_name)
+        except Exception as e:
+            logger.error(f"Error reading log {log_name}: {e}")
+            return None
+
     def get_missing_dates(self, publication_name: str, start_date: str = None, end_date: str = None, date_list: str = None):
         """
         Wrapper for get_missing_dates_from_a_newspaper
@@ -90,17 +103,12 @@ class DataLayerService:
         # Actually metadata manager takes configuration dict
         metadata = DataLakeMetadataManager(layer.get_configuration())
         
-        # Optimized singular call as suggested
-        # df_dup_md, df_dup_re = metadata.read_log("duplicates_log", include_duplicates=True)
-        # Note: 'include_duplicates=True' might be a hypothetical feature in prompt. 
-        # Checking main.py: metadata.read_log returns one DF. 
-        # The prompt says: "O bien con una única llamada... A fin de obtener dos dataframes"
-        # I will stick to separate calls if the dual call isn't standard in the library I saw.
-        # But let's assume separate calls based on main.py evidence.
+        df_md = self._safe_read_log(metadata, "duplicates_log")
+        df_re = self._safe_read_log(metadata, "duplicates_records")
         
-        df_md = metadata.read_log("duplicates_log")
-        df_re = metadata.read_log("duplicates_records")
-        
+        if df_md is None:
+            return []
+
         # Apply filters on Master (df_md)
         if publication:
             df_md = df_md.filter(f"lower(publication) = '{publication.lower()}'")
@@ -128,7 +136,10 @@ class DataLayerService:
         layer = self._get_layer(PortadaBuilder.BOAT_NEWS_TYPE)
         metadata = DataLakeMetadataManager(layer.get_configuration())
         
-        df_md = metadata.read_log("duplicates_log")
+        df_md = self._safe_read_log(metadata, "duplicates_log")
+        if df_md is None:
+            return []
+            
         master_row = df_md.filter(f"log_id = '{log_id}'").first()
         
         if not master_row:
@@ -137,7 +148,9 @@ class DataLayerService:
         dup_filter = master_row["duplicates_filter"]
         dup_ids = master_row["duplicate_ids"]
         
-        df_re = metadata.read_log("duplicates_records")
+        df_re = self._safe_read_log(metadata, "duplicates_records")
+        if df_re is None:
+            return []
         
         # Apply filters
         # Note: dup_filter string might be SQL-like string.
@@ -209,7 +222,10 @@ class DataLayerService:
         layer = self._get_layer(PortadaBuilder.BOAT_NEWS_TYPE)
         metadata = DataLakeMetadataManager(layer.get_configuration())
         
-        df = metadata.read_log("storage_log")
+        df = self._safe_read_log(metadata, "storage_log")
+        if df is None:
+            return []
+
         df = df.filter("stage = 0")
         
         if table_name:
@@ -223,7 +239,10 @@ class DataLayerService:
         layer = self._get_layer(PortadaBuilder.BOAT_NEWS_TYPE)
         metadata = DataLakeMetadataManager(layer.get_configuration())
         
-        df = metadata.read_log("field_lineage_log")
+        df = self._safe_read_log(metadata, "field_lineage_log")
+        if df is None:
+            return []
+
         df = df.filter(f"stored_log_id = '{log_id}'")
         
         return [row.asDict() for row in df.collect()]
@@ -232,7 +251,10 @@ class DataLayerService:
         layer = self._get_layer(PortadaBuilder.BOAT_NEWS_TYPE)
         metadata = DataLakeMetadataManager(layer.get_configuration())
         
-        df = metadata.read_log("process_log")
+        df = self._safe_read_log(metadata, "process_log")
+        if df is None:
+            return []
+            
         # "Por defecto, aquí, la condición del campo “stage” debe ser siempre == 0"
         # Check if stage column exists or if logic applies. Assuming yes.
         # Note: In main.py, I saw examples filtering filters.
@@ -249,7 +271,7 @@ class DataLayerService:
 
     def get_publications(self):
         import os
-        base_path = "/app/delta_lake/metadata/duplicates_records"
+        base_path = os.path.join(self.base_path, "metadata", "duplicates_records")
         pubs = set()
         if os.path.exists(base_path):
             for item in os.listdir(base_path):
@@ -262,7 +284,7 @@ class DataLayerService:
 
     def get_known_entities(self):
         import os
-        base_path = "/app/delta_lake/ingest/entity"
+        base_path = os.path.join(self.base_path, "ingest", "entity")
         entities = []
         if os.path.exists(base_path):
             for item in os.listdir(base_path):
