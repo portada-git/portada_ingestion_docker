@@ -34,9 +34,22 @@ async def get_gaps_file(
     content = await file.read()
     content_str = content.decode('utf-8')
     
+    # Detectar el formato del archivo
+    content_str = content_str.strip()
+    
+    # Si ya es YAML o JSON válido, usarlo directamente
+    if content_str.startswith('{') or content_str.startswith('[') or ':' in content_str:
+        # Ya tiene formato estructurado
+        yaml_content = content_str
+    else:
+        # Formato simple: una fecha por línea
+        # Convertir a formato YAML: fecha: [u]
+        lines = [line.strip() for line in content_str.split('\n') if line.strip()]
+        yaml_content = '\n'.join([f'"{line}": ["u"]' for line in lines])
+    
     try:
         service = DataLayerService.get_instance()
-        return service.get_missing_dates(publication, date_list=content_str)
+        return service.get_missing_dates(publication, date_list=yaml_content)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

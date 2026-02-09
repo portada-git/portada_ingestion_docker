@@ -532,10 +532,38 @@ class ApiService {
 
   // Analysis - Missing Dates
   async getMissingDates(request: MissingDatesRequest): Promise<MissingDatesResponse> {
-    return this.request<MissingDatesResponse>('/analysis/missing-dates', {
-      method: 'POST',
-      body: JSON.stringify(request),
+    // Si hay date_and_edition_list (archivo), usar el endpoint de archivo
+    if (request.date_and_edition_list) {
+      // Crear un archivo blob con el contenido
+      const blob = new Blob([request.date_and_edition_list], { type: 'text/plain' });
+      const file = new File([blob], 'dates.txt', { type: 'text/plain' });
+      return this.uploadDatesFile(file, request.publication_name);
+    }
+    
+    // Si hay rango de fechas o sin filtros, usar el endpoint de rango
+    const params = new URLSearchParams();
+    params.append('publication', request.publication_name);
+    if (request.start_date) params.append('start_date', request.start_date);
+    if (request.end_date) params.append('end_date', request.end_date);
+
+    const data = await this.request<string[]>(`/queries/gaps?${params.toString()}`, {
+      method: 'GET'
     });
+
+    // El backend devuelve un array de strings, necesitamos convertirlo al formato esperado
+    return {
+      publication_name: request.publication_name,
+      query_type: request.start_date || request.end_date ? 'date_range' : 'all',
+      missing_dates: Array.isArray(data) ? data.map(dateStr => ({
+        date: dateStr,
+        edition: '',
+        gap_duration: ''
+      })) : [],
+      total_missing: Array.isArray(data) ? data.length : 0,
+      date_range_analyzed: request.start_date && request.end_date 
+        ? `${request.start_date} - ${request.end_date}` 
+        : undefined
+    };
   }
 
   async analyzeMissingDatesFile(file: File, publication: string, onProgress?: (progress: number) => void): Promise<MissingDatesResponse> {
@@ -561,17 +589,46 @@ class ApiService {
     const formData = new FormData();
     formData.append('file', file);
 
-    return this.uploadRequest<MissingDatesResponse>(`/queries/gaps/file?publication=${encodeURIComponent(publicationName)}`, formData, onProgress);
+    const data = await this.uploadRequest<string[]>(`/queries/gaps/file?publication=${encodeURIComponent(publicationName)}`, formData, onProgress);
+
+    // El backend devuelve un array de strings, necesitamos convertirlo al formato esperado
+    return {
+      publication_name: publicationName,
+      query_type: 'file_list',
+      missing_dates: Array.isArray(data) ? data.map(dateStr => ({
+        date: dateStr,
+        edition: '',
+        gap_duration: ''
+      })) : [],
+      total_missing: Array.isArray(data) ? data.length : 0
+    } as MissingDatesResponse;
   }
 
   // Analysis - Duplicates
   async getDuplicates(request: DuplicatesRequest): Promise<DuplicatesResponse> {
-     return this.getDuplicatesMetadata({
+     const data = await this.getDuplicatesMetadata({
          user: request.user_responsible,
          publication: request.publication,
          start_date: request.start_date,
          end_date: request.end_date
      });
+     
+     // Backend returns: date, edition, duplicates, publication, timestamp, duplicates_filter
+     // Map to frontend format
+     const duplicates = Array.isArray(data) ? data.map((item: any) => ({
+       date: item.date || '',
+       edition: item.edition || '',
+       publication: item.publication || '',
+       duplicate_count: item.duplicates || 0,
+       duplicates_filter: item.duplicates_filter || '',
+       timestamp: item.timestamp || '',
+     })) : [];
+     
+     return {
+       duplicates,
+       total_duplicates: duplicates.length,
+       filters_applied: request
+     };
   }
 
   async getDuplicatesMetadata(request: {
@@ -579,26 +636,25 @@ class ApiService {
     publication?: string;
     start_date?: string;
     end_date?: string;
-  }): Promise<DuplicatesResponse> {
+  }): Promise<any> {
     const params = new URLSearchParams();
     if (request.publication) params.append('publication', request.publication);
     if (request.user) params.append('user', request.user);
     if (request.start_date) params.append('start_date', request.start_date);
     if (request.end_date) params.append('end_date', request.end_date);
 
+    // El backend devuelve un array directamente
     const data = await this.request<any[]>(`/audit/duplicates/metadata?${params.toString()}`, {
       method: 'GET'
     });
 
-    return {
-      duplicates: data,
-      total_duplicates: data.length,
-      filters_applied: request
-    };
+    return data;
   }
 
-  async getDuplicateDetails(logId: string) {
-    return this.request(`/audit/duplicates/records/${logId}`);
+  async getDuplicateDetails(duplicatesFilter: string) {
+    const params = new URLSearchParams();
+    params.append('duplicates_filter', duplicatesFilter);
+    return this.request(`/audit/duplicates/records?${params.toString()}`);
   }
 
   // Analysis - Storage and Process Metadata (NEW ENDPOINTS)

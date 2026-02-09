@@ -1,0 +1,66 @@
+CORRECCIONES EN DUPLICADOS - FRONTEND Y BACKEND
+================================================
+
+PROBLEMA IDENTIFICADO:
+---------------------
+El frontend estaba usando log_id para obtener detalles de duplicados,
+pero según ejemplos.py, debe usar duplicates_filter.
+
+CAMBIOS EN BACKEND:
+------------------
+1. portada_backend/app/services/datalayer.py
+   - get_duplicate_details() ahora recibe duplicates_filter directamente
+   - Simplificado: solo lee duplicates_records, aplica filtro y devuelve parsed_text
+   
+2. portada_backend/app/routers/audit.py
+   - Endpoint cambiado de GET /duplicates/records/{log_id}
+   - A: GET /duplicates/records?duplicates_filter=...
+   
+3. get_duplicate_metadata() ahora incluye duplicates_filter en la respuesta
+
+CAMBIOS EN FRONTEND:
+-------------------
+1. frontend/src/services/api.ts
+   - getDuplicateDetails() ahora recibe duplicatesFilter en lugar de logId
+   - Usa query parameter: ?duplicates_filter=...
+   - getDuplicatesMetadata() devuelve array directamente
+
+2. frontend/src/components/analysis/DuplicatesAnalysis.tsx
+   - loadDuplicateDetails() usa masterRow.duplicates_filter
+   - Transforma la respuesta del backend (array de {parsed_text}) al formato del frontend
+   - Mapea 'duplicates' (backend) a 'duplicate_count' (frontend)
+   - Maneja correctamente el array directo del backend
+
+FLUJO CORRECTO:
+--------------
+1. Usuario hace clic en "Buscar" con filtros
+2. Frontend llama GET /audit/duplicates/metadata
+3. Backend devuelve array con: date, edition, duplicates, publication, timestamp, duplicates_filter
+4. Frontend muestra tabla maestra
+5. Usuario hace clic en una fila
+6. Frontend extrae duplicates_filter de la fila
+7. Frontend llama GET /audit/duplicates/records?duplicates_filter=...
+8. Backend aplica el filtro y devuelve array de {parsed_text}
+9. Frontend transforma y muestra los detalles
+
+EJEMPLO DE USO:
+--------------
+Metadata response:
+{
+  "date": "1850-01-01",
+  "edition": "u",
+  "duplicates": 6,
+  "publication": "db",
+  "timestamp": "2026-02-03T10:38:24.227842+00:00",
+  "duplicates_filter": "lower(publication_name)='db' AND publication_date_year=1850..."
+}
+
+Details request:
+GET /audit/duplicates/records?duplicates_filter=lower(publication_name)='db'...
+
+Details response:
+[
+  {"parsed_text": "De Cádiz, Chiclana..."},
+  {"parsed_text": "De Barcelona..."},
+  ...
+]

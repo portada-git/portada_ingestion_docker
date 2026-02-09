@@ -82,7 +82,10 @@
       "count": "Cantidad",
       "record": "Registro",
       "occurrences": "Ocurrencias",
-      "info": "Los duplicados se detectan automáticamente durante el procesamiento de datos. Esta consulta muestra registros que aparecen múltiples veces en la misma publicación y fecha."
+      "info": "Los duplicados se detectan automáticamente durante el procesamiento de datos. Esta consulta muestra registros que aparecen múltiples veces en la misma publicación y fecha.",
+      "details": "Detalles de Duplicados",
+      "duplicate": "Duplicado",
+      "noDetails": "No hay detalles disponibles"
     },
     "dailyEntries": {
       "title": "Entradas Diarias",

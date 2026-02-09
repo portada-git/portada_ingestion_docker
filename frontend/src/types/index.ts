@@ -103,14 +103,12 @@ export interface MissingDatesResponse {
 }
 
 export interface DuplicateRecord {
-  log_id: string;
   date: string;
   edition: string;
   publication: string;
-  uploaded_by: string;
   duplicate_count: number;
   duplicates_filter: string;
-  duplicate_ids: string[];
+  timestamp: string;
 }
 
 export interface DuplicatesRequest {
