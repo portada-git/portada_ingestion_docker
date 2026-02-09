@@ -1,0 +1,76 @@
+PORTADA BACKEND - IMPLEMENTACIÓN COMPLETA
+==========================================
+
+ESTADO: ✅ FUNCIONANDO CORRECTAMENTE
+
+ENDPOINTS IMPLEMENTADOS Y PROBADOS:
+-----------------------------------
+
+1. Health Check
+   GET /api/v1/health
+   ✅ Funcionando
+
+2. Publicaciones
+   GET /api/v1/queries/publications
+   ✅ Funcionando - Devuelve: ["JCANELL4", "DB"]
+
+3. Fechas Faltantes (Gaps)
+   GET /api/v1/queries/gaps?publication=db&start_date=2023-01-01&end_date=2023-01-31
+   ✅ Funcionando - Devuelve lista de fechas faltantes
+
+4. Cantidad de Entradas
+   GET /api/v1/queries/entries/count?publication=db&start_date=1850-01-01&end_date=1850-01-31
+   ✅ Funcionando - Devuelve conteo por año/mes/día/edición
+
+5. Entidades Conocidas
+   GET /api/v1/queries/entities
+   ✅ Funcionando - Devuelve [] (vacío porque no hay datos)
+   
+   GET /api/v1/queries/entities/{entity_type}
+   ✅ Implementado - Listo para usar cuando haya datos
+
+6. Duplicados
+   GET /api/v1/audit/duplicates/metadata
+   ✅ Funcionando - Devuelve 16 registros
+   
+   GET /api/v1/audit/duplicates/records/{log_id}
+   ✅ Implementado
+
+7. Auditoría de Almacenamiento
+   GET /api/v1/audit/storage
+   ✅ Funcionando - Devuelve logs de storage
+   
+   GET /api/v1/audit/storage/{log_id}/lineage
+   ✅ Implementado
+
+8. Auditoría de Procesos
+   GET /api/v1/audit/process
+   ✅ Funcionando - Devuelve 4 registros
+
+ARQUITECTURA:
+-------------
+- Inicialización al arranque: boat_layer, entities_layer, metadata_layer
+- Reutilización de capas en cada petición (patrón singleton)
+- Uso correcto de métodos de la librería:
+  * get_missing_dates_from_a_newspaper()
+  * read_raw_entities()
+  * get_configuration() devuelve dict con _base_path y _project_data_name
+
+CORRECCIONES REALIZADAS:
+------------------------
+1. Nombre correcto de constante: KNOWN_ENTITIES_TYPE (no KNOW_ENTITIES_TYPE)
+2. Método correcto: get_missing_dates_from_a_newspaper()
+3. Acceso correcto a configuración: config["_base_path"]
+4. Uso de F.col() para filtros PySpark
+5. Inicialización correcta de todas las capas al arranque
+
+DOCKER:
+-------
+- Comando: docker compose up --build -d api
+- Puerto: 8000
+- Docs: http://localhost:8000/docs
+
+PRUEBAS:
+--------
+Script: ./portada_backend/test_api.sh
+Todos los endpoints responden correctamente

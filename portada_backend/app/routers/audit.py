@@ -19,11 +19,15 @@ async def get_duplicates_metadata(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/duplicates/records/{log_id}")
-async def get_duplicate_records(log_id: str):
+@router.get("/duplicates/records")
+async def get_duplicate_records(duplicates_filter: str):
+    """
+    Obtiene los detalles de duplicados usando el filtro.
+    El duplicates_filter viene de la columna duplicates_filter del endpoint /duplicates/metadata
+    """
     try:
         service = DataLayerService.get_instance()
-        return service.get_duplicate_details(log_id)
+        return service.get_duplicate_details(duplicates_filter)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

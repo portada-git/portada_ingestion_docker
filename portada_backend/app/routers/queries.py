@@ -62,21 +62,26 @@ async def list_entities():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/entities/{type}/download")
-async def download_entity_yaml(type: str):
-    # This would simulate downloading the YAML list. 
-    # Current DataLayer mock doesn't really have a "get all items for type" easily exposed as list of dicts -> YAML.
-    # Assuming list_known_entities just gives stats.
-    # We might need a real method in DataLayer to fetch the data.
-    # For now returning a placeholder or implementing a basic fetch if possible.
-    return {"message": f"Download YAML for {type} not fully implemented yet"}
+@router.get("/entities/{entity_type}")
+async def get_entity_data(entity_type: str):
+    try:
+        service = DataLayerService.get_instance()
+        return service.get_entity_data(entity_type)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/known-entities")
 async def get_known_entities_alt():
-    service = DataLayerService.get_instance()
-    return service.get_known_entities()
+    try:
+        service = DataLayerService.get_instance()
+        return service.list_known_entities()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/publications")
 async def query_publications():
-    service = DataLayerService.get_instance()
-    return service.get_publications()
+    try:
+        service = DataLayerService.get_instance()
+        return service.get_publications()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
