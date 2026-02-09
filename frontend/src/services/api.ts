@@ -15,7 +15,6 @@ import {
   KnownEntitiesResponse,
   KnownEntityDetailResponse,
   DailyEntriesRequest,
-  DailyEntriesResponse,
   PublicationsResponse
 } from '../types';
 
@@ -493,41 +492,20 @@ class ApiService {
   }
 
   async getKnownEntityDetail(name: string): Promise<KnownEntityDetailResponse> {
-    return this.request<KnownEntityDetailResponse>(`/queries/known-entities/${name}`);
+    return this.request<KnownEntityDetailResponse>(`/queries/entities/${name}`);
   }
 
-  async getDailyEntries(request: DailyEntriesRequest): Promise<DailyEntriesResponse> {
+  async getDailyEntries(request: DailyEntriesRequest): Promise<any> {
     const params = new URLSearchParams();
     if (request.publication) params.append('publication', request.publication);
     if (request.start_date) params.append('start_date', request.start_date);
     if (request.end_date) params.append('end_date', request.end_date);
     
-    // Backend returns [{y, m, d, count}, ...]
-    const rawData = await this.request<any[]>(`/queries/entries/count?${params.toString()}`);
+    // Backend returns hierarchical structure: {total, years: [{year, count, months: [...]}]}
+    const rawData = await this.request<any>(`/queries/entries/count?${params.toString()}`);
     
-    const daily_counts = Array.isArray(rawData) ? rawData.map(item => {
-        // Handle rollup rows where y,m,d might be null? Pyspark rollup includes nulls for subtotals.
-        // If y, m, d present:
-        if (item.y && item.m && item.d) {
-             const date = `${item.y}-${String(item.m).padStart(2, '0')}-${String(item.d).padStart(2, '0')}`;
-             return {
-                 date: date,
-                 count: item.count,
-                 publication: request.publication || ''
-             };
-        }
-        return null; // Skip rollup totals for now
-    }).filter(x => x !== null) as any[] : [];
-
-    return {
-      publication: request.publication || '',
-      daily_counts: daily_counts,
-      total_entries: daily_counts.reduce((sum, x) => sum + x.count, 0),
-      date_range: {
-        start_date: request.start_date || '',
-        end_date: request.end_date || ''
-      }
-    };
+    // Return the hierarchical structure as-is for the frontend to display
+    return rawData;
   }
 
   // Analysis - Missing Dates
@@ -543,6 +521,7 @@ class ApiService {
     // Si hay rango de fechas o sin filtros, usar el endpoint de rango
     const params = new URLSearchParams();
     params.append('publication', request.publication_name);
+    
     if (request.start_date) params.append('start_date', request.start_date);
     if (request.end_date) params.append('end_date', request.end_date);
 
@@ -669,11 +648,20 @@ class ApiService {
     const params = new URLSearchParams();
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
-        if (value) params.append(key, value);
+        if (value) {
+          // Map frontend field names to backend parameter names
+          if (key === 'table_name') {
+            params.append('table_name', value);
+          } else if (key === 'process_name') {
+            params.append('process', value);
+          } else {
+            params.append(key, value);
+          }
+        }
       });
     }
     const queryString = params.toString();
-    return this.request(`/metadata/storage${queryString ? `?${queryString}` : ''}`);
+    return this.request(`/audit/storage${queryString ? `?${queryString}` : ''}`);
   }
 
   async getProcessMetadata(filters?: {
@@ -686,15 +674,22 @@ class ApiService {
     const params = new URLSearchParams();
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
-        if (value) params.append(key, value);
+        if (value) {
+          // Map frontend field names to backend parameter names
+          if (key === 'process_name') {
+            params.append('process', value);
+          } else {
+            params.append(key, value);
+          }
+        }
       });
     }
     const queryString = params.toString();
-    return this.request(`/metadata/process${queryString ? `?${queryString}` : ''}`);
+    return this.request(`/audit/process${queryString ? `?${queryString}` : ''}`);
   }
 
   async getFieldLineage(storedLogId: string) {
-    return this.request<any>(`/metadata/lineage?stored_log_id=${storedLogId}`);
+    return this.request<any>(`/audit/storage/${storedLogId}/lineage`);
   }
 
   async getMetadataPublications() {

@@ -39,7 +39,17 @@ async def audit_storage(
 ):
     try:
         service = DataLayerService.get_instance()
-        return service.get_storage_audit(table_name, process)
+        records = service.get_storage_audit(table_name, process)
+        
+        # Devolver en el formato esperado por el frontend
+        return {
+            "storage_records": records,
+            "total_records": len(records),
+            "filters_applied": {
+                "table_name": table_name,
+                "process_name": process
+            }
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -47,7 +57,12 @@ async def audit_storage(
 async def audit_storage_lineage(log_id: str):
     try:
         service = DataLayerService.get_instance()
-        return service.get_lineage_detail(log_id)
+        lineages = service.get_lineage_detail(log_id)
+        
+        # Devolver en el formato esperado por el frontend
+        return {
+            "field_lineages": lineages
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

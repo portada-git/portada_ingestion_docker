@@ -132,6 +132,7 @@ class DataLayerService:
     def count_entries(self, publication, start_date=None, end_date=None):
         """
         Cantidad de entradas por año, mes, dia y edicion
+        Devuelve estructura jerárquica: años -> meses -> días
         """
         # 1. Leer datos
         df = self.boat_layer.read_raw_data(publication)
@@ -150,13 +151,94 @@ class DataLayerService:
         
         # 3. Calcular totales y subtotales
         df_counter = df.rollup("y", "m", "d", "publication_edition") \
-                       .agg(F.count("*").alias("t")) \
+                       .agg(F.count("*").alias("count")) \
                        .orderBy("y", "m", "d", "publication_edition")
         
-        # 4. Convertir a JSON
+        # 4. Convertir a JSON y organizar jerárquicamente
         resultados = df_counter.collect()
         
-        return [row.asDict() for row in resultados]
+        # Estructura jerárquica
+        years = {}
+        total = 0
+        
+        for row in resultados:
+            if row.y is None:
+                # Total general
+                total = row['count']
+            elif row.m is None:
+                # Total por año
+                year = row.y
+                if year not in years:
+                    years[year] = {
+                        'year': year,
+                        'count': row['count'],
+                        'months': {}
+                    }
+            elif row.d is None:
+                # Total por mes
+                year = row.y
+                month = row.m
+                if year not in years:
+                    years[year] = {'year': year, 'count': 0, 'months': {}}
+                if month not in years[year]['months']:
+                    years[year]['months'][month] = {
+                        'month': month,
+                        'count': row['count'],
+                        'days': {}
+                    }
+            elif row.publication_edition is None:
+                # Total por día
+                year = row.y
+                month = row.m
+                day = row.d
+                if year not in years:
+                    years[year] = {'year': year, 'count': 0, 'months': {}}
+                if month not in years[year]['months']:
+                    years[year]['months'][month] = {'month': month, 'count': 0, 'days': {}}
+                if day not in years[year]['months'][month]['days']:
+                    years[year]['months'][month]['days'][day] = {
+                        'day': day,
+                        'count': row['count'],
+                        'editions': []
+                    }
+            else:
+                # Por edición
+                year = row.y
+                month = row.m
+                day = row.d
+                edition = row.publication_edition
+                if year not in years:
+                    years[year] = {'year': year, 'count': 0, 'months': {}}
+                if month not in years[year]['months']:
+                    years[year]['months'][month] = {'month': month, 'count': 0, 'days': {}}
+                if day not in years[year]['months'][month]['days']:
+                    years[year]['months'][month]['days'][day] = {'day': day, 'count': 0, 'editions': []}
+                years[year]['months'][month]['days'][day]['editions'].append({
+                    'edition': edition,
+                    'count': row['count']
+                })
+        
+        # Convertir diccionarios a listas
+        result = {
+            'total': total,
+            'years': []
+        }
+        
+        for year_key in sorted(years.keys()):
+            year_data = years[year_key]
+            months_list = []
+            for month_key in sorted(year_data['months'].keys()):
+                month_data = year_data['months'][month_key]
+                days_list = []
+                for day_key in sorted(month_data['days'].keys()):
+                    day_data = month_data['days'][day_key]
+                    days_list.append(day_data)
+                month_data['days'] = days_list
+                months_list.append(month_data)
+            year_data['months'] = months_list
+            result['years'].append(year_data)
+        
+        return result
 
     def list_known_entities(self):
         """
@@ -172,6 +254,8 @@ class DataLayerService:
         entities_path = os.path.join(base_path, project_name, "ingest", "known_entities")
         
         entities = []
+        entity_types = set()
+        
         if os.path.exists(entities_path):
             for item in os.listdir(entities_path):
                 if item == "ship_entries" or item == "original_files":
@@ -179,36 +263,65 @@ class DataLayerService:
                     
                 path = os.path.join(entities_path, item)
                 if os.path.isdir(path):
+                    entity_types.add(item)
                     # Contar archivos
                     count = 0
                     for _, _, files in os.walk(path):
                         count += len([f for f in files if f.endswith('.json') or f.endswith('.yaml') or f.endswith('.parquet')])
                     
-                    entities.append({"type": item, "count": count})
+                    entities.append({
+                        "name": item,
+                        "type": item,
+                        "count": count
+                    })
         
-        return entities
+        return {
+            "entities": entities,
+            "total_entities": len(entities),
+            "entity_types": list(entity_types)
+        }
     
     def get_entity_data(self, entity_type: str):
         """
         Obtiene los datos de un tipo de entidad específico
-        Según ejemplos.py: df = entities_layer.read_raw_entities(entity=entity_type)
+        Según la librería: df = entities_layer.read_raw_entities(entity=entity_type)
         """
         if not self.entities_layer:
             raise Exception("Entities layer not available")
+        
+        try:
+            df = self.entities_layer.read_raw_entities(entity=entity_type)
             
-        df = self.entities_layer.read_raw_entities(entity=entity_type)
-        
-        # Cantidad de ese tipo
-        cantidad = df.select(F.count("*")).collect()[0][0]
-        
-        # Lista de valores
-        lista_valores = df.collect()
-        
-        return {
-            "type": entity_type,
-            "count": cantidad,
-            "data": [row.asDict() for row in lista_valores]
-        }
+            if df is None:
+                # No hay datos para este tipo de entidad
+                return {
+                    "name": entity_type,
+                    "type": entity_type,
+                    "data": [],
+                    "total_records": 0
+                }
+            
+            # Cantidad de ese tipo
+            cantidad = df.select(F.count("*")).collect()[0][0]
+            
+            # Lista de valores
+            lista_valores = df.collect()
+            
+            return {
+                "name": entity_type,
+                "type": entity_type,
+                "data": [row.asDict() for row in lista_valores],
+                "total_records": cantidad
+            }
+        except Exception as e:
+            logger.error(f"Error reading entity data for {entity_type}: {str(e)}")
+            # Si hay error, devolver estructura vacía
+            return {
+                "name": entity_type,
+                "type": entity_type,
+                "data": [],
+                "total_records": 0
+            }
 
     def get_storage_audit(self, table_name=None, process=None):
         """
@@ -225,8 +338,30 @@ class DataLayerService:
         if process:
             df = df.filter(F.col("process") == process)
         
-        # Devolver todas las columnas
-        return [row.asDict() for row in df.collect()]
+        # Convertir a lista de diccionarios y mapear campos al formato esperado por el frontend
+        results = []
+        for row in df.collect():
+            row_dict = row.asDict()
+            # Mapear campos al formato esperado por el frontend
+            mapped_row = {
+                "log_id": row_dict.get("log_id", ""),
+                "publication_name": row_dict.get("publication_name"),
+                "table_name": row_dict.get("table_name", ""),
+                "process_name": row_dict.get("process", ""),
+                "stage": row_dict.get("stage", 0),
+                "records_stored": row_dict.get("num_records", 0),
+                "storage_path": row_dict.get("target_path", ""),
+                "created_at": row_dict.get("timestamp", ""),
+                "metadata": {
+                    "format": "delta",
+                    "compression": "snappy",
+                    "schema_version": "1.0",
+                    "partition_columns": []
+                }
+            }
+            results.append(mapped_row)
+        
+        return results
 
     def get_lineage_detail(self, log_id):
         """
