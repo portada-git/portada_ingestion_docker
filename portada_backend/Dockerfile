@@ -9,10 +9,12 @@ RUN apt-get update && \
 WORKDIR /app
 
 # Install base heavy dependencies first (cached layer)
+ARG CACHE_BUST_LIBS=2
 COPY requirements-base.txt .
 RUN pip install --no-cache-dir -r requirements-base.txt
 
 # Install application dependencies (including git repo)
+ARG CACHE_BUST_OWN_LIBS=1
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
