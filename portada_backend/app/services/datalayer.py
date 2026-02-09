@@ -384,7 +384,33 @@ class DataLayerService:
         if process_name:
             df = df.filter(F.col("process") == process_name)
 
-        return [row.asDict() for row in df.collect()]
+        # Convertir a lista de diccionarios y mapear campos al formato esperado por el frontend
+        results = []
+        for row in df.collect():
+            row_dict = row.asDict()
+            # Incluir todos los campos originales más los campos mapeados para el frontend
+            mapped_row = {
+                # Campos mapeados para compatibilidad con el frontend
+                "process_log_id": row_dict.get("log_id", ""),
+                "publication_name": row_dict.get("publication_name", "N/A"),
+                "status": row_dict.get("status", "UNKNOWN"),
+                "records_processed": row_dict.get("num_records", 0),
+                "processed_at": row_dict.get("timestamp", ""),
+                # Todos los campos originales
+                "log_id": row_dict.get("log_id", ""),
+                "timestamp": row_dict.get("timestamp", ""),
+                "stage": row_dict.get("stage", 0),
+                "description": row_dict.get("description", ""),
+                "start_time": row_dict.get("start_time", ""),
+                "end_time": row_dict.get("end_time", ""),
+                "duration": row_dict.get("duration", 0),
+                "num_records": row_dict.get("num_records", 0),
+                "extra_info": row_dict.get("extra_info", {}),
+                "process": row_dict.get("process", "")
+            }
+            results.append(mapped_row)
+        
+        return results
 
     def get_publications(self):
         """

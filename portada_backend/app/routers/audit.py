@@ -73,6 +73,12 @@ async def audit_process(
 ):
     try:
         service = DataLayerService.get_instance()
-        return service.get_process_audit(process)
+        records = service.get_process_audit(process)
+        
+        # Devolver en el formato esperado por el frontend
+        return {
+            "process_metadata": records,
+            "total_count": len(records)
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
