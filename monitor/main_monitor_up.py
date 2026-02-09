@@ -22,11 +22,18 @@ config_path = os.getenv("DATA_LAYER_CONFIG", config_path)
 path_to_watch =  os.getenv("PATH_TO_WATCH", path_to_watch)
 host = os.getenv("DAGSTER_HOST", "localhost")
 
+def process_file(path_file, file_type=None, user_or_entity=None):
+    if file_type.lower() == "entity":
+        dagster_process_entity(path_file, user_or_entity)        
+    else:
+        dagster_process_entry(path_file, user_or_entity)
 
-def dagster_process_entry(ruta_fitxer, f_type, user):
+
+
+def dagster_process_entry(ruta_fitxer, user):
     client = DagsterGraphQLClient(hostname=host, port_number=3000)
     client.submit_job_execution(
-        job_name="ingestion",
+        job_name="entry_ingestion",
         run_config={
             "ops": {"ingested_entry_file": {"config": {"local_path": ruta_fitxer, "user": user}}},
             "resources": {
@@ -41,7 +48,25 @@ def dagster_process_entry(ruta_fitxer, f_type, user):
     )
 
 
-event_handler.set_path_to_observe(path_to_watch).set_file_process_function(dagster_process_entry).set_observer(Observer()).start()
+def dagster_process_entity(ruta_fitxer, entity_type):
+    client = DagsterGraphQLClient(hostname=host, port_number=3000)
+    client.submit_job_execution(
+        job_name="entity_ingestion",
+        run_config={
+            "ops": {"ingested_entity_file": {"config": {"local_path": ruta_fitxer, "entity_type": entity_type}}},
+            "resources": {
+                "datalayer": {
+                    "config": {
+                        "config_path": config_path,
+                        "job_name": "ingestion",
+                    }
+                }
+            }
+        }
+    )
+
+
+event_handler.set_path_to_observe(path_to_watch).set_file_process_function(process_file).set_observer(Observer()).start()
 
 # Definim una funció interna per gestionar la sortida neta
 def shutdown_handler(signum, frame):
