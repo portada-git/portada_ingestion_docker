@@ -30,8 +30,11 @@ type FilterType = "all" | "entry" | "entity";
 type TabType = "queue" | "completed";
 
 interface RedisFile {
-  id: string;
-  filename: string;
+  file_key?: string; // Nueva estructura: UUID sin extensión
+  id?: string; // Mantener para compatibilidad con datos antiguos
+  original_filename?: string; // Nueva estructura: nombre original
+  filename?: string; // Mantener para compatibilidad con datos antiguos
+  stored_filename?: string; // Nueva estructura: nombre con el que se guardó
   file_path: string;
   file_type: string;
   status: number; // 0=pending, 1=processing, 2=completed, 3=error
@@ -163,7 +166,7 @@ const ProcessDashboardView: React.FC = () => {
     if (searchTerm) {
       filtered = filtered.filter(
         (file) =>
-          file.filename.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (file.original_filename || file.filename || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
           file.user.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
@@ -177,7 +180,9 @@ const ProcessDashboardView: React.FC = () => {
           comparison = a.timestamp - b.timestamp;
           break;
         case "name":
-          comparison = a.filename.localeCompare(b.filename);
+          const aName = a.original_filename || a.filename || "";
+          const bName = b.original_filename || b.filename || "";
+          comparison = aName.localeCompare(bName);
           break;
         case "status":
           comparison = a.status - b.status;
@@ -544,7 +549,7 @@ const ProcessDashboardView: React.FC = () => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredFiles.map((file) => (
-                    <tr key={file.id} className="hover:bg-gray-50">
+                    <tr key={file.file_key || file.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           {file.file_type === "entry" ? (
@@ -554,10 +559,10 @@ const ProcessDashboardView: React.FC = () => {
                           )}
                           <div>
                             <div className="text-sm font-medium text-gray-900">
-                              {file.filename}
+                              {file.original_filename || file.filename}
                             </div>
                             <div className="text-sm text-gray-500">
-                              ID: {file.id.substring(0, 8)}...
+                              ID: {(file.file_key || file.id)?.substring(0, 8)}...
                             </div>
                           </div>
                         </div>

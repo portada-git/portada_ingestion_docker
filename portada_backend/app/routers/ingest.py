@@ -37,7 +37,7 @@ async def upload_entry(
     if len(files) > 20:
         raise HTTPException(status_code=400, detail="Maximum 20 files allowed per upload")
         
-    uploaded_ids = []
+    uploaded_files = []
     
     # Path: ingest/ship_entries/<username>/
     directory = os.path.join(BASE_FILE_PATH, "ship_entries", user)
@@ -47,7 +47,9 @@ async def upload_entry(
         if not file.filename.endswith(".json"):
              raise HTTPException(status_code=400, detail=f"File {file.filename} is not a JSON file")
 
-        file_path = os.path.join(directory, file.filename)
+        # Generar nombre aleatorio para el archivo (este será la key de Redis)
+        random_filename = f"{uuid.uuid4()}.json"
+        file_path = os.path.join(directory, random_filename)
         
         try:
             with open(file_path, "wb") as buffer:
@@ -55,28 +57,38 @@ async def upload_entry(
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"File save error for {file.filename}: {str(e)}")
             
-        # Record in Redis
-        file_id = str(uuid.uuid4())
-        
+        # Metadata para Redis
         metadata = {
-            "id": file_id,
-            "filename": file.filename,
+            "original_filename": file.filename,  # Nombre original para mostrar al usuario
+            "stored_filename": random_filename,  # Nombre con el que se guardó
             "file_path": file_path,
             "file_type": "entry",
-            "status": "0",  # String in Redis, converted to int when reading
+            "status": "0",  # 0=Pending, 1=Processing, 2=Completed, 3=Error
             "user": user,
             "timestamp": str(time.time())
         }
         
-        # Store as Hash
-        r.hset(f"file:{file_id}", mapping=metadata)
-        # Add to list of files
-        r.rpush("files:all", file_id)
-        r.rpush(f"files:user:{user}", file_id)
+        # Usar el nombre del archivo como key de Redis (sin extensión para más limpieza)
+        file_key = random_filename.replace(".json", "")
         
-        uploaded_ids.append(file_id)
+        # Store as Hash - La key es el nombre del archivo
+        r.hset(f"file:{file_key}", mapping=metadata)
+        # Add to list of files
+        r.rpush("files:all", file_key)
+        r.rpush(f"files:user:{user}", file_key)
+        
+        uploaded_files.append({
+            "file_key": file_key,
+            "original_filename": file.filename,
+            "stored_filename": random_filename
+        })
     
-    return {"message": "Entries uploaded successfully", "file_ids": uploaded_ids, "count": len(uploaded_ids)}
+    return {
+        "message": "Entries uploaded successfully", 
+        "files": uploaded_files, 
+        "count": len(uploaded_files)
+    }
+
 
 @router.post("/entity")
 async def upload_entity(
@@ -88,11 +100,21 @@ async def upload_entity(
     if not (file.filename.endswith(".yaml") or file.filename.endswith(".yml") or file.filename.endswith(".json")):
         raise HTTPException(status_code=400, detail="YAML/JSON files allowed for entities")
 
+    # Determinar extensión del archivo original
+    file_extension = ""
+    if file.filename.endswith(".yaml") or file.filename.endswith(".yml"):
+        file_extension = ".yaml"
+    elif file.filename.endswith(".json"):
+        file_extension = ".json"
+    
+    # Generar nombre aleatorio para el archivo (este será la key de Redis)
+    random_filename = f"{uuid.uuid4()}{file_extension}"
+    
     # Path: ingest/entity/<type>/
     directory = os.path.join(BASE_FILE_PATH, "entity", type)
     os.makedirs(directory, exist_ok=True)
     
-    file_path = os.path.join(directory, file.filename)
+    file_path = os.path.join(directory, random_filename)
     
     try:
         with open(file_path, "wb") as buffer:
@@ -100,23 +122,31 @@ async def upload_entity(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"File save error: {str(e)}")
         
-    # Record in Redis
-    file_id = str(uuid.uuid4())
+    # Metadata para Redis
     metadata = {
-        "id": file_id,
-        "filename": file.filename,
+        "original_filename": file.filename,  # Nombre original para mostrar al usuario
+        "stored_filename": random_filename,  # Nombre con el que se guardó
         "file_path": file_path,
         "file_type": f"entity_{type}",
-        "status": "0",  # String in Redis, converted to int when reading
+        "status": "0",  # 0=Pending, 1=Processing, 2=Completed, 3=Error
         "user": user,
         "timestamp": str(time.time())
     }
     
-    r.hset(f"file:{file_id}", mapping=metadata)
-    r.rpush("files:all", file_id)
-    r.rpush(f"files:user:{user}", file_id)
+    # Usar el nombre del archivo como key de Redis (sin extensión)
+    file_key = random_filename.replace(file_extension, "")
     
-    return {"message": "Entity uploaded successfully", "file_id": file_id}
+    # Store as Hash - La key es el nombre del archivo
+    r.hset(f"file:{file_key}", mapping=metadata)
+    r.rpush("files:all", file_key)
+    r.rpush(f"files:user:{user}", file_key)
+    
+    return {
+        "message": "Entity uploaded successfully", 
+        "file_key": file_key,
+        "original_filename": file.filename,
+        "stored_filename": random_filename
+    }
 
 # Auth endpoints
 @router.post("/auth/me")
@@ -154,19 +184,19 @@ async def list_files(
     """
     List all uploaded files from Redis with pagination
     """
-    # Get all file IDs
-    all_file_ids = r.lrange("files:all", 0, -1)
+    # Get all file keys
+    all_file_keys = r.lrange("files:all", 0, -1)
     
     # Decode bytes to strings
-    all_file_ids = [fid.decode('utf-8') if isinstance(fid, bytes) else fid for fid in all_file_ids]
+    all_file_keys = [fk.decode('utf-8') if isinstance(fk, bytes) else fk for fk in all_file_keys]
     
-    # Get file metadata for each ID
+    # Get file metadata for each key
     files = []
-    for file_id in all_file_ids:
-        file_data = r.hgetall(f"file:{file_id}")
+    for file_key in all_file_keys:
+        file_data = r.hgetall(f"file:{file_key}")
         if file_data:
             # Decode bytes to strings and convert types
-            decoded_data = {}
+            decoded_data = {"file_key": file_key}  # Añadir el file_key al resultado
             for key, value in file_data.items():
                 key_str = key.decode('utf-8') if isinstance(key, bytes) else key
                 value_str = value.decode('utf-8') if isinstance(value, bytes) else value
