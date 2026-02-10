@@ -1,6 +1,6 @@
 
 from fastapi import APIRouter, UploadFile, File, Header, HTTPException, Depends, Query
-from typing import List
+from typing import List, Optional
 from ..redis_client import get_redis
 import redis
 import os
@@ -63,9 +63,9 @@ async def upload_entry(
             "filename": file.filename,
             "file_path": file_path,
             "file_type": "entry",
-            "status": 0,
+            "status": "0",  # String in Redis, converted to int when reading
             "user": user,
-            "timestamp": time.time()
+            "timestamp": str(time.time())
         }
         
         # Store as Hash
@@ -107,9 +107,9 @@ async def upload_entity(
         "filename": file.filename,
         "file_path": file_path,
         "file_type": f"entity_{type}",
-        "status": 0,
+        "status": "0",  # String in Redis, converted to int when reading
         "user": user,
-        "timestamp": time.time()
+        "timestamp": str(time.time())
     }
     
     r.hset(f"file:{file_id}", mapping=metadata)
@@ -142,3 +142,64 @@ async def auth_me_get(user: str = Depends(get_current_user_name)):
 @router.post("/auth/logout")
 async def logout():
     return {"message": "Logged out"}
+
+@router.get("/files")
+async def list_files(
+    status: Optional[int] = Query(None, description="Filter by status (0=pending, 1=processing, 2=completed, 3=error)"),
+    user: Optional[str] = Query(None, description="Filter by user"),
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
+    r: redis.Redis = Depends(get_redis)
+):
+    """
+    List all uploaded files from Redis with pagination
+    """
+    # Get all file IDs
+    all_file_ids = r.lrange("files:all", 0, -1)
+    
+    # Decode bytes to strings
+    all_file_ids = [fid.decode('utf-8') if isinstance(fid, bytes) else fid for fid in all_file_ids]
+    
+    # Get file metadata for each ID
+    files = []
+    for file_id in all_file_ids:
+        file_data = r.hgetall(f"file:{file_id}")
+        if file_data:
+            # Decode bytes to strings and convert types
+            decoded_data = {}
+            for key, value in file_data.items():
+                key_str = key.decode('utf-8') if isinstance(key, bytes) else key
+                value_str = value.decode('utf-8') if isinstance(value, bytes) else value
+                
+                # Convert status to int and timestamp to float
+                if key_str == 'status':
+                    decoded_data[key_str] = int(value_str)
+                elif key_str == 'timestamp':
+                    decoded_data[key_str] = float(value_str)
+                else:
+                    decoded_data[key_str] = value_str
+            
+            # Apply filters
+            if status is not None and decoded_data.get('status', 0) != status:
+                continue
+            if user and decoded_data.get('user') != user:
+                continue
+            
+            files.append(decoded_data)
+    
+    # Sort by timestamp (newest first)
+    files.sort(key=lambda x: float(x.get('timestamp', 0)), reverse=True)
+    
+    # Pagination
+    total = len(files)
+    start = (page - 1) * page_size
+    end = start + page_size
+    paginated_files = files[start:end]
+    
+    return {
+        "files": paginated_files,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": (total + page_size - 1) // page_size
+    }

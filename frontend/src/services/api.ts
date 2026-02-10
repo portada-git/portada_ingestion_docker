@@ -463,6 +463,24 @@ class ApiService {
     return this.request(`/audit/process`);
   }
 
+  // Get files from Redis with pagination
+  async getIngestionFiles(params?: {
+    status?: number;
+    user?: string;
+    page?: number;
+    page_size?: number;
+  }) {
+    const urlParams = new URLSearchParams();
+    if (params) {
+      if (params.status !== undefined) urlParams.append('status', String(params.status));
+      if (params.user) urlParams.append('user', params.user);
+      if (params.page) urlParams.append('page', String(params.page));
+      if (params.page_size) urlParams.append('page_size', String(params.page_size));
+    }
+    const queryString = urlParams.toString();
+    return this.request(`/ingest/files${queryString ? `?${queryString}` : ''}`);
+  }
+
   // Alias for backward compatibility
   async getIngestionStatus(_status?: string): Promise<IngestionStatusResponse> {
     return this.request<IngestionStatusResponse>(`/audit/process`);

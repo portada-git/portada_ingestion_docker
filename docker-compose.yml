@@ -17,6 +17,7 @@ services:
       - DELTA_LAKE_PATH=/app/delta_test/docker
       - CONFIG_PATH=/app/config/delta_data_layer_config.json
       - PATH_TO_INGEST=/app/ingestion
+      - PYSPARK_SUBMIT_ARGS=--packages io.delta:delta-spark_2.12:3.2.1 --conf spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension --conf spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog pyspark-shell
     volumes:
       # Map the physical Delta Lake path from host to container
       - ./delta_lake:/app/delta_test/docker
