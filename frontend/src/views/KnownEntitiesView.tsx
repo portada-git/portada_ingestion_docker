@@ -82,17 +82,18 @@ const KnownEntitiesView: React.FC = () => {
 
   const handleExportYaml = (entity: KnownEntityDetailResponse) => {
     try {
-      // Crear estructura: tipo: [variante1, variante2, ...]
-      // Extraer los valores de la primera columna de cada fila como variantes
-      const variants = entity.data.map(row => {
-        // Obtener el primer valor de cada fila
-        const firstValue = Object.values(row)[0];
-        return firstValue;
+      // Crear estructura: tipo: { caracteristica: [voz1, voz2, ...], ... }
+      const characteristics: Record<string, string[]> = {};
+      
+      entity.data.forEach(row => {
+        const name = row.name;
+        const voices = row.voices || [];
+        characteristics[name] = voices;
       });
       
-      // Crear objeto con el tipo como clave y las variantes como array
+      // Crear objeto con el tipo como clave y las características como valor
       const yamlObject = {
-        [entity.name]: variants
+        [entity.name]: characteristics
       };
       
       const yamlContent = jsYaml.dump(yamlObject);
