@@ -59,8 +59,8 @@ const DuplicatesAnalysis: React.FC = () => {
         end_date: filters.endDate || undefined,
       });
       
-      // El backend devuelve un array directamente, no un objeto con .duplicates
-      const duplicatesData = Array.isArray(response) ? response : (response as any).duplicates || [];
+      // El backend ahora devuelve { duplicates: [], total_duplicates: 0, ... }
+      const duplicatesData = response.duplicates || [];
       
       // Mapear los campos del backend al formato esperado por el frontend
       const mappedData = duplicatesData.map((item: any) => ({
@@ -102,9 +102,8 @@ const DuplicatesAnalysis: React.FC = () => {
       const duplicatesFilter = String(masterRow.duplicates_filter);
       const response = await apiService.getDuplicateDetails(duplicatesFilter);
       
-      // El backend devuelve un array de objetos con parsed_text
-      // Necesitamos transformarlo al formato esperado por el componente
-      const records = Array.isArray(response) ? response : [];
+      // El backend ahora devuelve { records: [], total_records: 0, ... }
+      const records = response.records || [];
       
       return {
         log_id: String(masterRow.log_id || ''),

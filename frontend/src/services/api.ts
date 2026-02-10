@@ -640,18 +640,24 @@ class ApiService {
     if (request.start_date) params.append('start_date', request.start_date);
     if (request.end_date) params.append('end_date', request.end_date);
 
-    // El backend devuelve un array directamente
-    const data = await this.request<any[]>(`/audit/duplicates/metadata?${params.toString()}`, {
+    // El backend ahora devuelve un objeto con { duplicates: [], total_duplicates: 0, ... }
+    const data = await this.request<any>(`/audit/duplicates/metadata?${params.toString()}`, {
       method: 'GET'
     });
 
+    // Retornar el objeto completo para que el componente pueda acceder a duplicates
     return data;
   }
 
   async getDuplicateDetails(duplicatesFilter: string) {
     const params = new URLSearchParams();
     params.append('duplicates_filter', duplicatesFilter);
-    return this.request(`/audit/duplicates/records?${params.toString()}`);
+    
+    // El backend ahora devuelve un objeto con { records: [], total_records: 0, ... }
+    const data = await this.request<any>(`/audit/duplicates/records?${params.toString()}`);
+    
+    // Retornar el objeto completo
+    return data;
   }
 
   // Analysis - Storage and Process Metadata (NEW ENDPOINTS)

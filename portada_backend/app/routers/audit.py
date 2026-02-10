@@ -15,9 +15,23 @@ async def get_duplicates_metadata(
 ):
     try:
         service = DataLayerService.get_instance()
-        return service.get_duplicate_metadata(publication, user, start_date, end_date)
+        results = service.get_duplicate_metadata(publication, user, start_date, end_date)
+        
+        # Devolver en formato consistente con el frontend
+        return {
+            "duplicates": results,
+            "total_duplicates": len(results),
+            "filters_applied": {
+                "publication": publication,
+                "user": user,
+                "start_date": start_date,
+                "end_date": end_date
+            }
+        }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        import logging
+        logging.error(f"Error in get_duplicates_metadata: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving duplicates: {str(e)}")
 
 @router.get("/duplicates/records")
 async def get_duplicate_records(duplicates_filter: str):
@@ -27,9 +41,17 @@ async def get_duplicate_records(duplicates_filter: str):
     """
     try:
         service = DataLayerService.get_instance()
-        return service.get_duplicate_details(duplicates_filter)
+        results = service.get_duplicate_details(duplicates_filter)
+        
+        return {
+            "records": results,
+            "total_records": len(results),
+            "filter_applied": duplicates_filter
+        }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        import logging
+        logging.error(f"Error in get_duplicate_records: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving duplicate records: {str(e)}")
 
 # 6. Storage Audit
 @router.get("/storage")

@@ -92,24 +92,40 @@ class DataLayerService:
         Para obtener todos los duplicados a nivel general: 
         date, edition, duplicates (cantidad), publication, timestamp, duplicates_filter
         """
-        df_dup = self.metadata_layer.read_log("duplicates_log")
-        
-        # Aplicar filtros
-        if publication:
-            df_dup = df_dup.filter(F.lower(F.col("publication")) == publication.lower())
-        if user:
-            df_dup = df_dup.filter(F.col("uploaded_by") == user)
-        if start_date:
-            df_dup = df_dup.filter(F.col("date") >= start_date)
-        if end_date:
-            df_dup = df_dup.filter(F.col("date") <= end_date)
-        
-        # Seleccionar campos incluyendo duplicates_filter para el detalle
-        results = df_dup.select(
-            "date", "edition", "duplicates", "publication", "timestamp", "duplicates_filter"
-        ).collect()
-        
-        return [row.asDict() for row in results]
+        try:
+            df_dup = self.metadata_layer.read_log("duplicates_log")
+            
+            # Verificar si el DataFrame está vacío
+            if df_dup is None:
+                logger.warning("duplicates_log returned None")
+                return []
+            
+            # Verificar si hay datos
+            count = df_dup.count()
+            if count == 0:
+                logger.info("duplicates_log is empty")
+                return []
+            
+            # Aplicar filtros
+            if publication:
+                df_dup = df_dup.filter(F.lower(F.col("publication")) == publication.lower())
+            if user:
+                df_dup = df_dup.filter(F.col("uploaded_by") == user)
+            if start_date:
+                df_dup = df_dup.filter(F.col("date") >= start_date)
+            if end_date:
+                df_dup = df_dup.filter(F.col("date") <= end_date)
+            
+            # Seleccionar campos incluyendo duplicates_filter para el detalle
+            results = df_dup.select(
+                "date", "edition", "duplicates", "publication", "timestamp", "duplicates_filter"
+            ).collect()
+            
+            return [row.asDict() for row in results]
+        except Exception as e:
+            logger.error(f"Error reading duplicates_log: {str(e)}")
+            # Retornar lista vacía en lugar de fallar
+            return []
 
     def get_duplicate_details(self, duplicates_filter: str):
         """
@@ -118,16 +134,24 @@ class DataLayerService:
         2. Aplicar duplicates_filter
         3. Seleccionar solo parsed_text
         """
-        # 1. Leer registros de duplicados
-        df_duplicates = self.metadata_layer.read_log("duplicates_records")
-        
-        # 2. Aplicar duplicates_filter
-        df_duplicates = df_duplicates.filter(duplicates_filter)
-        
-        # 3. Seleccionar solo parsed_text y convertir a lista
-        results = df_duplicates.select(df_duplicates.parsed_text).collect()
-        
-        return [row.asDict() for row in results]
+        try:
+            # 1. Leer registros de duplicados
+            df_duplicates = self.metadata_layer.read_log("duplicates_records")
+            
+            if df_duplicates is None:
+                logger.warning("duplicates_records returned None")
+                return []
+            
+            # 2. Aplicar duplicates_filter
+            df_duplicates = df_duplicates.filter(duplicates_filter)
+            
+            # 3. Seleccionar solo parsed_text y convertir a lista
+            results = df_duplicates.select(df_duplicates.parsed_text).collect()
+            
+            return [row.asDict() for row in results]
+        except Exception as e:
+            logger.error(f"Error reading duplicates_records: {str(e)}")
+            return []
 
     def count_entries(self, publication, start_date=None, end_date=None):
         """
