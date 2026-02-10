@@ -3,3 +3,4 @@ dades_persistents/
 ingestion_zone
 __pycache__/
 .DS_Store/
+demo/

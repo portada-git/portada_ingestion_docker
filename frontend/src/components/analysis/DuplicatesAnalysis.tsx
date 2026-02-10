@@ -58,13 +58,29 @@ const DuplicatesAnalysis: React.FC = () => {
         start_date: filters.startDate || undefined,
         end_date: filters.endDate || undefined,
       });
-      setMasterData((response as any).duplicates || []);
+      
+      // El backend devuelve un array directamente, no un objeto con .duplicates
+      const duplicatesData = Array.isArray(response) ? response : (response as any).duplicates || [];
+      
+      // Mapear los campos del backend al formato esperado por el frontend
+      const mappedData = duplicatesData.map((item: any) => ({
+        log_id: item.log_id || '',
+        date: item.date || '',
+        edition: item.edition || '',
+        publication: item.publication || '',
+        uploaded_by: item.uploaded_by || '',
+        duplicate_count: item.duplicates || 0, // El backend usa 'duplicates', el frontend espera 'duplicate_count'
+        duplicates_filter: item.duplicates_filter || '',
+        duplicate_ids: item.duplicate_ids || [],
+      }));
+      
+      setMasterData(mappedData);
 
       addNotification({
         type: "success",
         title: t("analysis.duplicates.dataLoaded"),
         message: t("analysis.duplicates.foundRecords", {
-          count: (response as any).duplicates?.length || 0,
+          count: mappedData.length,
         }),
       });
     } catch (error) {
@@ -83,9 +99,26 @@ const DuplicatesAnalysis: React.FC = () => {
     masterRow: Record<string, unknown>,
   ): Promise<DuplicateDetail> => {
     try {
-      const logId = String(masterRow.log_id);
-      const response = await apiService.getDuplicateDetails(logId);
-      return response as DuplicateDetail;
+      const duplicatesFilter = String(masterRow.duplicates_filter);
+      const response = await apiService.getDuplicateDetails(duplicatesFilter);
+      
+      // El backend devuelve un array de objetos con parsed_text
+      // Necesitamos transformarlo al formato esperado por el componente
+      const records = Array.isArray(response) ? response : [];
+      
+      return {
+        log_id: String(masterRow.log_id || ''),
+        metadata: masterRow as DuplicateMetadata,
+        duplicate_records: records.map((item: any, index: number) => ({
+          id: String(index + 1),
+          title: item.parsed_text || '',
+          date: String(masterRow.date || ''),
+          publication: String(masterRow.publication || ''),
+          duplicate_group: String(masterRow.log_id || '').substring(0, 8),
+          content_preview: item.parsed_text || '',
+        })),
+        total_records: records.length,
+      };
     } catch (error) {
       addNotification({
         type: "error",

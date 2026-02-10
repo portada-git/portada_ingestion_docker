@@ -51,7 +51,7 @@ const LoginView: React.FC = () => {
         <div className="text-center">
           <div className="mx-auto h-24 w-24 flex items-center justify-center">
             <img 
-              src="/logo.png" 
+              src="/logo.jpeg" 
               alt={t('navigation.logoAlt')} 
               className="h-full w-full object-contain"
             />

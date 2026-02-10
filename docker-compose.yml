@@ -14,12 +14,12 @@ services:
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - DELTA_LAKE_PATH=/app/delta_lake
+      - DELTA_LAKE_PATH=/app/delta_test/docker
       - CONFIG_PATH=/app/config/delta_data_layer_config.json
       - PATH_TO_INGEST=/app/ingestion
     volumes:
       # Map the physical Delta Lake path from host to container
-      - ./delta_lake:/app/delta_lake
+      - ./delta_lake:/app/delta_test/docker
       # Map a config folder if you have one, or create it empty for now
       - ./data_layer_config:/app/config
       - ./ingestion_zone:/app/ingestion

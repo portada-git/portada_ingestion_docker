@@ -154,7 +154,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
           <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
             <div className="flex items-center">
               <img
-                src="/logo.png"
+                src="/logo.jpeg"
                 alt="PortAda Logo"
                 className="w-10 h-10 object-contain"
                 role="img"

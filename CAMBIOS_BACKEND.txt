@@ -1,0 +1,51 @@
+REFACTORIZACIÓN PORTADA_BACKEND
+================================
+
+CAMBIOS PRINCIPALES:
+
+1. Inicialización de Capas al Arranque
+   - Se inicializan boat_layer, entities_layer y metadata_layer al arrancar la API
+   - Se reutilizan en cada petición (patrón singleton)
+   - Eliminado el método _get_layer() que creaba capas por petición
+
+2. Correcciones de Métodos
+   - get_missing_dates: Usa boat_layer.get_missing_dates() directamente
+   - count_entries: Usa boat_layer.read_raw_data() con filtros correctos
+   - get_duplicate_metadata: Usa metadata_layer directamente
+   - get_duplicate_details: Usa metadata_layer con filtros correctos
+   - get_storage_audit: Usa metadata_layer con filtro stage=0
+   - get_process_audit: Usa metadata_layer con filtro stage=0
+   - get_lineage_detail: Usa metadata_layer directamente
+
+3. Nuevos Métodos
+   - get_entity_data(entity_type): Obtiene datos de un tipo de entidad específico
+   - Usa entities_layer.read_raw_entities()
+
+4. Uso de PySpark Functions
+   - Importado F (functions) al inicio
+   - Todos los filtros usan F.col() en lugar de strings SQL
+   - Más seguro y consistente
+
+5. Configuración Docker
+   - Actualizado docker-compose.yml para usar paths consistentes
+   - DELTA_LAKE_PATH=/app/delta_test/docker (coincide con config JSON)
+   - Volumen mapeado correctamente
+
+6. Endpoints Actualizados
+   - GET /api/v1/queries/entities/{entity_type} - Nuevo endpoint
+   - Todos los endpoints con manejo de errores try/except
+
+ARCHIVOS MODIFICADOS:
+- portada_backend/app/services/datalayer.py
+- portada_backend/app/routers/queries.py
+- portada_backend/requirements.txt (eliminada línea duplicada)
+- docker-compose.yml
+
+ARCHIVOS NUEVOS:
+- portada_backend/test_api.sh (script de pruebas)
+- portada_backend/README.md
+- start_backend.sh (script para iniciar backend)
+
+PARA PROBAR:
+1. ./start_backend.sh
+2. ./portada_backend/test_api.sh

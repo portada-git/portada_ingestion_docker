@@ -82,7 +82,10 @@
       "count": "Count",
       "record": "Record",
       "occurrences": "Occurrences",
-      "info": "Duplicates are automatically detected during data processing. This query shows records that appear multiple times in the same publication and date."
+      "info": "Duplicates are automatically detected during data processing. This query shows records that appear multiple times in the same publication and date.",
+      "details": "Duplicate Details",
+      "duplicate": "Duplicate",
+      "noDetails": "No details available"
     },
     "dailyEntries": {
       "title": "Daily Entries",

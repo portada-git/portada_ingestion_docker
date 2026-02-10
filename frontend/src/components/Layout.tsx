@@ -117,7 +117,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <img
-                  src="/logo.png"
+                  src="/logo.jpeg"
                   alt="PortAda Logo"
                   className="w-10 h-10 object-contain"
                   role="img"
@@ -285,7 +285,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </button>
             <div className="flex items-center">
               <img
-                src="/logo.png"
+                src="/logo.jpeg"
                 alt="PortAda Logo"
                 className="w-8 h-8 object-contain mr-2"
                 role="img"

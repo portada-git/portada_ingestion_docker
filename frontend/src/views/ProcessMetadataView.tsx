@@ -25,6 +25,16 @@ interface ProcessMetadataItem {
   processed_at: string;
   records_processed: number;
   status: string;
+  log_id: string;
+  timestamp: string;
+  stage: number;
+  description: string;
+  start_time: string;
+  end_time: string;
+  duration: number;
+  num_records: number;
+  extra_info: any;
+  process: string;
 }
 
 interface ProcessMetadataResponse {
@@ -154,23 +164,32 @@ const ProcessMetadataView: React.FC = () => {
               />
 
               <div className="overflow-x-auto rounded-lg border border-slate-200">
-                <table className="w-full">
+                <table className="w-full text-sm">
                   <thead className="bg-slate-50">
                     <tr className="border-b border-slate-200">
                       <th className="text-left py-3 px-4 font-semibold text-slate-900">
-                        Process Log ID
+                        Log ID
                       </th>
                       <th className="text-left py-3 px-4 font-semibold text-slate-900">
-                        Publicación
+                        Proceso
+                      </th>
+                      <th className="text-left py-3 px-4 font-semibold text-slate-900">
+                        Descripción
                       </th>
                       <th className="text-left py-3 px-4 font-semibold text-slate-900">
                         Estado
                       </th>
-                      <th className="text-left py-3 px-4 font-semibold text-slate-900">
-                        Registros Procesados
+                      <th className="text-right py-3 px-4 font-semibold text-slate-900">
+                        Registros
                       </th>
                       <th className="text-left py-3 px-4 font-semibold text-slate-900">
-                        Fecha de Procesamiento
+                        Inicio
+                      </th>
+                      <th className="text-left py-3 px-4 font-semibold text-slate-900">
+                        Fin
+                      </th>
+                      <th className="text-right py-3 px-4 font-semibold text-slate-900">
+                        Duración (s)
                       </th>
                     </tr>
                   </thead>
@@ -181,10 +200,13 @@ const ProcessMetadataView: React.FC = () => {
                         className="hover:bg-slate-50 transition-colors"
                       >
                         <td className="py-3 px-4 text-slate-700 font-mono text-xs">
-                          {process.process_log_id.substring(0, 8)}...
+                          {process.log_id.substring(0, 8)}...
                         </td>
-                        <td className="py-3 px-4 text-slate-700 font-medium">
-                          {process.publication_name}
+                        <td className="py-3 px-4 text-slate-700 font-medium text-xs">
+                          {process.process}
+                        </td>
+                        <td className="py-3 px-4 text-slate-600 text-xs max-w-xs truncate" title={process.description}>
+                          {process.description}
                         </td>
                         <td className="py-3 px-4">
                           <span
@@ -193,11 +215,17 @@ const ProcessMetadataView: React.FC = () => {
                             {process.status}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-slate-700 font-mono">
-                          {process.records_processed.toLocaleString()}
+                        <td className="py-3 px-4 text-slate-700 font-mono text-right">
+                          {process.num_records.toLocaleString()}
                         </td>
-                        <td className="py-3 px-4 text-slate-700 text-sm">
-                          {new Date(process.processed_at).toLocaleString()}
+                        <td className="py-3 px-4 text-slate-700 text-xs">
+                          {new Date(process.start_time).toLocaleString()}
+                        </td>
+                        <td className="py-3 px-4 text-slate-700 text-xs">
+                          {new Date(process.end_time).toLocaleString()}
+                        </td>
+                        <td className="py-3 px-4 text-slate-700 font-mono text-right">
+                          {process.duration.toFixed(2)}
                         </td>
                       </tr>
                     ))}
