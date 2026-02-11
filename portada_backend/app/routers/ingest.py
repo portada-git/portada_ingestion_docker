@@ -22,10 +22,15 @@ def get_current_user_name(x_api_key: str = Header(...), r: redis.Redis = Depends
     if not x_api_key:
         raise HTTPException(status_code=401, detail="Missing API Key (Username)")
     
-    # Add to set of users (idempotent)
-    r.sadd("users", x_api_key)
+    # Create a short hash of the token for directory names (first 16 chars of hash)
+    import hashlib
+    user_hash = hashlib.sha256(x_api_key.encode()).hexdigest()[:16]
     
-    return x_api_key
+    # Add to set of users (idempotent) - store mapping
+    r.sadd("users", user_hash)
+    r.hset(f"user:{user_hash}", "token", x_api_key)
+    
+    return user_hash
 
 @router.post("/entry")
 async def upload_entry(
@@ -63,7 +68,7 @@ async def upload_entry(
             "stored_filename": random_filename,  # Nombre con el que se guardó
             "file_path": file_path,
             "file_type": "entry",
-            "status": "0",  # 0=Pending, 1=Processing, 2=Completed, 3=Error
+            "status": "0",  # 0=en cola, 1=procesado, 2=error
             "user": user,
             "timestamp": str(time.time())
         }
@@ -128,7 +133,7 @@ async def upload_entity(
         "stored_filename": random_filename,  # Nombre con el que se guardó
         "file_path": file_path,
         "file_type": f"entity_{type}",
-        "status": "0",  # 0=Pending, 1=Processing, 2=Completed, 3=Error
+        "status": "0",  # 0=en cola, 1=procesado, 2=error
         "user": user,
         "timestamp": str(time.time())
     }
@@ -175,7 +180,7 @@ async def logout():
 
 @router.get("/files")
 async def list_files(
-    status: Optional[int] = Query(None, description="Filter by status (0=pending, 1=processing, 2=completed, 3=error)"),
+    status: Optional[int] = Query(None, description="Filter by status (0=en cola, 1=procesado, 2=error)"),
     user: Optional[str] = Query(None, description="Filter by user"),
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),

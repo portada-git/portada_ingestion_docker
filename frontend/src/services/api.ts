@@ -18,7 +18,7 @@ import {
   PublicationsResponse
 } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '__VITE_API_BASE_URL__';
 
 // Types for interceptors
 type RequestInterceptor = (config: RequestInit & { url: string }) => RequestInit & { url: string };
@@ -610,20 +610,29 @@ class ApiService {
          end_date: request.end_date
      });
      
-     // Backend returns: date, edition, duplicates, publication, timestamp, duplicates_filter
+     console.log('getDuplicates - raw data:', data);
+     
+     // Backend returns object: {duplicates: [...], total_duplicates: N}
+     // Extract the duplicates array from the response
+     const duplicatesArray = data.duplicates || [];
+     
+     console.log('getDuplicates - duplicates array:', duplicatesArray);
+     
      // Map to frontend format
-     const duplicates = Array.isArray(data) ? data.map((item: any) => ({
+     const duplicates = duplicatesArray.map((item: any) => ({
        date: item.date || '',
        edition: item.edition || '',
        publication: item.publication || '',
        duplicate_count: item.duplicates || 0,
        duplicates_filter: item.duplicates_filter || '',
        timestamp: item.timestamp || '',
-     })) : [];
+     }));
+     
+     console.log('getDuplicates - mapped duplicates:', duplicates);
      
      return {
        duplicates,
-       total_duplicates: duplicates.length,
+       total_duplicates: data.total_duplicates || duplicates.length,
        filters_applied: request
      };
   }
@@ -656,8 +665,8 @@ class ApiService {
     // El backend ahora devuelve un objeto con { records: [], total_records: 0, ... }
     const data = await this.request<any>(`/audit/duplicates/records?${params.toString()}`);
     
-    // Retornar el objeto completo
-    return data;
+    // Retornar el array de records directamente
+    return data.records || [];
   }
 
   // Analysis - Storage and Process Metadata (NEW ENDPOINTS)

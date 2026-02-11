@@ -20,7 +20,7 @@ class UploadedFile(Base):
     filename = Column(String)
     file_path = Column(String)
     file_type = Column(String) # 'entry' or 'entity'
-    status = Column(Integer, default=0) # 0 = Pending/Uploaded
+    status = Column(Integer, default=0) # 0=en cola, 1=procesado, 2=error
     uploaded_at = Column(DateTime, default=datetime.utcnow)
     user_id = Column(Integer, ForeignKey("users.id"))
 

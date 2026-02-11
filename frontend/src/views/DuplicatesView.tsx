@@ -5,7 +5,7 @@
 
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Copy, Search, X } from "lucide-react";
+import { Copy, Search, X, Download } from "lucide-react";
 import { apiService } from "../services/api";
 import { withErrorHandling } from "../utils/apiErrorHandler";
 import { DuplicatesResponse } from "../types";
@@ -29,10 +29,17 @@ const DuplicatesView: React.FC = () => {
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [formData, setFormData] = useState({
     publication: "",
+    start_date: "",
+    end_date: "",
   });
 
   const handlePublicationChange = (value: string) => {
     setFormData((prev) => ({ ...prev, publication: value }));
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,7 +49,9 @@ const DuplicatesView: React.FC = () => {
 
     const result = await withErrorHandling(async () => {
       return await apiService.getDuplicates({
-        publication: formData.publication,
+        publication: formData.publication || undefined,
+        start_date: formData.start_date || undefined,
+        end_date: formData.end_date || undefined,
       });
     });
 
@@ -72,6 +81,75 @@ const DuplicatesView: React.FC = () => {
   const closeDetails = () => {
     setSelectedDuplicate(null);
     setDuplicateDetails([]);
+  };
+
+  const downloadDetailsCSV = () => {
+    if (!selectedDuplicate || duplicateDetails.length === 0) return;
+
+    // Generar nombre del archivo
+    const date = selectedDuplicate.date;
+    const edition = selectedDuplicate.edition.toUpperCase();
+    const publication = selectedDuplicate.publication.toUpperCase();
+    const total = duplicateDetails.length;
+    const fileName = `detalles_duplicados_${publication}_${edition}_${date}_total_${total}.csv`;
+
+    // Crear contenido CSV
+    const headers = ["Número", "Texto"];
+    const csvContent = [
+      headers.join(","),
+      ...duplicateDetails.map((text, index) => {
+        // Escapar comillas y saltos de línea en el texto
+        const escapedText = `"${text.replace(/"/g, '""').replace(/\n/g, ' ')}"`;
+        return `${index + 1},${escapedText}`;
+      }),
+    ].join("\n");
+
+    // Crear blob y descargar
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", fileName);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const downloadCSV = () => {
+    if (!results || results.duplicates.length === 0) return;
+
+    // Generar nombre del archivo
+    const publication = formData.publication ? formData.publication.toUpperCase() : "TODAS";
+    const startDate = formData.start_date || "inicio";
+    const endDate = formData.end_date || "fin";
+    const total = results.total_duplicates;
+    const fileName = `duplicados_${publication}_${startDate}_${endDate}_total_${total}.csv`;
+
+    // Crear contenido CSV
+    const headers = ["Fecha", "Edición", "Publicación", "Cantidad"];
+    const csvContent = [
+      headers.join(","),
+      ...results.duplicates.map((duplicate) => {
+        return [
+          duplicate.date,
+          duplicate.edition,
+          duplicate.publication.toUpperCase(),
+          duplicate.duplicate_count,
+        ].join(",");
+      }),
+    ].join("\n");
+
+    // Crear blob y descargar
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", fileName);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const renderEmptyState = () => {
@@ -148,6 +226,34 @@ const DuplicatesView: React.FC = () => {
                 className="md:col-span-2"
               />
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t("analysis.duplicates.startDate")} ({t("common.optional")})
+                </label>
+                <input
+                  type="date"
+                  name="start_date"
+                  value={formData.start_date}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t("analysis.duplicates.endDate")} ({t("common.optional")})
+                </label>
+                <input
+                  type="date"
+                  name="end_date"
+                  value={formData.end_date}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                />
+              </div>
+            </div>
           </div>
         </QueryForm>
       </AnalysisCard>
@@ -161,13 +267,31 @@ const DuplicatesView: React.FC = () => {
                 {results.total_duplicates}{" "}
                 {t("analysis.duplicates.duplicatesFound")}
               </p>
-              <div className="flex items-center space-x-2 text-sm text-slate-500">
-                <Search className="w-4 h-4" />
-                <span>
-                  {formData.publication
-                    ? `${t("analysis.duplicates.publication")}: ${formData.publication.toUpperCase()}`
-                    : t("analysis.duplicates.allPublications")}
-                </span>
+              <div className="flex items-center space-x-4">
+                <button
+                  onClick={downloadCSV}
+                  className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Descargar CSV</span>
+                </button>
+                <div className="flex items-center space-x-2 text-sm text-slate-500">
+                  <div className="flex items-center space-x-2">
+                    <Search className="w-4 h-4" />
+                    <span>
+                      {formData.publication
+                        ? `${t("analysis.duplicates.publication")}: ${formData.publication.toUpperCase()}`
+                        : t("analysis.duplicates.allPublications")}
+                    </span>
+                  </div>
+                  {(formData.start_date || formData.end_date) && (
+                    <span className="text-slate-400">
+                      {formData.start_date && `Desde: ${formData.start_date}`}
+                      {formData.start_date && formData.end_date && " • "}
+                      {formData.end_date && `Hasta: ${formData.end_date}`}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
             <div className="overflow-x-auto">
@@ -235,12 +359,22 @@ const DuplicatesView: React.FC = () => {
                   {new Date(selectedDuplicate.date).toLocaleDateString()} • {selectedDuplicate.edition.toUpperCase()} • {selectedDuplicate.publication.toUpperCase()} • {selectedDuplicate.duplicate_count} {t("analysis.duplicates.duplicatesFound")}
                 </p>
               </div>
-              <button
-                onClick={closeDetails}
-                className="text-slate-400 hover:text-white transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={downloadDetailsCSV}
+                  className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm"
+                  disabled={isLoadingDetails || duplicateDetails.length === 0}
+                >
+                  <Download className="w-4 h-4" />
+                  <span>CSV</span>
+                </button>
+                <button
+                  onClick={closeDetails}
+                  className="text-slate-400 hover:text-white transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
             </div>
             <div className="p-6 overflow-y-auto flex-1">
               {isLoadingDetails ? (
