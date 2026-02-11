@@ -1,5 +1,5 @@
 import os
-from dagster import Definitions, load_assets_from_modules, define_asset_job
+from dagster import Definitions, load_assets_from_modules, define_asset_job, in_process_executor
 from dagster_pyspark import PySparkResource
 from dagster_portada_project.resources.delta_data_layer_resource import DeltaDataLayerResource, RedisConfig
 from dagster_portada_project.assets import boat_fact_ingestion_assets, entity_ingestion_assets
@@ -24,7 +24,6 @@ entity_ingestion = define_asset_job(
 cfg_path = os.getenv("DATA_LAYER_CONFIG", "config/delta_data_layer_config.json")
 redis_host = os.getenv("REDIS_HOST", "localhost")
 redis_port = os.getenv("REDIS_PORT", "5700")
-
 
 spark_config = data_layer_builder_config_to_dagster_pyspark(cfg_path)
 py_spark_resource = PySparkResource(spark_config=spark_config)

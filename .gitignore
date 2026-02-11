@@ -1,8 +1,9 @@
 delta_lake/
 dades_persistents/
 ingestion_zone
-__pycache__/
-.DS_Store/
+__pycache__
+.DS_Store
 demo/
 .vscode/
 .redis/
+.env
