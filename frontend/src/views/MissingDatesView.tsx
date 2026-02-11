@@ -5,7 +5,7 @@
 
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Calendar, Search, Bug, ChevronDown, ChevronUp } from "lucide-react";
+import { Calendar, Search, Bug, ChevronDown, ChevronUp, Download } from "lucide-react";
 import { apiService } from "../services/api";
 import { withErrorHandling } from "../utils/apiErrorHandler";
 import AnalysisCard from "../components/AnalysisCard";
@@ -191,6 +191,45 @@ const MissingDatesView: React.FC = () => {
     setIsLoading(false);
   };
 
+  const downloadCSV = () => {
+    if (!results || results.missing_dates.length === 0) return;
+
+    // Generar nombre del archivo
+    const publication = formData.publication.toUpperCase();
+    const startDate = formData.startDate || "inicio";
+    const endDate = formData.endDate || "fin";
+    const total = results.total_missing;
+    const fileName = `fechas_faltantes_${publication}_${startDate}_${endDate}_total_${total}.csv`;
+
+    // Crear contenido CSV
+    const headers = ["Fecha", "Edición"];
+    if (results.missing_dates.some((d) => d.gap_duration)) {
+      headers.push("Duración");
+    }
+
+    const csvContent = [
+      headers.join(","),
+      ...results.missing_dates.map((entry) => {
+        const row = [entry.date, entry.edition];
+        if (entry.gap_duration) {
+          row.push(entry.gap_duration);
+        }
+        return row.join(",");
+      }),
+    ].join("\n");
+
+    // Crear blob y descargar
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", fileName);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const renderEmptyState = () => {
     // If no publication is selected, show selection state
     if (!formData.publication) {
@@ -328,12 +367,21 @@ const MissingDatesView: React.FC = () => {
                 type="info"
                 className="flex-1"
               />
-              <div className="flex items-center space-x-2 text-sm text-slate-500 ml-4">
-                <Search className="w-4 h-4" />
-                <span>
-                  {t("analysis.missingDates.publication")}:{" "}
-                  {formData.publication.toUpperCase()}
-                </span>
+              <div className="flex items-center space-x-4">
+                <button
+                  onClick={downloadCSV}
+                  className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Descargar CSV</span>
+                </button>
+                <div className="flex items-center space-x-2 text-sm text-slate-500">
+                  <Search className="w-4 h-4" />
+                  <span>
+                    {t("analysis.missingDates.publication")}:{" "}
+                    {formData.publication.toUpperCase()}
+                  </span>
+                </div>
               </div>
             </div>
 

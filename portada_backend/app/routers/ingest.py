@@ -22,10 +22,15 @@ def get_current_user_name(x_api_key: str = Header(...), r: redis.Redis = Depends
     if not x_api_key:
         raise HTTPException(status_code=401, detail="Missing API Key (Username)")
     
-    # Add to set of users (idempotent)
-    r.sadd("users", x_api_key)
+    # Create a short hash of the token for directory names (first 16 chars of hash)
+    import hashlib
+    user_hash = hashlib.sha256(x_api_key.encode()).hexdigest()[:16]
     
-    return x_api_key
+    # Add to set of users (idempotent) - store mapping
+    r.sadd("users", user_hash)
+    r.hset(f"user:{user_hash}", "token", x_api_key)
+    
+    return user_hash
 
 @router.post("/entry")
 async def upload_entry(

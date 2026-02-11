@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BarChart3, ChevronRight, ChevronDown } from 'lucide-react';
+import { BarChart3, ChevronRight, ChevronDown, Download } from 'lucide-react';
 import { apiService } from '../services/api';
 import { withErrorHandling } from '../utils/apiErrorHandler';
 import { DailyEntriesRequest } from '../types';
@@ -120,6 +120,49 @@ const DailyEntriesView: React.FC = () => {
     return date.toLocaleDateString('es-ES', { month: 'long' });
   };
 
+  const downloadCSV = () => {
+    if (!results || !results.years || results.years.length === 0) return;
+
+    // Generar nombre del archivo
+    const publication = formData.publication.toUpperCase();
+    const startDate = formData.startDate || "inicio";
+    const endDate = formData.endDate || "fin";
+    const total = results.total;
+    const fileName = `entradas_diarias_${publication}_${startDate}_${endDate}_total_${total}.csv`;
+
+    // Crear contenido CSV con estructura jerárquica
+    const headers = ["Año", "Mes", "Día", "Fecha Completa", "Cantidad"];
+    const rows: string[] = [headers.join(",")];
+
+    results.years.forEach((year) => {
+      year.months.forEach((month) => {
+        month.days.forEach((day) => {
+          const fullDate = `${year.year}-${String(month.month).padStart(2, '0')}-${String(day.day).padStart(2, '0')}`;
+          rows.push([
+            year.year,
+            getMonthName(month.month),
+            day.day,
+            fullDate,
+            day.count
+          ].join(","));
+        });
+      });
+    });
+
+    const csvContent = rows.join("\n");
+
+    // Crear blob y descargar
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", fileName);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-6">
       <AnalysisCard
@@ -174,10 +217,19 @@ const DailyEntriesView: React.FC = () => {
       {results && results.years && results.years.length > 0 && (
         <ResultsCard title={t('analysis.dailyEntries.results')}>
           <div className="space-y-4">
-            <InfoMessage
-              message={t('analysis.dailyEntries.totalEntries', { count: results.total })}
-              type="success"
-            />
+            <div className="flex items-center justify-between">
+              <InfoMessage
+                message={t('analysis.dailyEntries.totalEntries', { count: results.total })}
+                type="success"
+              />
+              <button
+                onClick={downloadCSV}
+                className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm"
+              >
+                <Download className="w-4 h-4" />
+                <span>Descargar CSV</span>
+              </button>
+            </div>
             
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-slate-200">

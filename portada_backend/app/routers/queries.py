@@ -30,6 +30,9 @@ async def get_gaps_range(
         service = DataLayerService.get_instance()
         return service.get_missing_dates(publication, start_date=start_date, end_date=end_date)
     except Exception as e:
+        import traceback
+        error_detail = f"{str(e)}\n\nTraceback:\n{traceback.format_exc()}"
+        logger.error(f"Error in get_gaps_range: {error_detail}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/gaps/file")
