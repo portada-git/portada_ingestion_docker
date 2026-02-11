@@ -14,7 +14,7 @@ COPY requirements-base.txt .
 RUN pip install --no-cache-dir -r requirements-base.txt
 
 # Install application dependencies (including git repo)
-ARG CACHE_BUST_OWN_LIBS=1
+ARG CACHE_BUST_OWN_LIBS=2
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 

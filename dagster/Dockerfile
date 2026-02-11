@@ -52,7 +52,7 @@ ARG CACHE_BUST_LIBS=2
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-ARG CACHE_BUST_OWN_LIBS=17
+ARG CACHE_BUST_OWN_LIBS=18
 # Instal·lem les dependències
 COPY own_requirements.txt .
 RUN pip install --no-cache-dir -r own_requirements.txt
