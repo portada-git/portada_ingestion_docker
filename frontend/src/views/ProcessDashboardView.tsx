@@ -37,7 +37,7 @@ interface RedisFile {
   stored_filename?: string; // Nueva estructura: nombre con el que se guardó
   file_path: string;
   file_type: string;
-  status: number; // 0=pending, 1=processing, 2=completed, 3=error
+  status: number; // 0=en cola, 1=procesado, 2=error
   user: string;
   timestamp: number;
 }
@@ -79,11 +79,11 @@ const ProcessDashboardView: React.FC = () => {
       // Determine status filter based on active tab
       let statusFilter: number | undefined;
       if (activeTab === "queue") {
-        // Queue: pending (0) or processing (1)
-        statusFilter = undefined; // We'll filter client-side for multiple statuses
+        // Queue: pending (0)
+        statusFilter = 0;
       } else {
-        // Completed: completed (2)
-        statusFilter = 2;
+        // Completed: processed (1)
+        statusFilter = 1;
       }
       
       const response = await apiService.getIngestionFiles({
@@ -93,11 +93,6 @@ const ProcessDashboardView: React.FC = () => {
       }) as RedisFilesResponse;
       
       let fetchedFiles = response.files || [];
-      
-      // Client-side filter for queue tab (status 0 or 1)
-      if (activeTab === "queue") {
-        fetchedFiles = fetchedFiles.filter((f: RedisFile) => f.status === 0 || f.status === 1);
-      }
       
       setFiles(fetchedFiles);
       setTotalFiles(response.total || 0);
@@ -126,9 +121,9 @@ const ProcessDashboardView: React.FC = () => {
 
   // Calculate stats from current files
   const stats = useMemo(() => {
-    const queueFiles = files.filter(f => f.status === 0 || f.status === 1);
-    const completedFiles = files.filter(f => f.status === 2);
-    const errorFiles = files.filter(f => f.status === 3);
+    const queueFiles = files.filter(f => f.status === 0);
+    const completedFiles = files.filter(f => f.status === 1);
+    const errorFiles = files.filter(f => f.status === 2);
     
     return {
       totalTasks: totalFiles,
@@ -145,11 +140,11 @@ const ProcessDashboardView: React.FC = () => {
     // Filter by status
     if (filterStatus !== "all") {
       if (filterStatus === "queue") {
-        filtered = filtered.filter((file) => file.status === 0 || file.status === 1);
+        filtered = filtered.filter((file) => file.status === 0);
       } else if (filterStatus === "completed") {
-        filtered = filtered.filter((file) => file.status === 2);
+        filtered = filtered.filter((file) => file.status === 1);
       } else if (filterStatus === "error") {
-        filtered = filtered.filter((file) => file.status === 3);
+        filtered = filtered.filter((file) => file.status === 2);
       }
     }
 
@@ -211,10 +206,8 @@ const ProcessDashboardView: React.FC = () => {
       case 0:
         return <Clock className="w-4 h-4 text-yellow-500" />;
       case 1:
-        return <LoadingSpinner size="sm" />;
-      case 2:
         return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 3:
+      case 2:
         return <AlertCircle className="w-4 h-4 text-red-500" />;
       default:
         return <Clock className="w-4 h-4 text-gray-500" />;
@@ -226,10 +219,8 @@ const ProcessDashboardView: React.FC = () => {
       case 0:
         return "bg-yellow-100 text-yellow-800";
       case 1:
-        return "bg-blue-100 text-blue-800";
-      case 2:
         return "bg-green-100 text-green-800";
-      case 3:
+      case 2:
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -239,12 +230,10 @@ const ProcessDashboardView: React.FC = () => {
   const getStatusLabel = (status: number) => {
     switch (status) {
       case 0:
-        return "Pendiente";
+        return "En Cola";
       case 1:
-        return "Procesando";
+        return "Procesado";
       case 2:
-        return "Completado";
-      case 3:
         return "Error";
       default:
         return "Desconocido";

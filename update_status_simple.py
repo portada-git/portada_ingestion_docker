@@ -15,10 +15,10 @@ def update_status(file_key: str, new_status: int):
     
     Args:
         file_key: La key del archivo (UUID sin extensión)
-        new_status: 0=Pending, 1=Processing, 2=Completed, 3=Error
+        new_status: 0=en cola, 1=procesado, 2=error
     
     Ejemplo:
-        update_status("a1b2c3d4-e5f6-7890-abcd-ef1234567890", 2)
+        update_status("a1b2c3d4-e5f6-7890-abcd-ef1234567890", 1)
     """
     # Verificar que el archivo existe
     if not r.exists(f"file:{file_key}"):
@@ -28,7 +28,7 @@ def update_status(file_key: str, new_status: int):
     # Actualizar el status
     r.hset(f"file:{file_key}", "status", str(new_status))
     
-    status_names = {0: "Pending", 1: "Processing", 2: "Completed", 3: "Error"}
+    status_names = {0: "En Cola", 1: "Procesado", 2: "Error"}
     print(f"✓ Status actualizado a {new_status} ({status_names.get(new_status, 'Unknown')})")
     
     # Mostrar info del archivo
@@ -51,7 +51,7 @@ def list_files():
     print(f"\nTotal de archivos: {len(file_keys)}\n")
     print("-" * 80)
     
-    status_names = {0: "Pending", 1: "Processing", 2: "Completed", 3: "Error"}
+    status_names = {0: "En Cola", 1: "Procesado", 2: "Error"}
     
     for file_key in file_keys:
         file_key_str = file_key.decode('utf-8') if isinstance(file_key, bytes) else file_key
