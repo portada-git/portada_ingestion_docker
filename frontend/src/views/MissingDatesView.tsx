@@ -105,8 +105,8 @@ const MissingDatesView: React.FC = () => {
   const [formData, setFormData] = useState({
     publication: "",
     queryMethod: "date_range",
-    startDate: "1820-01-01",
-    endDate: "1950-12-31",
+    startDate: "",
+    endDate: "",
   });
 
   const queryMethods = [
@@ -148,6 +148,14 @@ const MissingDatesView: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.publication) return;
+
+    // Validar que si es date_range, ambas fechas estén presentes
+    if (formData.queryMethod === "date_range") {
+      if (!formData.startDate || !formData.endDate) {
+        alert("Por favor, especifica ambas fechas (inicio y fin) para realizar la consulta.");
+        return;
+      }
+    }
 
     setIsLoading(true);
     setHasSearched(true);
@@ -250,26 +258,33 @@ const MissingDatesView: React.FC = () => {
 
             {formData.queryMethod === "date_range" && (
               <>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
+                  <p className="font-medium">Importante: Ambas fechas son requeridas</p>
+                  <p className="text-xs mt-1">Para evitar consultas muy largas, especifica un rango de fechas. Rangos grandes (más de 1 mes) pueden tardar varios minutos.</p>
+                </div>
+                
                 <InputField
                   label={t("analysis.missingDates.startDate")}
-                  description={t("analysis.missingDates.startDateOptional")}
+                  description="Requerido - Fecha de inicio del rango"
                   name="startDate"
                   type="date"
                   value={formData.startDate}
                   onChange={handleStartDateChange}
                   min="1820-01-01"
                   max="1950-12-31"
+                  required
                 />
 
                 <InputField
                   label={t("analysis.missingDates.endDate")}
-                  description={t("analysis.missingDates.endDateOptional")}
+                  description="Requerido - Fecha de fin del rango"
                   name="endDate"
                   type="date"
                   value={formData.endDate}
                   onChange={handleEndDateChange}
                   min="1820-01-01"
                   max="1950-12-31"
+                  required
                 />
               </>
             )}

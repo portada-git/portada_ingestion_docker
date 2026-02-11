@@ -15,7 +15,6 @@ import {
   KnownEntitiesResponse,
   KnownEntityDetailResponse,
   DailyEntriesRequest,
-  DailyEntriesResponse,
   PublicationsResponse
 } from '../types';
 
@@ -464,6 +463,24 @@ class ApiService {
     return this.request(`/audit/process`);
   }
 
+  // Get files from Redis with pagination
+  async getIngestionFiles(params?: {
+    status?: number;
+    user?: string;
+    page?: number;
+    page_size?: number;
+  }) {
+    const urlParams = new URLSearchParams();
+    if (params) {
+      if (params.status !== undefined) urlParams.append('status', String(params.status));
+      if (params.user) urlParams.append('user', params.user);
+      if (params.page) urlParams.append('page', String(params.page));
+      if (params.page_size) urlParams.append('page_size', String(params.page_size));
+    }
+    const queryString = urlParams.toString();
+    return this.request(`/ingest/files${queryString ? `?${queryString}` : ''}`);
+  }
+
   // Alias for backward compatibility
   async getIngestionStatus(_status?: string): Promise<IngestionStatusResponse> {
     return this.request<IngestionStatusResponse>(`/audit/process`);
@@ -493,49 +510,57 @@ class ApiService {
   }
 
   async getKnownEntityDetail(name: string): Promise<KnownEntityDetailResponse> {
-    return this.request<KnownEntityDetailResponse>(`/queries/known-entities/${name}`);
+    return this.request<KnownEntityDetailResponse>(`/queries/entities/${name}`);
   }
 
-  async getDailyEntries(request: DailyEntriesRequest): Promise<DailyEntriesResponse> {
+  async getDailyEntries(request: DailyEntriesRequest): Promise<any> {
     const params = new URLSearchParams();
     if (request.publication) params.append('publication', request.publication);
     if (request.start_date) params.append('start_date', request.start_date);
     if (request.end_date) params.append('end_date', request.end_date);
     
-    // Backend returns [{y, m, d, count}, ...]
-    const rawData = await this.request<any[]>(`/queries/entries/count?${params.toString()}`);
+    // Backend returns hierarchical structure: {total, years: [{year, count, months: [...]}]}
+    const rawData = await this.request<any>(`/queries/entries/count?${params.toString()}`);
     
-    const daily_counts = Array.isArray(rawData) ? rawData.map(item => {
-        // Handle rollup rows where y,m,d might be null? Pyspark rollup includes nulls for subtotals.
-        // If y, m, d present:
-        if (item.y && item.m && item.d) {
-             const date = `${item.y}-${String(item.m).padStart(2, '0')}-${String(item.d).padStart(2, '0')}`;
-             return {
-                 date: date,
-                 count: item.count,
-                 publication: request.publication || ''
-             };
-        }
-        return null; // Skip rollup totals for now
-    }).filter(x => x !== null) as any[] : [];
-
-    return {
-      publication: request.publication || '',
-      daily_counts: daily_counts,
-      total_entries: daily_counts.reduce((sum, x) => sum + x.count, 0),
-      date_range: {
-        start_date: request.start_date || '',
-        end_date: request.end_date || ''
-      }
-    };
+    // Return the hierarchical structure as-is for the frontend to display
+    return rawData;
   }
 
   // Analysis - Missing Dates
   async getMissingDates(request: MissingDatesRequest): Promise<MissingDatesResponse> {
-    return this.request<MissingDatesResponse>('/analysis/missing-dates', {
-      method: 'POST',
-      body: JSON.stringify(request),
+    // Si hay date_and_edition_list (archivo), usar el endpoint de archivo
+    if (request.date_and_edition_list) {
+      // Crear un archivo blob con el contenido
+      const blob = new Blob([request.date_and_edition_list], { type: 'text/plain' });
+      const file = new File([blob], 'dates.txt', { type: 'text/plain' });
+      return this.uploadDatesFile(file, request.publication_name);
+    }
+    
+    // Si hay rango de fechas o sin filtros, usar el endpoint de rango
+    const params = new URLSearchParams();
+    params.append('publication', request.publication_name);
+    
+    if (request.start_date) params.append('start_date', request.start_date);
+    if (request.end_date) params.append('end_date', request.end_date);
+
+    const data = await this.request<string[]>(`/queries/gaps?${params.toString()}`, {
+      method: 'GET'
     });
+
+    // El backend devuelve un array de strings, necesitamos convertirlo al formato esperado
+    return {
+      publication_name: request.publication_name,
+      query_type: request.start_date || request.end_date ? 'date_range' : 'all',
+      missing_dates: Array.isArray(data) ? data.map(dateStr => ({
+        date: dateStr,
+        edition: '',
+        gap_duration: ''
+      })) : [],
+      total_missing: Array.isArray(data) ? data.length : 0,
+      date_range_analyzed: request.start_date && request.end_date 
+        ? `${request.start_date} - ${request.end_date}` 
+        : undefined
+    };
   }
 
   async analyzeMissingDatesFile(file: File, publication: string, onProgress?: (progress: number) => void): Promise<MissingDatesResponse> {
@@ -561,17 +586,46 @@ class ApiService {
     const formData = new FormData();
     formData.append('file', file);
 
-    return this.uploadRequest<MissingDatesResponse>(`/queries/gaps/file?publication=${encodeURIComponent(publicationName)}`, formData, onProgress);
+    const data = await this.uploadRequest<string[]>(`/queries/gaps/file?publication=${encodeURIComponent(publicationName)}`, formData, onProgress);
+
+    // El backend devuelve un array de strings, necesitamos convertirlo al formato esperado
+    return {
+      publication_name: publicationName,
+      query_type: 'file_list',
+      missing_dates: Array.isArray(data) ? data.map(dateStr => ({
+        date: dateStr,
+        edition: '',
+        gap_duration: ''
+      })) : [],
+      total_missing: Array.isArray(data) ? data.length : 0
+    } as MissingDatesResponse;
   }
 
   // Analysis - Duplicates
   async getDuplicates(request: DuplicatesRequest): Promise<DuplicatesResponse> {
-     return this.getDuplicatesMetadata({
+     const data = await this.getDuplicatesMetadata({
          user: request.user_responsible,
          publication: request.publication,
          start_date: request.start_date,
          end_date: request.end_date
      });
+     
+     // Backend returns: date, edition, duplicates, publication, timestamp, duplicates_filter
+     // Map to frontend format
+     const duplicates = Array.isArray(data) ? data.map((item: any) => ({
+       date: item.date || '',
+       edition: item.edition || '',
+       publication: item.publication || '',
+       duplicate_count: item.duplicates || 0,
+       duplicates_filter: item.duplicates_filter || '',
+       timestamp: item.timestamp || '',
+     })) : [];
+     
+     return {
+       duplicates,
+       total_duplicates: duplicates.length,
+       filters_applied: request
+     };
   }
 
   async getDuplicatesMetadata(request: {
@@ -579,26 +633,31 @@ class ApiService {
     publication?: string;
     start_date?: string;
     end_date?: string;
-  }): Promise<DuplicatesResponse> {
+  }): Promise<any> {
     const params = new URLSearchParams();
     if (request.publication) params.append('publication', request.publication);
     if (request.user) params.append('user', request.user);
     if (request.start_date) params.append('start_date', request.start_date);
     if (request.end_date) params.append('end_date', request.end_date);
 
-    const data = await this.request<any[]>(`/audit/duplicates/metadata?${params.toString()}`, {
+    // El backend ahora devuelve un objeto con { duplicates: [], total_duplicates: 0, ... }
+    const data = await this.request<any>(`/audit/duplicates/metadata?${params.toString()}`, {
       method: 'GET'
     });
 
-    return {
-      duplicates: data,
-      total_duplicates: data.length,
-      filters_applied: request
-    };
+    // Retornar el objeto completo para que el componente pueda acceder a duplicates
+    return data;
   }
 
-  async getDuplicateDetails(logId: string) {
-    return this.request(`/audit/duplicates/records/${logId}`);
+  async getDuplicateDetails(duplicatesFilter: string) {
+    const params = new URLSearchParams();
+    params.append('duplicates_filter', duplicatesFilter);
+    
+    // El backend ahora devuelve un objeto con { records: [], total_records: 0, ... }
+    const data = await this.request<any>(`/audit/duplicates/records?${params.toString()}`);
+    
+    // Retornar el objeto completo
+    return data;
   }
 
   // Analysis - Storage and Process Metadata (NEW ENDPOINTS)
@@ -613,11 +672,20 @@ class ApiService {
     const params = new URLSearchParams();
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
-        if (value) params.append(key, value);
+        if (value) {
+          // Map frontend field names to backend parameter names
+          if (key === 'table_name') {
+            params.append('table_name', value);
+          } else if (key === 'process_name') {
+            params.append('process', value);
+          } else {
+            params.append(key, value);
+          }
+        }
       });
     }
     const queryString = params.toString();
-    return this.request(`/metadata/storage${queryString ? `?${queryString}` : ''}`);
+    return this.request(`/audit/storage${queryString ? `?${queryString}` : ''}`);
   }
 
   async getProcessMetadata(filters?: {
@@ -630,15 +698,22 @@ class ApiService {
     const params = new URLSearchParams();
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
-        if (value) params.append(key, value);
+        if (value) {
+          // Map frontend field names to backend parameter names
+          if (key === 'process_name') {
+            params.append('process', value);
+          } else {
+            params.append(key, value);
+          }
+        }
       });
     }
     const queryString = params.toString();
-    return this.request(`/metadata/process${queryString ? `?${queryString}` : ''}`);
+    return this.request(`/audit/process${queryString ? `?${queryString}` : ''}`);
   }
 
   async getFieldLineage(storedLogId: string) {
-    return this.request<any>(`/metadata/lineage?stored_log_id=${storedLogId}`);
+    return this.request<any>(`/audit/storage/${storedLogId}/lineage`);
   }
 
   async getMetadataPublications() {

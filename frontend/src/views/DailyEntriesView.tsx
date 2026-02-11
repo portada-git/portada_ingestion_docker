@@ -1,11 +1,11 @@
 /**
  * Daily Entries Analysis View
- * Modern implementation with dark theme and internationalization
+ * Hierarchical view with expandable years -> months -> days
  */
 
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BarChart3 } from 'lucide-react';
+import { BarChart3, ChevronRight, ChevronDown } from 'lucide-react';
 import { apiService } from '../services/api';
 import { withErrorHandling } from '../utils/apiErrorHandler';
 import { DailyEntriesRequest } from '../types';
@@ -14,18 +14,33 @@ import QueryForm from '../components/QueryForm';
 import PublicationSelector from '../components/PublicationSelector';
 import { InputField } from '../components/FormField';
 import { ResultsCard, InfoMessage, EmptyState } from '../components/ResultsCard';
-import DataVisualization from '../components/DataVisualization';
 
-interface DailyEntry {
-  date: string;
-  count: number;
-  publication: string;
+interface HierarchicalData {
+  total: number;
+  years: Array<{
+    year: number;
+    count: number;
+    months: Array<{
+      month: number;
+      count: number;
+      days: Array<{
+        day: number;
+        count: number;
+        editions: Array<{
+          edition: string;
+          count: number;
+        }>;
+      }>;
+    }>;
+  }>;
 }
 
 const DailyEntriesView: React.FC = () => {
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
-  const [results, setResults] = useState<DailyEntry[]>([]);
+  const [results, setResults] = useState<HierarchicalData | null>(null);
+  const [expandedYears, setExpandedYears] = useState<Set<number>>(new Set());
+  const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set());
   const [formData, setFormData] = useState({
     publication: '',
     startDate: '',
@@ -61,19 +76,49 @@ const DailyEntriesView: React.FC = () => {
     });
 
     if (result) {
-      const transformedResults: DailyEntry[] = result.daily_counts?.map((entry: any) => ({
-        date: entry.date,
-        count: entry.count,
-        publication: entry.publication
-      })) || [];
-      
-      setResults(transformedResults);
+      setResults(result);
+      // Auto-expand first year if only one year
+      if (result.years && result.years.length === 1) {
+        setExpandedYears(new Set([result.years[0].year]));
+      }
     }
     
     setIsLoading(false);
   };
 
-  const totalEntries = results.reduce((sum, entry) => sum + entry.count, 0);
+  const toggleYear = (year: number) => {
+    const newExpanded = new Set(expandedYears);
+    if (newExpanded.has(year)) {
+      newExpanded.delete(year);
+      // Also collapse all months of this year
+      const newExpandedMonths = new Set(expandedMonths);
+      Array.from(expandedMonths).forEach(key => {
+        if (key.startsWith(`${year}-`)) {
+          newExpandedMonths.delete(key);
+        }
+      });
+      setExpandedMonths(newExpandedMonths);
+    } else {
+      newExpanded.add(year);
+    }
+    setExpandedYears(newExpanded);
+  };
+
+  const toggleMonth = (year: number, month: number) => {
+    const key = `${year}-${month}`;
+    const newExpanded = new Set(expandedMonths);
+    if (newExpanded.has(key)) {
+      newExpanded.delete(key);
+    } else {
+      newExpanded.add(key);
+    }
+    setExpandedMonths(newExpanded);
+  };
+
+  const getMonthName = (month: number) => {
+    const date = new Date(2000, month - 1, 1);
+    return date.toLocaleDateString('es-ES', { month: 'long' });
+  };
 
   return (
     <div className="space-y-6">
@@ -126,68 +171,98 @@ const DailyEntriesView: React.FC = () => {
       </AnalysisCard>
 
       {/* Results */}
-      {results.length > 0 && (
-        <div className="space-y-6">
-          <ResultsCard title={t('analysis.dailyEntries.results')}>
-            <div className="space-y-4">
-              <InfoMessage
-                message={t('analysis.dailyEntries.totalEntries', { count: totalEntries })}
-                type="success"
-              />
-              
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-slate-200">
-                      <th className="text-left py-3 px-4 font-semibold text-slate-900">
-                        {t('analysis.dailyEntries.date')}
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-slate-900">
-                        {t('analysis.dailyEntries.count')}
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-slate-900">
-                        Publicación
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {results.map((entry, index) => (
-                      <tr key={index} className="border-b border-slate-100 hover:bg-slate-50">
-                        <td className="py-3 px-4 text-slate-700">
-                          {new Date(entry.date).toLocaleDateString()}
+      {results && results.years && results.years.length > 0 && (
+        <ResultsCard title={t('analysis.dailyEntries.results')}>
+          <div className="space-y-4">
+            <InfoMessage
+              message={t('analysis.dailyEntries.totalEntries', { count: results.total })}
+              type="success"
+            />
+            
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-slate-200">
+                <thead className="bg-slate-100">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">
+                      Período
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">
+                      {t('analysis.dailyEntries.count')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-slate-200">
+                  {results.years.map((year) => (
+                    <React.Fragment key={year.year}>
+                      {/* Year Row */}
+                      <tr 
+                        className="hover:bg-slate-50 cursor-pointer"
+                        onClick={() => toggleYear(year.year)}
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            {expandedYears.has(year.year) ? (
+                              <ChevronDown className="w-4 h-4 mr-2 text-slate-500" />
+                            ) : (
+                              <ChevronRight className="w-4 h-4 mr-2 text-slate-500" />
+                            )}
+                            <span className="font-semibold text-slate-900">{year.year}</span>
+                          </div>
                         </td>
-                        <td className="py-3 px-4 text-slate-700 font-mono font-semibold">
-                          {entry.count.toLocaleString()}
-                        </td>
-                        <td className="py-3 px-4 text-slate-700">
-                          {entry.publication}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="font-semibold text-slate-900">{year.count.toLocaleString()}</span>
                         </td>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </ResultsCard>
 
-          {/* Chart Visualization */}
-          <DataVisualization
-            data={results.map(entry => ({
-              label: new Date(entry.date).toLocaleDateString('es-ES', { 
-                month: 'short', 
-                day: 'numeric' 
-              }),
-              value: entry.count
-            }))}
-            type="line"
-            title={t('analysis.dailyEntries.chart')}
-            height={300}
-            showLegend={false}
-          />
-        </div>
+                      {/* Months (if year is expanded) */}
+                      {expandedYears.has(year.year) && year.months.map((month) => (
+                        <React.Fragment key={`${year.year}-${month.month}`}>
+                          <tr 
+                            className="bg-slate-50 hover:bg-slate-100 cursor-pointer"
+                            onClick={() => toggleMonth(year.year, month.month)}
+                          >
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center pl-8">
+                                {expandedMonths.has(`${year.year}-${month.month}`) ? (
+                                  <ChevronDown className="w-4 h-4 mr-2 text-slate-500" />
+                                ) : (
+                                  <ChevronRight className="w-4 h-4 mr-2 text-slate-500" />
+                                )}
+                                <span className="font-medium text-slate-800 capitalize">
+                                  {getMonthName(month.month)} {year.year}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className="font-medium text-slate-800">{month.count.toLocaleString()}</span>
+                            </td>
+                          </tr>
+
+                          {/* Days (if month is expanded) */}
+                          {expandedMonths.has(`${year.year}-${month.month}`) && month.days.map((day) => (
+                            <tr key={`${year.year}-${month.month}-${day.day}`} className="bg-white hover:bg-slate-50">
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="pl-16 text-slate-700">
+                                  {day.day} de {getMonthName(month.month)} de {year.year}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className="text-slate-700">{day.count.toLocaleString()}</span>
+                              </td>
+                            </tr>
+                          ))}
+                        </React.Fragment>
+                      ))}
+                    </React.Fragment>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </ResultsCard>
       )}
 
-      {results.length === 0 && formData.publication && !isLoading && (
+      {results && (!results.years || results.years.length === 0) && !isLoading && (
         <ResultsCard>
           <EmptyState message={t('analysis.dailyEntries.noResults')} />
         </ResultsCard>

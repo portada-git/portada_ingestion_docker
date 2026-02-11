@@ -117,18 +117,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <img
-                  src="/logo.png"
+                  src="/logo.jpeg"
                   alt="PortAda Logo"
-                  className="w-10 h-10 object-contain"
+                  className="w-50 h-30 object-contain"
                   role="img"
                   aria-label={t("navigation.logoAlt")}
                 />
-              </div>
-              <div className="ml-3">
-                <h1 className="text-lg font-semibold text-gray-900">
-                  {t("app.title")}
-                </h1>
-                <p className="text-xs text-gray-500">{t("app.subtitle")}</p>
               </div>
             </div>
           </div>
@@ -185,11 +179,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     >
                       <item.icon className="w-5 h-5 mr-3" aria-hidden="true" />
                       <span className="flex-1">{item.name}</span>
-                      {item.badge && (
+                      {/* {item.badge && (
                         <span className="ml-2 px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
                           {item.badge}
                         </span>
-                      )}
+                      )} */}
                     </Link>
                   )}
 
@@ -285,7 +279,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </button>
             <div className="flex items-center">
               <img
-                src="/logo.png"
+                src="/logo.jpeg"
                 alt="PortAda Logo"
                 className="w-8 h-8 object-contain mr-2"
                 role="img"

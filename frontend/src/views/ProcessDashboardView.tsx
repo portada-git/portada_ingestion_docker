@@ -1,10 +1,10 @@
 /**
  * Process Dashboard View - Vista centralizada de todos los procesos de carga
  * Permite gestionar, monitorear y analizar todos los uploads del sistema
- * Incluye pestañas para procesos activos e historial completo
+ * Lee datos directamente de Redis con paginación y auto-actualización
  */
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import {
   Activity,
   CheckCircle,
@@ -17,107 +17,157 @@ import {
   FileText,
   Database,
   Zap,
-  TrendingUp,
   History,
+  User,
+  RefreshCw,
 } from "lucide-react";
 import { clsx } from "clsx";
-import { useUploadStore, UploadTask } from "../store/useUploadStore";
-import { useGlobalProcesses } from "../hooks/useGlobalProcesses";
+import { apiService } from "../services/api";
 import LoadingSpinner from "../components/LoadingSpinner";
 
-type FilterStatus = "all" | "active" | "completed" | "failed";
-type FilterType = "all" | "extraction_data" | "known_entities";
-type TabType = "active" | "history";
+type FilterStatus = "all" | "queue" | "completed" | "error";
+type FilterType = "all" | "entry" | "entity";
+type TabType = "queue" | "completed";
+
+interface RedisFile {
+  file_key?: string; // Nueva estructura: UUID sin extensión
+  id?: string; // Mantener para compatibilidad con datos antiguos
+  original_filename?: string; // Nueva estructura: nombre original
+  filename?: string; // Mantener para compatibilidad con datos antiguos
+  stored_filename?: string; // Nueva estructura: nombre con el que se guardó
+  file_path: string;
+  file_type: string;
+  status: number; // 0=pending, 1=processing, 2=completed, 3=error
+  user: string;
+  timestamp: number;
+}
+
+interface RedisFilesResponse {
+  files: RedisFile[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
 
 const ProcessDashboardView: React.FC = () => {
-  const {
-    tasks,
-    historyTasks,
-    isLoadingHistory,
-    getStats,
-    fetchHistory,
-    getProcessingHistory,
-  } = useUploadStore();
-
-  // Enable global process syncing for this view
-  const { isGlobalSyncActive } = useGlobalProcesses({ enabled: true });
-
-  const [activeTab, setActiveTab] = useState<TabType>("active");
+  const [activeTab, setActiveTab] = useState<TabType>("queue");
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
   const [filterType, setFilterType] = useState<FilterType>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"date" | "name" | "status">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  
+  // Redis data state
+  const [files, setFiles] = useState<RedisFile[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [totalFiles, setTotalFiles] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
-  // Fetch history when history tab is clicked
-  React.useEffect(() => {
-    if (activeTab === "history") {
-      fetchHistory();
-    }
-  }, [activeTab, fetchHistory]);
-
-  const stats = getStats();
-
-  // Get tasks based on active tab
-  const currentTasks = useMemo(() => {
-    if (activeTab === "active") {
-      return tasks.filter((task) =>
-        ["pending", "uploading", "processing"].includes(task.status),
-      );
+  // Fetch files from Redis
+  const fetchFiles = useCallback(async (showRefreshIndicator = false) => {
+    if (showRefreshIndicator) {
+      setIsRefreshing(true);
     } else {
-      // Combine local history with DB history, avoiding duplicates by taskId
-      const localHistory = tasks.filter((t) =>
-        ["completed", "failed", "cancelled"].includes(t.status),
-      );
-
-      const dbHistory = historyTasks || [];
-
-      // Map to avoid duplicates, prioritizing local state for recent tasks
-      const combinedMap = new Map<string, UploadTask>();
-
-      dbHistory.forEach((task) => {
-        combinedMap.set(task.taskId, task);
-      });
-
-      localHistory.forEach((task) => {
-        combinedMap.set(task.taskId, task);
-      });
-
-      return Array.from(combinedMap.values());
+      setIsLoading(true);
     }
-  }, [activeTab, tasks, historyTasks]);
+    
+    try {
+      // Determine status filter based on active tab
+      let statusFilter: number | undefined;
+      if (activeTab === "queue") {
+        // Queue: pending (0) or processing (1)
+        statusFilter = undefined; // We'll filter client-side for multiple statuses
+      } else {
+        // Completed: completed (2)
+        statusFilter = 2;
+      }
+      
+      const response = await apiService.getIngestionFiles({
+        status: statusFilter,
+        page,
+        page_size: pageSize,
+      }) as RedisFilesResponse;
+      
+      let fetchedFiles = response.files || [];
+      
+      // Client-side filter for queue tab (status 0 or 1)
+      if (activeTab === "queue") {
+        fetchedFiles = fetchedFiles.filter((f: RedisFile) => f.status === 0 || f.status === 1);
+      }
+      
+      setFiles(fetchedFiles);
+      setTotalFiles(response.total || 0);
+      setTotalPages(response.total_pages || 0);
+    } catch (error) {
+      console.error("Error fetching files:", error);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  }, [activeTab, page, pageSize]);
 
-  // Filter and sort tasks
-  const filteredTasks = useMemo(() => {
-    let filtered = currentTasks;
+  // Initial fetch and tab change
+  useEffect(() => {
+    fetchFiles();
+  }, [fetchFiles]);
+
+  // Auto-refresh every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchFiles(true);
+    }, 5000);
+    
+    return () => clearInterval(interval);
+  }, [fetchFiles]);
+
+  // Calculate stats from current files
+  const stats = useMemo(() => {
+    const queueFiles = files.filter(f => f.status === 0 || f.status === 1);
+    const completedFiles = files.filter(f => f.status === 2);
+    const errorFiles = files.filter(f => f.status === 3);
+    
+    return {
+      totalTasks: totalFiles,
+      activeTasks: queueFiles.length,
+      completedTasks: completedFiles.length,
+      failedTasks: errorFiles.length,
+    };
+  }, [files, totalFiles]);
+
+  // Filter and sort files
+  const filteredFiles = useMemo(() => {
+    let filtered = files;
 
     // Filter by status
     if (filterStatus !== "all") {
-      if (filterStatus === "active") {
-        filtered = filtered.filter((task) =>
-          ["pending", "uploading", "processing"].includes(task.status),
-        );
+      if (filterStatus === "queue") {
+        filtered = filtered.filter((file) => file.status === 0 || file.status === 1);
       } else if (filterStatus === "completed") {
-        filtered = filtered.filter((task) => task.status === "completed");
-      } else if (filterStatus === "failed") {
-        filtered = filtered.filter((task) =>
-          ["failed", "cancelled"].includes(task.status),
-        );
+        filtered = filtered.filter((file) => file.status === 2);
+      } else if (filterStatus === "error") {
+        filtered = filtered.filter((file) => file.status === 3);
       }
     }
 
     // Filter by type
     if (filterType !== "all") {
-      filtered = filtered.filter((task) => task.ingestionType === filterType);
+      if (filterType === "entry") {
+        filtered = filtered.filter((file) => file.file_type === "entry");
+      } else if (filterType === "entity") {
+        filtered = filtered.filter((file) => file.file_type.startsWith("entity_"));
+      }
     }
 
     // Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(
-        (task) =>
-          task.fileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          task.publication?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          task.message.toLowerCase().includes(searchTerm.toLowerCase()),
+        (file) =>
+          (file.original_filename || file.filename || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+          file.user.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -127,22 +177,15 @@ const ProcessDashboardView: React.FC = () => {
 
       switch (sortBy) {
         case "date":
-          // For history tab, sort by end time; for active tab, sort by start time
-          const aTime =
-            activeTab === "history"
-              ? a.endTime?.getTime() || 0
-              : a.startTime.getTime();
-          const bTime =
-            activeTab === "history"
-              ? b.endTime?.getTime() || 0
-              : b.startTime.getTime();
-          comparison = aTime - bTime;
+          comparison = a.timestamp - b.timestamp;
           break;
         case "name":
-          comparison = a.fileName.localeCompare(b.fileName);
+          const aName = a.original_filename || a.filename || "";
+          const bName = b.original_filename || b.filename || "";
+          comparison = aName.localeCompare(bName);
           break;
         case "status":
-          comparison = a.status.localeCompare(b.status);
+          comparison = a.status - b.status;
           break;
       }
 
@@ -150,97 +193,80 @@ const ProcessDashboardView: React.FC = () => {
     });
 
     return filtered;
-  }, [
-    currentTasks,
-    filterStatus,
-    filterType,
-    searchTerm,
-    sortBy,
-    sortOrder,
-    activeTab,
-  ]);
+  }, [files, filterStatus, filterType, searchTerm, sortBy, sortOrder]);
 
-  const formatTime = (ms: number): string => {
-    const seconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-
-    if (hours > 0) return `${hours}h ${minutes % 60}m`;
-    if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
-    return `${seconds}s`;
+  const formatTime = (timestamp: number): string => {
+    const date = new Date(timestamp * 1000);
+    return date.toLocaleString('es-ES', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
-  const formatFileSize = (bytes: number): string => {
-    const sizes = ["B", "KB", "MB", "GB"];
-    if (bytes === 0) return "0 B";
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${sizes[i]}`;
-  };
-
-  const getStatusIcon = (status: UploadTask["status"]) => {
+  const getStatusIcon = (status: number) => {
     switch (status) {
-      case "pending":
+      case 0:
         return <Clock className="w-4 h-4 text-yellow-500" />;
-      case "uploading":
-      case "processing":
+      case 1:
         return <LoadingSpinner size="sm" />;
-      case "completed":
+      case 2:
         return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case "failed":
-      case "cancelled":
+      case 3:
         return <AlertCircle className="w-4 h-4 text-red-500" />;
       default:
         return <Clock className="w-4 h-4 text-gray-500" />;
     }
   };
 
-  const getStatusColor = (status: UploadTask["status"]) => {
+  const getStatusColor = (status: number) => {
     switch (status) {
-      case "pending":
+      case 0:
         return "bg-yellow-100 text-yellow-800";
-      case "uploading":
-      case "processing":
+      case 1:
         return "bg-blue-100 text-blue-800";
-      case "completed":
+      case 2:
         return "bg-green-100 text-green-800";
-      case "failed":
-      case "cancelled":
+      case 3:
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
   };
 
-  const getStatusLabel = (status: UploadTask["status"]) => {
+  const getStatusLabel = (status: number) => {
     switch (status) {
-      case "pending":
-      case "uploading":
-      case "processing":
-        return "En cola";
-      case "completed":
-        return "Procesado";
-      case "failed":
-        return "Fallido";
-      case "cancelled":
-        return "Cancelado";
+      case 0:
+        return "Pendiente";
+      case 1:
+        return "Procesando";
+      case 2:
+        return "Completado";
+      case 3:
+        return "Error";
       default:
-        return status;
+        return "Desconocido";
     }
   };
 
+  const getFileTypeLabel = (fileType: string) => {
+    if (fileType === "entry") return "Entrada de Barco";
+    if (fileType.startsWith("entity_")) {
+      const entityType = fileType.replace("entity_", "");
+      return `Entidad: ${entityType}`;
+    }
+    return fileType;
+  };
+
   const exportData = () => {
-    const data = filteredTasks.map((task) => ({
-      fileName: task.fileName,
-      status: task.status,
-      ingestionType: task.ingestionType,
-      publication: task.publication,
-      recordsProcessed: task.recordsProcessed,
-      startTime: task.startTime.toISOString(),
-      endTime: task.endTime?.toISOString(),
-      duration: task.endTime
-        ? task.endTime.getTime() - task.startTime.getTime()
-        : null,
-      error: task.error,
+    const data = filteredFiles.map((file) => ({
+      filename: file.filename,
+      status: getStatusLabel(file.status),
+      file_type: getFileTypeLabel(file.file_type),
+      user: file.user,
+      timestamp: formatTime(file.timestamp),
     }));
 
     const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -263,9 +289,12 @@ const ProcessDashboardView: React.FC = () => {
         <h1 className="text-2xl font-bold text-gray-900 flex items-center">
           <Activity className="w-6 h-6 mr-2" />
           Dashboard de Procesos
+          {isRefreshing && (
+            <RefreshCw className="w-4 h-4 ml-2 text-blue-500 animate-spin" />
+          )}
         </h1>
         <p className="mt-1 text-sm text-gray-600">
-          Monitoreo y gestión centralizada de todos los procesos de carga
+          Monitoreo y gestión centralizada de todos los procesos de carga desde Redis
         </p>
       </div>
 
@@ -273,43 +302,42 @@ const ProcessDashboardView: React.FC = () => {
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
           <button
-            onClick={() => setActiveTab("active")}
+            onClick={() => {
+              setActiveTab("queue");
+              setPage(1);
+            }}
             className={clsx(
               "py-2 px-1 border-b-2 font-medium text-sm",
-              activeTab === "active"
+              activeTab === "queue"
                 ? "border-blue-500 text-blue-600"
                 : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300",
             )}
           >
             <Activity className="w-4 h-4 inline mr-2" />
-            Procesos Activos
-            {stats.activeTasks &&
-              !isNaN(stats.activeTasks) &&
-              stats.activeTasks > 0 && (
-                <span className="ml-2 bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
-                  {stats.activeTasks}
-                </span>
-              )}
+            En Cola
+            {stats.activeTasks > 0 && (
+              <span className="ml-2 bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
+                {stats.activeTasks}
+              </span>
+            )}
           </button>
           <button
-            onClick={() => setActiveTab("history")}
+            onClick={() => {
+              setActiveTab("completed");
+              setPage(1);
+            }}
             className={clsx(
               "py-2 px-1 border-b-2 font-medium text-sm",
-              activeTab === "history"
+              activeTab === "completed"
                 ? "border-blue-500 text-blue-600"
                 : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300",
             )}
           >
             <History className="w-4 h-4 inline mr-2" />
-            Historial Completo
-            {currentTasks.length > 0 && activeTab === "history" && (
+            Completados
+            {stats.completedTasks > 0 && activeTab === "completed" && (
               <span className="ml-2 bg-gray-100 text-gray-800 text-xs font-medium px-2 py-1 rounded-full">
-                {currentTasks.length}
-              </span>
-            )}
-            {activeTab === "active" && getProcessingHistory().length > 0 && (
-              <span className="ml-2 bg-gray-100 text-gray-500 text-xs font-medium px-2 py-1 rounded-full">
-                {getProcessingHistory().length}
+                {stats.completedTasks}
               </span>
             )}
           </button>
@@ -317,7 +345,7 @@ const ProcessDashboardView: React.FC = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="card">
           <div className="flex items-center">
             <div className="flex-shrink-0">
@@ -328,7 +356,7 @@ const ProcessDashboardView: React.FC = () => {
                 Total Procesos
               </p>
               <p className="text-2xl font-bold text-gray-900">
-                {isNaN(stats.totalTasks) ? 0 : stats.totalTasks || 0}
+                {stats.totalTasks}
               </p>
             </div>
           </div>
@@ -340,16 +368,14 @@ const ProcessDashboardView: React.FC = () => {
               <Zap className="w-8 h-8 text-yellow-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Activos</p>
+              <p className="text-sm font-medium text-gray-600">En Cola</p>
               <p className="text-2xl font-bold text-gray-900">
-                {isNaN(stats.activeTasks) ? 0 : stats.activeTasks || 0}
+                {stats.activeTasks}
               </p>
-              {isGlobalSyncActive && (
-                <div className="flex items-center mt-1">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-1" />
-                  <span className="text-xs text-green-600">Sincronizando</span>
-                </div>
-              )}
+              <div className="flex items-center mt-1">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-1" />
+                <span className="text-xs text-green-600">Auto-actualización</span>
+              </div>
             </div>
           </div>
         </div>
@@ -362,22 +388,8 @@ const ProcessDashboardView: React.FC = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Completados</p>
               <p className="text-2xl font-bold text-gray-900">
-                {isNaN(stats.completedTasks) ? 0 : stats.completedTasks || 0}
+                {stats.completedTasks}
               </p>
-              {stats.totalTasks &&
-                !isNaN(stats.totalTasks) &&
-                stats.totalTasks > 0 && (
-                  <p className="text-xs text-gray-500">
-                    {Math.round(
-                      ((isNaN(stats.completedTasks)
-                        ? 0
-                        : stats.completedTasks) /
-                        stats.totalTasks) *
-                        100,
-                    )}
-                    % éxito
-                  </p>
-                )}
             </div>
           </div>
         </div>
@@ -388,46 +400,10 @@ const ProcessDashboardView: React.FC = () => {
               <AlertCircle className="w-8 h-8 text-red-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Fallidos</p>
+              <p className="text-sm font-medium text-gray-600">Errores</p>
               <p className="text-2xl font-bold text-gray-900">
-                {isNaN(stats.failedTasks) ? 0 : stats.failedTasks || 0}
+                {stats.failedTasks}
               </p>
-              {stats.totalTasks &&
-                !isNaN(stats.totalTasks) &&
-                stats.totalTasks > 0 && (
-                  <p className="text-xs text-gray-500">
-                    {Math.round(
-                      ((isNaN(stats.failedTasks) ? 0 : stats.failedTasks) /
-                        stats.totalTasks) *
-                        100,
-                    )}
-                    % fallos
-                  </p>
-                )}
-            </div>
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <TrendingUp className="w-8 h-8 text-purple-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Registros</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {(isNaN(stats.totalRecordsProcessed)
-                  ? 0
-                  : stats.totalRecordsProcessed || 0
-                ).toLocaleString()}
-              </p>
-              {stats.averageProcessingTime &&
-                !isNaN(stats.averageProcessingTime) &&
-                stats.averageProcessingTime > 0 && (
-                  <p className="text-xs text-gray-500">
-                    Promedio: {formatTime(stats.averageProcessingTime)}
-                  </p>
-                )}
             </div>
           </div>
         </div>
@@ -448,9 +424,9 @@ const ProcessDashboardView: React.FC = () => {
                 className="input-sm"
               >
                 <option value="all">Todos los estados</option>
-                <option value="active">Activos</option>
+                <option value="queue">En Cola</option>
                 <option value="completed">Completados</option>
-                <option value="failed">Fallidos</option>
+                <option value="error">Errores</option>
               </select>
             </div>
 
@@ -460,15 +436,15 @@ const ProcessDashboardView: React.FC = () => {
               className="input-sm"
             >
               <option value="all">Todos los tipos</option>
-              <option value="extraction_data">Datos de Extracción</option>
-              <option value="known_entities">Entidades Conocidas</option>
+              <option value="entry">Entradas de Barco</option>
+              <option value="entity">Entidades</option>
             </select>
 
             <div className="relative">
               <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
-                placeholder="Buscar archivos..."
+                placeholder="Buscar archivos o usuarios..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="input-sm pl-10"
@@ -479,9 +455,17 @@ const ProcessDashboardView: React.FC = () => {
           {/* Actions */}
           <div className="flex items-center space-x-2">
             <button
+              onClick={() => fetchFiles(true)}
+              className="btn btn-secondary btn-sm"
+              disabled={isRefreshing}
+            >
+              <RefreshCw className={clsx("w-4 h-4 mr-2", isRefreshing && "animate-spin")} />
+              Actualizar
+            </button>
+            <button
               onClick={exportData}
               className="btn btn-secondary btn-sm"
-              disabled={filteredTasks.length === 0}
+              disabled={filteredFiles.length === 0}
             >
               <Download className="w-4 h-4 mr-2" />
               Exportar
@@ -490,12 +474,12 @@ const ProcessDashboardView: React.FC = () => {
         </div>
       </div>
 
-      {/* Tasks Table */}
+      {/* Files Table */}
       <div className="card">
         <div className="card-header">
           <h3 className="text-lg font-semibold text-gray-900">
-            {activeTab === "active" ? "Procesos Activos" : "Historial Completo"}{" "}
-            ({filteredTasks.length})
+            {activeTab === "queue" ? "Procesos en Cola" : "Procesos Completados"}{" "}
+            ({filteredFiles.length})
           </h3>
 
           {/* Sort Controls */}
@@ -519,80 +503,152 @@ const ProcessDashboardView: React.FC = () => {
           </div>
         </div>
 
-        {isLoadingHistory && activeTab === "history" ? (
+        {isLoading ? (
           <div className="text-center py-12">
             <LoadingSpinner size="lg" />
             <p className="mt-4 text-gray-600">
-              Cargando historial desde el servidor...
+              Cargando procesos desde Redis...
             </p>
           </div>
-        ) : filteredTasks.length === 0 ? (
+        ) : filteredFiles.length === 0 ? (
           <div className="text-center py-12">
             <Activity className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
               No hay procesos
             </h3>
             <p className="text-gray-600">
-              {currentTasks.length === 0
-                ? activeTab === "active"
-                  ? "No se han iniciado procesos de carga aún"
-                  : "No hay historial de procesamiento disponible"
+              {files.length === 0
+                ? activeTab === "queue"
+                  ? "No hay procesos en cola actualmente"
+                  : "No hay procesos completados"
                 : "No hay procesos que coincidan con los filtros aplicados"}
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Archivo
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Estado
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredTasks.map((task) => (
-                  <tr key={task.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        {task.ingestionType === "extraction_data" ? (
-                          <FileText className="w-5 h-5 text-blue-500 mr-3" />
-                        ) : (
-                          <Database className="w-5 h-5 text-purple-500 mr-3" />
-                        )}
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">
-                            {task.fileName}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {formatFileSize(task.fileSize)}
-                            {task.publication && ` • ${task.publication}`}
+          <>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Archivo
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Tipo
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Usuario
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Estado
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Fecha
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredFiles.map((file) => (
+                    <tr key={file.file_key || file.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          {file.file_type === "entry" ? (
+                            <FileText className="w-5 h-5 text-blue-500 mr-3" />
+                          ) : (
+                            <Database className="w-5 h-5 text-purple-500 mr-3" />
+                          )}
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {file.original_filename || file.filename}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              ID: {(file.file_key || file.id)?.substring(0, 8)}...
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </td>
+                      </td>
 
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        {getStatusIcon(task.status)}
-                        <span
-                          className={clsx(
-                            "ml-2 px-2 py-1 text-xs font-medium rounded-full",
-                            getStatusColor(task.status),
-                          )}
-                        >
-                          {getStatusLabel(task.status)}
-                        </span>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {getFileTypeLabel(file.file_type)}
+                        </div>
+                      </td>
+
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <User className="w-4 h-4 text-gray-400 mr-2" />
+                          <span className="text-sm text-gray-900">{file.user}</span>
+                        </div>
+                      </td>
+
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          {getStatusIcon(file.status)}
+                          <span
+                            className={clsx(
+                              "ml-2 px-2 py-1 text-xs font-medium rounded-full",
+                              getStatusColor(file.status),
+                            )}
+                          >
+                            {getStatusLabel(file.status)}
+                          </span>
+                        </div>
+                      </td>
+
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formatTime(file.timestamp)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-gray-600">Mostrar:</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    setPage(1);
+                  }}
+                  className="input-sm"
+                >
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+                <span className="text-sm text-gray-600">por página</span>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setPage(Math.max(1, page - 1))}
+                  disabled={page === 1}
+                  className="btn btn-secondary btn-sm"
+                >
+                  Anterior
+                </button>
+                <span className="text-sm text-gray-600">
+                  Página {page} de {totalPages || 1}
+                </span>
+                <button
+                  onClick={() => setPage(Math.min(totalPages, page + 1))}
+                  disabled={page >= totalPages}
+                  className="btn btn-secondary btn-sm"
+                >
+                  Siguiente
+                </button>
+              </div>
+
+              <div className="text-sm text-gray-600">
+                Total: {totalFiles} archivos
+              </div>
+            </div>
+          </>
         )}
       </div>
     </div>

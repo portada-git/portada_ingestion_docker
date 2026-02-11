@@ -1,2 +1,1 @@
 py-portada-data-layer @ git+https://github.com/portada-git/py_portada_data_layer.git
-py-portada-data-layer @ git+https://github.com/portada-git/py_portada_data_layer.git
