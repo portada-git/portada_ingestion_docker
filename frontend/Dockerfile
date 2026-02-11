@@ -1,5 +1,13 @@
+ARG ARG_VITE_API_BASE_URL
+
 # Stage 1: Build
 FROM node:20-alpine AS builder
+
+ARG ARG_VITE_API_BASE_URL
+
+ENV VITE_API_BASE_URL=${ARG_VITE_API_BASE_URL}
+
+RUN echo "|=====> ${VITE_API_BASE_URL:-EMPTY}"
 
 WORKDIR /app
 RUN npm install -g bun
