@@ -7,12 +7,12 @@ RUN apt-get update && \
 
 WORKDIR /app
 
-ARG CACHE_BUST_LIBS=1
+ARG CACHE_BUST_LIBS=3
 # Instal·lem les dependències
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-ARG CACHE_BUST_OWN_LIBS=2
+ARG CACHE_BUST_OWN_LIBS=4
 # Instal·lem les dependències
 COPY own_requirements.txt .
 RUN pip install --no-cache-dir -r own_requirements.txt

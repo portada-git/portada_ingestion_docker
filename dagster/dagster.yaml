@@ -1,7 +1,7 @@
 # dagster.yaml
 run_launcher:
   module: dagster.core.launcher
-  class: DefaultRunLauncher
+  class: QueuedRunLauncher
 
 concurrency:
   runs:

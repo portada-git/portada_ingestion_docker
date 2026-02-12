@@ -6,7 +6,7 @@ from dagster_graphql import DagsterGraphQLClient
 
 
 from watchdog.observers import Observer
-from portada_file_monitor.file_event_handler import PortadaIngestionEventHandler
+from portada_file_monitor.file_event_handler import QueuedPortadaIngestionEventHandler
 
 so = platform.system()
 if so == "Darwin":
@@ -17,10 +17,13 @@ else:
     config_path = "/home/josep/Dropbox/feinesJordi/github/dagster_portada_project/dagster_portada_project/config/delta_data_layer_config.json"
 
 # Creem l'observador i el manejador
-event_handler = PortadaIngestionEventHandler()
 config_path = os.getenv("DATA_LAYER_CONFIG", config_path)
 path_to_watch =  os.getenv("PATH_TO_WATCH", path_to_watch)
-host = os.getenv("DAGSTER_HOST", "localhost")
+host = os.getenv("DAGSTER_HOST", "localhost")	
+redis_port=os.getenv("REDIS_PORT", 6379)
+redis_host=os.getenv("REDIS_HOST", "localhost")
+event_handler = QueuedPortadaIngestionEventHandler(host=redis_host, port=redis_port, db=2)
+
 
 def process_file(path_file, file_type=None, user_or_entity=None):
     if file_type.lower() == "entity":
