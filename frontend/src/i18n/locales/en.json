@@ -193,7 +193,7 @@
     "selectPublicationFirst": "Please select a publication before uploading files",
     "deltaLakePath": "Delta Lake Path",
     "entityName": "Entity Name",
-    "entity_flag": "nationality",
+    "entity_flag": "flags",
     "entity_comodity": "commodities",
     "entity_ship_type": "ship types",
     "entity_unit": "measurement units",
