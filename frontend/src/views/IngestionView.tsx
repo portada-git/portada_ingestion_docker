@@ -159,6 +159,12 @@ const IngestionView: React.FC = () => {
               className="input"
             >
               <option value="flag">{t("ingestion.entity_flag")}</option>
+              <option value="ship_tons">
+                {t("ingestion.entity_ship_tons")}
+              </option>
+              <option value="travel_duration">
+                {t("ingestion.entity_travel_duration")}
+              </option>
               <option value="comodity">{t("ingestion.entity_comodity")}</option>
               <option value="ship_type">
                 {t("ingestion.entity_ship_type")}

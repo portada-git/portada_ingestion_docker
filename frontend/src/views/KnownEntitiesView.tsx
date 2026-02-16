@@ -32,18 +32,18 @@ const KnownEntitiesView: React.FC = () => {
   });
 
   // Usar las 6 entidades predefinidas
-  const allEntities = KNOWN_ENTITIES.map(entity => ({
+  const allEntities = KNOWN_ENTITIES.map((entity) => ({
     name: entity.code,
     type: entity.code,
-    count: entityCounts[entity.code] || 0
+    count: entityCounts[entity.code] || 0,
   }));
 
   const typeOptions = [
     { value: "", label: "Todos los tipos" },
-    ...KNOWN_ENTITIES.map(entity => ({
+    ...KNOWN_ENTITIES.map((entity) => ({
       value: entity.code,
-      label: entity.name
-    }))
+      label: entity.name,
+    })),
   ];
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,9 +71,9 @@ const KnownEntitiesView: React.FC = () => {
     if (result) {
       setEntityDetail(result as KnownEntityDetailResponse);
       // Actualizar el count real
-      setEntityCounts(prev => ({
+      setEntityCounts((prev) => ({
         ...prev,
-        [name]: result.total_records || 0
+        [name]: result.total_records || 0,
       }));
     }
 
@@ -84,18 +84,18 @@ const KnownEntitiesView: React.FC = () => {
     try {
       // Crear estructura: tipo: { caracteristica: [voz1, voz2, ...], ... }
       const characteristics: Record<string, string[]> = {};
-      
-      entity.data.forEach(row => {
+
+      entity.data.forEach((row) => {
         const name = row.name;
         const voices = row.voices || [];
         characteristics[name] = voices;
       });
-      
+
       // Crear objeto con el tipo como clave y las características como valor
       const yamlObject = {
-        [entity.name]: characteristics
+        [entity.name]: characteristics,
       };
-      
+
       const yamlContent = jsYaml.dump(yamlObject);
       const blob = new Blob([yamlContent], {
         type: "text/yaml;charset=utf-8;",
@@ -116,6 +116,8 @@ const KnownEntitiesView: React.FC = () => {
   const getTypeColor = (type: string): string => {
     const colors: Record<string, string> = {
       flag: "bg-blue-100 text-blue-800",
+      ship_tons: "bg-blue-200 text-blue-800",
+      travel_duration: "bg-yellow-100 text-yellow-800",
       comodity: "bg-green-100 text-green-800",
       ship_type: "bg-purple-100 text-purple-800",
       unit: "bg-cyan-100 text-cyan-800",
@@ -126,7 +128,7 @@ const KnownEntitiesView: React.FC = () => {
   };
 
   const getTypeLabel = (type: string): string => {
-    const entity = KNOWN_ENTITIES.find(e => e.code === type);
+    const entity = KNOWN_ENTITIES.find((e) => e.code === type);
     return entity ? entity.name : type;
   };
 
@@ -251,9 +253,7 @@ const KnownEntitiesView: React.FC = () => {
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500">
-                        Registros:
-                      </span>
+                      <span className="text-sm text-gray-500">Registros:</span>
                       <span className="font-mono text-sm font-semibold text-gray-900">
                         {entity.count.toLocaleString()}
                       </span>
@@ -283,7 +283,7 @@ const KnownEntitiesView: React.FC = () => {
                 <FileCode className="w-5 h-5 mr-2 text-blue-600" />
                 {isDetailLoading
                   ? "Cargando detalles..."
-                  : `Detalles de ${getTypeLabel(entityDetail?.name || '')}`}
+                  : `Detalles de ${getTypeLabel(entityDetail?.name || "")}`}
               </h3>
               {entityDetail && (
                 <button
