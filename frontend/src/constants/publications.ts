@@ -25,7 +25,9 @@ export const PUBLICATIONS: Publication[] = [
 ];
 
 export const KNOWN_ENTITIES: KnownEntity[] = [
-  { code: 'flag', name: 'Nacionalidad', description: 'Banderas y nacionalidades' },
+  { code: 'flag', name: 'Banderas', description: 'Banderas' },
+  { code: 'ship_tons', name: 'Tonelajes', description: 'Tonelajes de barcos' },
+  { code: 'travel_duration', name: 'Duración de viaje', description: 'Duración de viaje entre puertos' },
   { code: 'comodity', name: 'Mercancías', description: 'Tipos de mercancías' },
   { code: 'ship_type', name: 'Tipos de barcos', description: 'Clasificación de embarcaciones' },
   { code: 'unit', name: 'Unidades de medida', description: 'Unidades de medida utilizadas' },
