@@ -16,21 +16,19 @@ BASE_FILE_PATH = os.getenv("PATH_TO_INGEST", "/app/ingestion")
 
 def get_current_user_name(x_api_key: str = Header(...), r: redis.Redis = Depends(get_redis)):
     """
-    User logs in with username only (x-api-key).
+    User logs in with username (x-api-key).
     We check if user exists in Redis set "users". If not, add them.
     """
     if not x_api_key:
         raise HTTPException(status_code=401, detail="Missing API Key (Username)")
     
-    # Create a short hash of the token for directory names (first 16 chars of hash)
-    import hashlib
-    user_hash = hashlib.sha256(x_api_key.encode()).hexdigest()[:16]
+    # Use the x-api-key directly as username
+    username = x_api_key
     
-    # Add to set of users (idempotent) - store mapping
-    r.sadd("users", user_hash)
-    r.hset(f"user:{user_hash}", "token", x_api_key)
+    # Add to set of users (idempotent)
+    r.sadd("users", username)
     
-    return user_hash
+    return username
 
 @router.post("/entry")
 async def upload_entry(
