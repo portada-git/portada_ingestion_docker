@@ -39,10 +39,10 @@ const KnownEntitiesView: React.FC = () => {
   }));
 
   const typeOptions = [
-    { value: "", label: "Todos los tipos" },
+    { value: "", label: t("known_entities.allTypes", "Todos los tipos") },
     ...KNOWN_ENTITIES.map((entity) => ({
       value: entity.code,
-      label: entity.name,
+      label: t(`ingestion.entity_${entity.code}`, entity.name),
     })),
   ];
 
@@ -128,8 +128,7 @@ const KnownEntitiesView: React.FC = () => {
   };
 
   const getTypeLabel = (type: string): string => {
-    const entity = KNOWN_ENTITIES.find((e) => e.code === type);
-    return entity ? entity.name : type;
+    return t(`ingestion.entity_${type}`, type);
   };
 
   const filteredEntities = allEntities.filter((entity) => {
@@ -167,14 +166,17 @@ const KnownEntitiesView: React.FC = () => {
                 htmlFor="searchTerm"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Buscar entidad
+                {t("known_entities.searchLabel", "Buscar entidad")}
               </label>
               <input
                 type="text"
                 id="searchTerm"
                 value={formData.searchTerm}
                 onChange={handleSearchChange}
-                placeholder="Nombre de la entidad..."
+                placeholder={t(
+                  "known_entities.searchPlaceholder",
+                  "Nombre de la entidad...",
+                )}
                 className="input"
               />
             </div>
@@ -184,7 +186,7 @@ const KnownEntitiesView: React.FC = () => {
                 htmlFor="entityType"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Tipo de entidad
+                {t("known_entities.typeLabel", "Tipo de entidad")}
               </label>
               <select
                 id="entityType"
@@ -211,10 +213,16 @@ const KnownEntitiesView: React.FC = () => {
             <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
               <h3 className="text-lg font-semibold text-gray-900 flex items-center">
                 <Users className="w-5 h-5 mr-2" />
-                Entidades ({filteredEntities.length})
+                {t("known_entities.resultsTitle", {
+                  count: filteredEntities.length,
+                  defaultValue: `Entidades (${filteredEntities.length})`,
+                })}
               </h3>
               <p className="text-sm text-gray-500 italic">
-                Haz clic en una entidad para ver sus detalles
+                {t(
+                  "known_entities.clickToSeeDetails",
+                  "Haz clic en una entidad para ver sus detalles",
+                )}
               </p>
             </div>
 
@@ -244,7 +252,9 @@ const KnownEntitiesView: React.FC = () => {
 
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500">Tipo:</span>
+                      <span className="text-sm text-gray-500">
+                        {t("known_entities.type", "Tipo")}:
+                      </span>
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${getTypeColor(entity.type)}`}
                       >
@@ -253,7 +263,9 @@ const KnownEntitiesView: React.FC = () => {
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500">Registros:</span>
+                      <span className="text-sm text-gray-500">
+                        {t("known_entities.records", "Registros")}:
+                      </span>
                       <span className="font-mono text-sm font-semibold text-gray-900">
                         {entity.count.toLocaleString()}
                       </span>
@@ -267,10 +279,16 @@ const KnownEntitiesView: React.FC = () => {
           <div className="card text-center py-12">
             <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No se encontraron entidades
+              {t(
+                "known_entities.noEntitiesFound",
+                "No se encontraron entidades",
+              )}
             </h3>
             <p className="text-gray-500">
-              No hay entidades que coincidan con los criterios de búsqueda.
+              {t(
+                "known_entities.noEntitiesDesc",
+                "No hay entidades que coincidan con los criterios de búsqueda.",
+              )}
             </p>
           </div>
         )}
@@ -282,8 +300,11 @@ const KnownEntitiesView: React.FC = () => {
               <h3 className="text-lg font-semibold text-gray-900 flex items-center">
                 <FileCode className="w-5 h-5 mr-2 text-blue-600" />
                 {isDetailLoading
-                  ? "Cargando detalles..."
-                  : `Detalles de ${getTypeLabel(entityDetail?.name || "")}`}
+                  ? t("known_entities.loadingDetails", "Cargando detalles...")
+                  : t("known_entities.detailsOf", {
+                      name: getTypeLabel(entityDetail?.name || ""),
+                      defaultValue: `Detalles de ${getTypeLabel(entityDetail?.name || "")}`,
+                    })}
               </h3>
               {entityDetail && (
                 <button
@@ -291,7 +312,7 @@ const KnownEntitiesView: React.FC = () => {
                   className="btn btn-secondary py-1 px-3 text-sm flex items-center"
                 >
                   <Download className="w-4 h-4 mr-2" />
-                  Exportar YAML
+                  {t("known_entities.exportYaml", "Exportar YAML")}
                 </button>
               )}
             </div>
@@ -340,8 +361,11 @@ const KnownEntitiesView: React.FC = () => {
                 </table>
                 <div className="px-6 py-3 bg-gray-50 border-t border-gray-200">
                   <p className="text-xs text-gray-500">
-                    Mostrando {entityDetail.data.length} registros para la
-                    entidad {getTypeLabel(entityDetail.name)}.
+                    {t("known_entities.showingRecords", {
+                      count: entityDetail.data.length,
+                      name: getTypeLabel(entityDetail.name),
+                      defaultValue: `Mostrando ${entityDetail.data.length} registros para la entidad ${getTypeLabel(entityDetail.name)}.`,
+                    })}
                   </p>
                 </div>
               </div>
@@ -349,7 +373,10 @@ const KnownEntitiesView: React.FC = () => {
               <div className="p-12 text-center">
                 <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500">
-                  No hay registros detallados disponibles para esta entidad.
+                  {t(
+                    "known_entities.noDetailsAvailable",
+                    "No hay registros detallados disponibles para esta entidad.",
+                  )}
                 </p>
               </div>
             )}
@@ -363,13 +390,13 @@ const KnownEntitiesView: React.FC = () => {
           <AlertCircle className="w-5 h-5 text-blue-500 mr-3 mt-0.5 flex-shrink-0" />
           <div className="text-sm text-gray-600">
             <p className="font-medium text-gray-900 mb-1">
-              Información importante:
+              {t("known_entities.importantInfo", "Información importante:")}
             </p>
             <p>
-              Esta vista muestra todas las entidades conocidas que han sido
-              ingresadas en el sistema. Puedes buscar por nombre o filtrar por
-              tipo de entidad. El número de referencias indica cuántas veces
-              aparece cada entidad en los datos procesados.
+              {t(
+                "known_entities.infoDescription",
+                "Esta vista muestra todas las entidades conocidas que han sido ingresadas en el sistema. Puedes buscar por nombre o filtrar por tipo de entidad. El número de referencias indica cuántas veces aparece cada entidad en los datos procesados.",
+              )}
             </p>
           </div>
         </div>
