@@ -60,6 +60,15 @@ const UnifiedFileUpload: React.FC<UnifiedFileUploadProps> = ({
 
   const activeUploadsRef = useRef<Set<string>>(new Set());
   const abortControllersRef = useRef<Map<string, AbortController>>(new Map());
+  
+  // Store the current entityName in a ref to ensure we always use the latest value
+  const entityNameRef = useRef(entityName);
+  
+  // Update ref when entityName prop changes
+  useEffect(() => {
+    entityNameRef.current = entityName;
+    console.log('[BulkFileUpload] entityName updated to:', entityName);
+  }, [entityName]);
 
   // Integration with persistent upload store
   const { createUploadHandler } = useUploadIntegration({
@@ -174,12 +183,16 @@ const UnifiedFileUpload: React.FC<UnifiedFileUploadProps> = ({
       );
 
       // Use integrated upload handler that connects to persistent store
+      // IMPORTANT: Use entityNameRef.current to get the latest value at upload time
+      const currentEntityName = entityNameRef.current;
+      console.log('[BulkFileUpload] Uploading file with entityName:', currentEntityName);
+      
       const uploadHandler = createUploadHandler(async (file, onProgress) => {
         return await apiService.uploadFile(
           file,
           ingestionType,
           publication,
-          entityName,
+          currentEntityName, // Use the current value from ref
           undefined,
           onProgress,
         );
