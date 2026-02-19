@@ -15,6 +15,7 @@ import IngestionView from "./views/IngestionView";
 import AnalysisView from "./views/AnalysisView";
 import ConfigurationView from "./views/ConfigurationView";
 import ProcessDashboardView from "./views/ProcessDashboardView";
+import ProcessesView from "./views/ProcessesView";
 import { DailyIngestionSummaryView } from "./views/DailyIngestionSummaryView";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotificationContainer from "./components/NotificationContainer";
@@ -107,8 +108,9 @@ const App: React.FC = () => {
                   <Routes>
                     <Route
                       path="/"
-                      element={<Navigate to="/dashboard" replace />}
+                      element={<Navigate to="/processes" replace />}
                     />
+                    <Route path="/processes" element={<ProcessesView />} />
                     <Route path="/dashboard" element={<DashboardView />} />
                     <Route path="/ingestion" element={<IngestionView />} />
                     <Route path="/analysis/*" element={<AnalysisView />} />
@@ -117,7 +119,7 @@ const App: React.FC = () => {
                       element={<ConfigurationView />}
                     />
                     <Route
-                      path="/processes"
+                      path="/processes-dashboard"
                       element={<ProcessDashboardView />}
                     />
                     <Route
@@ -126,7 +128,7 @@ const App: React.FC = () => {
                     />
                     <Route
                       path="*"
-                      element={<Navigate to="/dashboard" replace />}
+                      element={<Navigate to="/processes" replace />}
                     />
                   </Routes>
                 </Layout>

@@ -395,5 +395,24 @@
       "role": "Role",
       "lastUpdate": "Last Update"
     }
+  },
+  "processes": {
+    "title": "Processes",
+    "subtitle": "Select the process you want to execute",
+    "ingestion": {
+      "title": "Data Ingestion",
+      "description": "Load and process extraction data files or known entities into the system"
+    },
+    "cleaning": {
+      "title": "Data Cleaning",
+      "description": "Clean and normalize ingested data to improve quality and consistency"
+    },
+    "disambiguation": {
+      "title": "Data Disambiguation",
+      "description": "Resolve ambiguities in the data to improve information accuracy"
+    },
+    "clickToAccess": "Click to access",
+    "comingSoon": "Coming Soon",
+    "info": "Each process is designed for a specific stage of the data workflow"
   }
 }

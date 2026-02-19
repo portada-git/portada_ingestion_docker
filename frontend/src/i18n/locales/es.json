@@ -413,5 +413,24 @@
       "role": "Rol",
       "lastUpdate": "Última Actualización"
     }
+  },
+  "processes": {
+    "title": "Procesos",
+    "subtitle": "Selecciona el proceso que deseas ejecutar",
+    "ingestion": {
+      "title": "Ingestion de datos",
+      "description": "Carga y procesa archivos de datos de extracción o entidades conocidas en el sistema"
+    },
+    "cleaning": {
+      "title": "Limpieza de datos",
+      "description": "Limpia y normaliza los datos ingresados para mejorar su calidad y consistencia"
+    },
+    "disambiguation": {
+      "title": "Desambiguación de datos",
+      "description": "Resuelve ambigüedades en los datos para mejorar la precisión de la información"
+    },
+    "clickToAccess": "Haz clic para acceder",
+    "comingSoon": "Próximamente",
+    "info": "Cada proceso está diseñado para una etapa específica del flujo de trabajo de datos"
   }
 }
