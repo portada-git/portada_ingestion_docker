@@ -7,3 +7,12 @@ demo/
 .vscode/
 .redis/
 .env
+
+# Archivos de desarrollo local (no subir a GitHub)
+docker-compose.dev.yml
+start_dev.sh
+stop_dev.sh
+logs_dev.sh
+rebuild_dev.sh
+dev_help.sh
+DEV_README.md
