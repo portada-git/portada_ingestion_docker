@@ -66,6 +66,35 @@ const ProcessDashboardView: React.FC = () => {
   const [pageSize, setPageSize] = useState(20);
   const [totalFiles, setTotalFiles] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  
+  // Global stats (independent of current page)
+  const [globalStats, setGlobalStats] = useState({
+    totalTasks: 0,
+    activeTasks: 0,
+    completedTasks: 0,
+    failedTasks: 0,
+  });
+
+  // Fetch global stats (all statuses)
+  const fetchGlobalStats = useCallback(async () => {
+    try {
+      // Fetch counts for each status
+      const [queueResponse, completedResponse, errorResponse] = await Promise.all([
+        apiService.getIngestionFiles({ status: 0, page: 1, page_size: 1 }) as Promise<RedisFilesResponse>,
+        apiService.getIngestionFiles({ status: 1, page: 1, page_size: 1 }) as Promise<RedisFilesResponse>,
+        apiService.getIngestionFiles({ status: 2, page: 1, page_size: 1 }) as Promise<RedisFilesResponse>,
+      ]);
+      
+      setGlobalStats({
+        totalTasks: (queueResponse.total || 0) + (completedResponse.total || 0) + (errorResponse.total || 0),
+        activeTasks: queueResponse.total || 0,
+        completedTasks: completedResponse.total || 0,
+        failedTasks: errorResponse.total || 0,
+      });
+    } catch (error) {
+      console.error("Error fetching global stats:", error);
+    }
+  }, []);
 
   // Fetch files from Redis
   const fetchFiles = useCallback(async (showRefreshIndicator = false) => {
@@ -82,8 +111,8 @@ const ProcessDashboardView: React.FC = () => {
         // Queue: pending (0)
         statusFilter = 0;
       } else {
-        // Completed: processed (1)
-        statusFilter = 1;
+        // Finalizados: no filter (we'll get all and filter client-side for 1 and 2)
+        statusFilter = undefined;
       }
       
       const response = await apiService.getIngestionFiles({
@@ -93,6 +122,11 @@ const ProcessDashboardView: React.FC = () => {
       }) as RedisFilesResponse;
       
       let fetchedFiles = response.files || [];
+      
+      // If on completed tab, filter for status 1 or 2 client-side
+      if (activeTab === "completed") {
+        fetchedFiles = fetchedFiles.filter(f => f.status === 1 || f.status === 2);
+      }
       
       setFiles(fetchedFiles);
       setTotalFiles(response.total || 0);
@@ -108,30 +142,21 @@ const ProcessDashboardView: React.FC = () => {
   // Initial fetch and tab change
   useEffect(() => {
     fetchFiles();
-  }, [fetchFiles]);
+    fetchGlobalStats();
+  }, [fetchFiles, fetchGlobalStats]);
 
   // Auto-refresh every 5 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       fetchFiles(true);
+      fetchGlobalStats();
     }, 5000);
     
     return () => clearInterval(interval);
-  }, [fetchFiles]);
+  }, [fetchFiles, fetchGlobalStats]);
 
-  // Calculate stats from current files
-  const stats = useMemo(() => {
-    const queueFiles = files.filter(f => f.status === 0);
-    const completedFiles = files.filter(f => f.status === 1);
-    const errorFiles = files.filter(f => f.status === 2);
-    
-    return {
-      totalTasks: totalFiles,
-      activeTasks: queueFiles.length,
-      completedTasks: completedFiles.length,
-      failedTasks: errorFiles.length,
-    };
-  }, [files, totalFiles]);
+  // Calculate stats from current files (removed - now using globalStats)
+  // const stats = useMemo(() => { ... }, [files, totalFiles]);
 
   // Filter and sort files
   const filteredFiles = useMemo(() => {
@@ -304,9 +329,9 @@ const ProcessDashboardView: React.FC = () => {
           >
             <Activity className="w-4 h-4 inline mr-2" />
             En Cola
-            {stats.activeTasks > 0 && (
+            {globalStats.activeTasks > 0 && (
               <span className="ml-2 bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
-                {stats.activeTasks}
+                {globalStats.activeTasks}
               </span>
             )}
           </button>
@@ -323,10 +348,10 @@ const ProcessDashboardView: React.FC = () => {
             )}
           >
             <History className="w-4 h-4 inline mr-2" />
-            Completados
-            {stats.completedTasks > 0 && activeTab === "completed" && (
-              <span className="ml-2 bg-gray-100 text-gray-800 text-xs font-medium px-2 py-1 rounded-full">
-                {stats.completedTasks}
+            Procesos Finalizados
+            {(globalStats.completedTasks + globalStats.failedTasks) > 0 && (
+              <span className="ml-2 bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
+                {globalStats.completedTasks + globalStats.failedTasks}
               </span>
             )}
           </button>
@@ -345,7 +370,7 @@ const ProcessDashboardView: React.FC = () => {
                 Total Procesos
               </p>
               <p className="text-2xl font-bold text-gray-900">
-                {stats.totalTasks}
+                {globalStats.totalTasks}
               </p>
             </div>
           </div>
@@ -359,7 +384,7 @@ const ProcessDashboardView: React.FC = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">En Cola</p>
               <p className="text-2xl font-bold text-gray-900">
-                {stats.activeTasks}
+                {globalStats.activeTasks}
               </p>
               <div className="flex items-center mt-1">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-1" />
@@ -377,7 +402,7 @@ const ProcessDashboardView: React.FC = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Completados</p>
               <p className="text-2xl font-bold text-gray-900">
-                {stats.completedTasks}
+                {globalStats.completedTasks}
               </p>
             </div>
           </div>
@@ -391,7 +416,7 @@ const ProcessDashboardView: React.FC = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Errores</p>
               <p className="text-2xl font-bold text-gray-900">
-                {stats.failedTasks}
+                {globalStats.failedTasks}
               </p>
             </div>
           </div>
