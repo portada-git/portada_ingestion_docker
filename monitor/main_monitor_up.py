@@ -6,7 +6,7 @@ from dagster_graphql import DagsterGraphQLClient
 
 
 from watchdog.observers import Observer
-from portada_file_monitor.file_event_handler import QueuedPortadaIngestionEventHandler
+from portada_file_monitor.file_event_handler import PortadaIngestionEventHandler
 
 so = platform.system()
 if so == "Darwin":
@@ -22,7 +22,8 @@ path_to_watch =  os.getenv("PATH_TO_WATCH", path_to_watch)
 host = os.getenv("DAGSTER_HOST", "localhost")	
 redis_port=os.getenv("REDIS_PORT", 6379)
 redis_host=os.getenv("REDIS_HOST", "localhost")
-event_handler = QueuedPortadaIngestionEventHandler(host=redis_host, port=redis_port, db=2)
+#event_handler = QueuedPortadaIngestionEventHandler(host=redis_host, port=redis_port, db=2)
+event_handler = PortadaIngestionEventHandler()
 
 
 def process_file(path_file, file_type=None, user_or_entity=None):
