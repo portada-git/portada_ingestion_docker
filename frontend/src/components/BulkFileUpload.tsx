@@ -266,6 +266,11 @@ const UnifiedFileUpload: React.FC<UnifiedFileUploadProps> = ({
     } finally {
       abortControllersRef.current.delete(fileItem.id);
       activeUploadsRef.current.delete(fileItem.id);
+      
+      // IMPORTANTE: Después de terminar un archivo, procesar el siguiente en la cola
+      if (isProcessing) {
+        processQueue();
+      }
     }
   };
 

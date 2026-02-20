@@ -15,6 +15,8 @@ import IngestionView from "./views/IngestionView";
 import AnalysisView from "./views/AnalysisView";
 import ConfigurationView from "./views/ConfigurationView";
 import ProcessDashboardView from "./views/ProcessDashboardView";
+import ProcessesView from "./views/ProcessesView";
+import CleaningView from "./views/CleaningView";
 import { DailyIngestionSummaryView } from "./views/DailyIngestionSummaryView";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotificationContainer from "./components/NotificationContainer";
@@ -103,33 +105,45 @@ const App: React.FC = () => {
             path="/*"
             element={
               <ProtectedRouteWrapper>
-                <Layout key={i18n.language}>
-                  <Routes>
-                    <Route
-                      path="/"
-                      element={<Navigate to="/dashboard" replace />}
-                    />
-                    <Route path="/dashboard" element={<DashboardView />} />
-                    <Route path="/ingestion" element={<IngestionView />} />
-                    <Route path="/analysis/*" element={<AnalysisView />} />
-                    <Route
-                      path="/configuration/*"
-                      element={<ConfigurationView />}
-                    />
-                    <Route
-                      path="/processes"
-                      element={<ProcessDashboardView />}
-                    />
-                    <Route
-                      path="/daily-ingestion-summary"
-                      element={<DailyIngestionSummaryView />}
-                    />
-                    <Route
-                      path="*"
-                      element={<Navigate to="/dashboard" replace />}
-                    />
-                  </Routes>
-                </Layout>
+                <Routes>
+                  {/* Rutas sin Layout (pantalla completa) */}
+                  <Route path="/processes" element={<ProcessesView />} />
+                  <Route path="/cleaning" element={<CleaningView />} />
+                  
+                  {/* Rutas con Layout (con sidebar) */}
+                  <Route
+                    path="/*"
+                    element={
+                      <Layout key={i18n.language}>
+                        <Routes>
+                          <Route
+                            path="/"
+                            element={<Navigate to="/processes" replace />}
+                          />
+                          <Route path="/dashboard" element={<DashboardView />} />
+                          <Route path="/ingestion" element={<IngestionView />} />
+                          <Route path="/analysis/*" element={<AnalysisView />} />
+                          <Route
+                            path="/configuration/*"
+                            element={<ConfigurationView />}
+                          />
+                          <Route
+                            path="/processes-dashboard"
+                            element={<ProcessDashboardView />}
+                          />
+                          <Route
+                            path="/daily-ingestion-summary"
+                            element={<DailyIngestionSummaryView />}
+                          />
+                          <Route
+                            path="*"
+                            element={<Navigate to="/processes" replace />}
+                          />
+                        </Routes>
+                      </Layout>
+                    }
+                  />
+                </Routes>
               </ProtectedRouteWrapper>
             }
           />
