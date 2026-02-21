@@ -15,7 +15,7 @@ export const useAuth = () => {
   const handleLogin = useCallback(async (username: string) => {
     try {
       await login(username);
-      navigate('/dashboard');
+      navigate('/processes');
     } catch (error) {
       throw error; // Re-throw to let the component handle the error
     }
