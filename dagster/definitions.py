@@ -32,7 +32,11 @@ redi_cfg = RedisConfig(host=redis_host, port=redis_port)
 
 
 def callback_error(param, log):
-    path = param["run_config"]["ops"]["ingested_entity_file"]["config"]["local_path"]
+    if "ingested_entity_file" in param["run_config"]["ops"];
+        path = param["run_config"]["ops"]["ingested_entity_file"]["config"]["local_path"]
+    else:        
+        path = param["run_config"]["ops"]["ingested_entry_file"]["config"]["local_path"]
+
     if param["asset"] != "update_data_base_for_entity":
         redis_client = redi_cfg.get_redis_client()
         file_found = redis_client.update_file(path, RedisClient.ERROR_STATUS)
