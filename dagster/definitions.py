@@ -32,7 +32,7 @@ redi_cfg = RedisConfig(host=redis_host, port=redis_port)
 
 
 def callback_error(param, log):
-    if "ingested_entity_file" in param["run_config"]["ops"];
+    if "ingested_entity_file" in param["run_config"]["ops"]:
         path = param["run_config"]["ops"]["ingested_entity_file"]["config"]["local_path"]
     else:        
         path = param["run_config"]["ops"]["ingested_entry_file"]["config"]["local_path"]
