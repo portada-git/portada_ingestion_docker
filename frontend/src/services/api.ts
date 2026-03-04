@@ -37,6 +37,81 @@ interface ApiError extends Error {
   details?: any;
 }
 
+export interface SimilarityAlgorithmConfig {
+  enabled: boolean;
+  threshold: number;
+  gray_zone: [number, number];
+  params: Record<string, string | number | boolean>;
+}
+
+export interface SimilarityConfigResponse {
+  version: number;
+  normalize: boolean;
+  consensus: {
+    min_votes: number;
+    require_levenshtein_ocr: boolean;
+  };
+  algorithms: Record<string, SimilarityAlgorithmConfig>;
+  updated_at?: string;
+}
+
+export interface SimilarityRunRequest {
+  entity: string;
+  known_entity?: string;
+  citation_field?: string;
+  use_clean_entries?: boolean;
+  publication_name?: string;
+  user?: string;
+  y?: number;
+  m?: number;
+  d?: number;
+  edition?: string;
+  force_refit?: boolean;
+}
+
+export interface SimilarityRunResult {
+  term: string;
+  frequency: number;
+  entity: string;
+  best_voice: string;
+  classification: string;
+  consensus: boolean;
+  no_match: boolean;
+  votes_approval: number;
+  votes_entity: number;
+  algorithm_scores: Record<string, {
+    score: number;
+    voice: string;
+    approved: boolean;
+    in_gray_zone: boolean;
+    threshold: number;
+  }>;
+}
+
+export interface SimilarityRunResponse {
+  input: {
+    entity: string;
+    known_entity: string;
+    citation_field: string;
+  };
+  summary: {
+    terms_count: number;
+    total_occurrences: number;
+    voices_count: number;
+    strict_match_percentage: number;
+    fuzzy_match_percentage: number;
+    classification_distribution: Record<string, number>;
+    cache: {
+      entity: string;
+      cache_hit: boolean;
+      trained_at?: string;
+      config_signature?: string;
+      voices_signature?: string;
+    };
+  };
+  results: SimilarityRunResult[];
+}
+
 class ApiService {
   private baseUrl: string;
   private token: string | null = null;
@@ -511,6 +586,68 @@ class ApiService {
 
   async getKnownEntityDetail(name: string): Promise<KnownEntityDetailResponse> {
     return this.request<KnownEntityDetailResponse>(`/queries/entities/${name}`);
+  }
+
+  async getSimilarityConfig(): Promise<SimilarityConfigResponse> {
+    return this.request<SimilarityConfigResponse>('/similarity/config');
+  }
+
+  async saveSimilarityConfig(config: SimilarityConfigResponse): Promise<SimilarityConfigResponse> {
+    return this.request<SimilarityConfigResponse>('/similarity/config', {
+      method: 'POST',
+      body: JSON.stringify(config),
+    });
+  }
+
+  async getSimilarityStatus(): Promise<{
+    enabled_algorithms: string[];
+    entities: Array<{
+      entity: string;
+      has_cache: boolean;
+      config_signature?: string;
+      voices_signature?: string;
+      voices_count: number;
+      trained_at?: string;
+      algorithms: string[];
+      cache_file: string;
+    }>;
+  }> {
+    return this.request('/similarity/status');
+  }
+
+  async getSimilarityEntities(): Promise<{
+    entities: Array<{
+      key: string;
+      known_entity: string;
+      citation_field: string;
+    }>;
+  }> {
+    return this.request('/similarity/entities');
+  }
+
+  async runSimilarity(payload: SimilarityRunRequest): Promise<SimilarityRunResponse> {
+    return this.request<SimilarityRunResponse>('/similarity/run', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async exportSimilarity(payload: SimilarityRunRequest, format: string = 'csv'): Promise<Blob> {
+    const url = `${this.baseUrl}/similarity/export?format=${format}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        ...this.getAuthHeaders(),
+      },
+      body: JSON.stringify(payload),
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw this.createApiError(`Export failed: ${response.status}`, response.status);
+    }
+
+    return response.blob();
   }
 
   async getDailyEntries(request: DailyEntriesRequest): Promise<any> {

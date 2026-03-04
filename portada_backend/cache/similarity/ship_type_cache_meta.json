@@ -1,0 +1,12 @@
+{
+  "entity": "ship_type",
+  "voices_count": 2,
+  "config_signature": "cb25ea54899ab13271da5bec94473be982e4885095c420c68a6f7d9630c76757",
+  "voices_signature": "89707583f65759b58eec029e9c8fcb95272014430734f76accc410f93ef0d233",
+  "trained_at": "2026-03-04T13:20:25.010684+00:00",
+  "algorithms": [
+    "levenshtein_ocr",
+    "jaro_winkler",
+    "ngram_2"
+  ]
+}

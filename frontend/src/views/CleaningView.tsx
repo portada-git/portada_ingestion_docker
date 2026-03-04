@@ -1,595 +1,565 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Settings, 
-  Play, 
-  Download, 
-  ChevronRight,
-  Info,
-  X,
-  ArrowLeft,
-  Home,
-  LogOut
-} from 'lucide-react';
+import { ArrowLeft, Download, Home, LogOut, Play, RotateCw, Save, Settings } from 'lucide-react';
+
+import {
+  apiService,
+  type SimilarityConfigResponse,
+  type SimilarityRunResponse,
+} from '../services/api';
 import { useAuthStore } from '../store/useStore';
 
-interface CleaningConfig {
-  field: string;
-  algorithms: string[];
-  thresholds: {
-    [key: string]: number;
-  };
-  grayZones: {
-    [key: string]: { min: number; max: number };
-  };
-  filters: string[];
+type CacheStatusMap = Record<
+  string,
+  {
+    has_cache: boolean;
+    trained_at?: string;
+    voices_count: number;
+  }
+>;
+
+const classificationOptions = ['ALL', 'CONSENSUADO', 'CONSENSUADO_DEBIL', 'SOLO_1_VOTO', 'ZONA_GRIS', 'RECHAZADO'] as const;
+
+function formatIsoDate(value?: string): string {
+  if (!value) {
+    return '-';
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+  return date.toLocaleString();
 }
 
-interface CleaningResults {
-  totalOccurrences: number;
-  matchedPercentage: number;
-  fuzzyMatchPercentage: number;
-  uniqueTerms: number;
-  distribution: Array<{
-    classification: string;
-    occurrences: number;
-    percentage: number;
-  }>;
-  preview: Array<Record<string, string | number>>;
+function toNumber(value: string, fallback: number): number {
+  const parsed = Number(value);
+  if (Number.isNaN(parsed)) {
+    return fallback;
+  }
+  return parsed;
 }
 
-const CleaningView: React.FC = () => {
+export default function CleaningView() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { logout, user } = useAuthStore();
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [showConfig, setShowConfig] = useState(true);
-  const [results, setResults] = useState<CleaningResults | null>(null);
-  const [processingSteps, setProcessingSteps] = useState<string[]>([]);
-  const [isComplete, setIsComplete] = useState(false);
 
-  const [config, setConfig] = useState<CleaningConfig>({
-    field: 'master_role',
-    algorithms: ['Levenshtein_OCR', 'Jaro_Winkler'],
-    thresholds: {
-      Levenshtein_OCR: 0.75,
-      Jaro_Winkler: 0.85,
-      Nilsim_2: 0.85,
-    },
-    grayZones: {
-      Levenshtein_OCR: { min: 0.71, max: 0.75 },
-      Jaro_Winkler: { min: 0.85, max: 0.85 },
-      Nilsim_2: { min: 0.83, max: 0.85 },
-    },
-    filters: [],
-  });
+  const [config, setConfig] = useState<SimilarityConfigResponse | null>(null);
+  const [result, setResult] = useState<SimilarityRunResponse | null>(null);
+  const [entities, setEntities] = useState<Array<{ key: string; known_entity: string; citation_field: string }>>([]);
+  const [cacheStatusByEntity, setCacheStatusByEntity] = useState<CacheStatusMap>({});
 
-  const availableFields = [
-    { value: 'master_role', label: 'Rol del capitán' },
-    { value: 'port', label: 'Puerto' },
-    { value: 'commodity', label: 'Mercancía' },
-    { value: 'ship_type', label: 'Tipo de barco' },
-  ];
+  const [selectedEntity, setSelectedEntity] = useState('master_role');
+  const [useCleanEntries, setUseCleanEntries] = useState(true);
+  const [forceRefit, setForceRefit] = useState(false);
 
-  const availableAlgorithms = [
-    { value: 'Levenshtein_OCR', label: 'Levenshtein_OCR', color: 'blue' },
-    { value: 'Jaro_Winkler', label: 'Jaro_Winkler', color: 'green' },
-    { value: 'Nilsim_2', label: 'Nilsim_2', color: 'purple' },
-  ];
+  const [classificationFilter, setClassificationFilter] = useState<(typeof classificationOptions)[number]>('ALL');
+  const [entityFilter, setEntityFilter] = useState('ALL');
+  const [searchFilter, setSearchFilter] = useState('');
 
-  const handleProcessing = async () => {
-    setIsProcessing(true);
-    setIsComplete(false);
-    setProcessingSteps([]);
+  const [loadingConfig, setLoadingConfig] = useState(false);
+  const [savingConfig, setSavingConfig] = useState(false);
+  const [running, setRunning] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [error, setError] = useState('');
 
-    // Simular procesamiento
-    const steps = [
-      'Procesando Levenshtein_OCR...',
-      'Procesando Jaro_Winkler...',
-      'Procesando Nilsim_2...',
-    ];
+  async function loadInitialData() {
+    setLoadingConfig(true);
+    setError('');
+    try {
+      const [cfg, status, entitiesPayload] = await Promise.all([
+        apiService.getSimilarityConfig(),
+        apiService.getSimilarityStatus(),
+        apiService.getSimilarityEntities(),
+      ]);
 
-    for (let i = 0; i < steps.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setProcessingSteps(prev => [...prev, steps[i]]);
+      setConfig(cfg);
+      setEntities(entitiesPayload.entities);
+      if (entitiesPayload.entities.length > 0) {
+        setSelectedEntity(entitiesPayload.entities[0].key);
+      }
+
+      const nextCacheStatus: CacheStatusMap = {};
+      for (const item of status.entities) {
+        nextCacheStatus[item.entity] = {
+          has_cache: item.has_cache,
+          trained_at: item.trained_at,
+          voices_count: item.voices_count,
+        };
+      }
+      setCacheStatusByEntity(nextCacheStatus);
+    } catch (err) {
+      setError((err as Error).message || 'No se pudo cargar la configuración');
+    } finally {
+      setLoadingConfig(false);
     }
+  }
 
-    // Simular resultados
-    setResults({
-      totalOccurrences: 52017,
-      matchedPercentage: 98.0,
-      fuzzyMatchPercentage: 98.0,
-      uniqueTerms: 186,
-      distribution: [
-        { classification: 'CONSENSUADO', occurrences: 71, percentage: 38.17 },
-        { classification: 'LITERAL NORMALIZADO - DE WIKI', occurrences: 11, percentage: 5.91 },
-        { classification: 'SOLO_1_VOTO', occurrences: 17, percentage: 9.14 },
-        { classification: 'ZONA_GRIS', occurrences: 11, percentage: 5.91 },
-        { classification: 'RECHAZADO', occurrences: 76, percentage: 40.86 },
-      ],
-      preview: [
-        { termino: 'nap', Levenshtein_OCR: 0.7988, Jaro_Winkler: 0, clasificacion: 'nap' },
-        { termino: 'capitan', Levenshtein_OCR: 0.8124, Jaro_Winkler: 0, clasificacion: 'capitan' },
-        { termino: 'patron', Levenshtein_OCR: 0.7988, Jaro_Winkler: 0, clasificacion: 'patron' },
-      ],
-    });
+  useEffect(() => {
+    void loadInitialData();
+  }, []);
 
-    setIsComplete(true);
-    setIsProcessing(false);
-  };
+  async function handleSaveConfig() {
+    if (!config) {
+      return;
+    }
+    setSavingConfig(true);
+    setError('');
+    try {
+      const saved = await apiService.saveSimilarityConfig(config);
+      setConfig(saved);
+      await loadInitialData();
+    } catch (err) {
+      setError((err as Error).message || 'No se pudo guardar la configuración');
+    } finally {
+      setSavingConfig(false);
+    }
+  }
 
-  const handleLogout = async () => {
+  async function handleRun() {
+    if (!config) {
+      return;
+    }
+    setRunning(true);
+    setError('');
+    try {
+      const runResponse = await apiService.runSimilarity({
+        entity: selectedEntity,
+        use_clean_entries: useCleanEntries,
+        force_refit: forceRefit,
+      });
+      setResult(runResponse);
+      await loadInitialData();
+    } catch (err) {
+      setError((err as Error).message || 'No se pudo ejecutar el análisis');
+    } finally {
+      setRunning(false);
+    }
+  }
+
+  async function handleLogout() {
     await logout();
     navigate('/login');
-  };
+  }
 
-  const updateThreshold = (algo: string, value: number) => {
-    setConfig(prev => ({
-      ...prev,
-      thresholds: { ...prev.thresholds, [algo]: value },
-      // Recalibrar zonas grises automáticamente: -0.05 y +0.05
-      grayZones: {
-        ...prev.grayZones,
-        [algo]: {
-          min: Math.max(0, value - 0.05), // No permitir valores negativos
-          max: Math.min(1, value + 0.05), // No permitir valores mayores a 1
-        },
-      },
-    }));
-  };
+  async function handleExport() {
+    if (!selectedEntity) {
+      return;
+    }
+    setExporting(true);
+    setError('');
+    try {
+      const blob = await apiService.exportSimilarity({
+        entity: selectedEntity,
+        use_clean_entries: useCleanEntries,
+        force_refit: false, // No hace falta refit para exportar lo que ya se calculó o el default
+      }, 'csv');
 
-  const toggleAlgorithm = (algo: string) => {
-    setConfig(prev => ({
-      ...prev,
-      algorithms: prev.algorithms.includes(algo)
-        ? prev.algorithms.filter(a => a !== algo)
-        : [...prev.algorithms, algo],
-    }));
-  };
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `similarity_${selectedEntity}_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      setError((err as Error).message || 'No se pudo exportar el archivo');
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  const filteredRows = (result?.results || []).filter((row) => {
+    if (classificationFilter !== 'ALL' && row.classification !== classificationFilter) {
+      return false;
+    }
+    if (entityFilter !== 'ALL' && row.entity !== entityFilter) {
+      return false;
+    }
+    if (!searchFilter.trim()) {
+      return true;
+    }
+    const query = searchFilter.trim().toLowerCase();
+    return (
+      row.term.toLowerCase().includes(query)
+      || row.best_voice.toLowerCase().includes(query)
+      || row.entity.toLowerCase().includes(query)
+    );
+  });
+
+  const resultEntities = Array.from(new Set((result?.results || []).map((row) => row.entity).filter((item) => item)));
+  const enabledAlgorithms = config
+    ? Object.entries(config.algorithms)
+      .filter(([, value]) => value.enabled)
+      .map(([key]) => key)
+    : [];
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
-      <div className={`${showConfig ? 'w-80' : 'w-0'} transition-all duration-300 bg-white border-r border-gray-200 overflow-hidden flex flex-col`}>
-        {showConfig && (
-          <>
-            {/* Contenido scrolleable */}
-            <div className="flex-1 overflow-y-auto">
-              <div className="p-6 space-y-6">
-                {/* Logo PortAda */}
-                <div className="flex items-center justify-center pb-4 border-b border-gray-200">
-                  <img 
-                    src="/logo.jpeg" 
-                    alt="PortAda Logo" 
-                    className="h-16 w-auto object-contain"
-                  />
-                </div>
-
-                {/* Header con botón de volver */}
-                <div className="flex items-center justify-between pb-4 border-b border-gray-200">
-                  <button
-                    onClick={() => navigate('/processes')}
-                    className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-                  >
-                    <ArrowLeft className="w-5 h-5" />
-                    <span className="text-sm font-medium">{t('common.back')}</span>
-                  </button>
-                  <button
-                    onClick={() => setShowConfig(false)}
-                    className="p-1 hover:bg-gray-100 rounded"
-                  >
-                    <X className="w-5 h-5 text-gray-500" />
-                  </button>
-                </div>
-
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    {t('cleaning.configuration')}
-                  </h2>
-                </div>
-
-            {/* 1. Campo a analizar */}
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">
-                1. {t('cleaning.fieldToAnalyze')}
-              </h3>
-              <p className="text-xs text-gray-500 mb-2">{t('cleaning.selectField')}</p>
-              <select
-                value={config.field}
-                onChange={(e) => setConfig({ ...config, field: e.target.value })}
-                className="input text-sm"
-              >
-                {availableFields.map(field => (
-                  <option key={field.value} value={field.value}>
-                    {field.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* 2. Algoritmos */}
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">
-                2. {t('cleaning.algorithms')}
-              </h3>
-              <p className="text-xs text-gray-500 mb-2">{t('cleaning.selectAlgorithms')}</p>
-              <div className="space-y-2">
-                {availableAlgorithms.map(algo => (
-                  <button
-                    key={algo.value}
-                    onClick={() => toggleAlgorithm(algo.value)}
-                    className={`w-full px-3 py-2 text-sm rounded-md transition-colors ${
-                      config.algorithms.includes(algo.value)
-                        ? `bg-${algo.color}-100 text-${algo.color}-700 border border-${algo.color}-300`
-                        : 'bg-gray-100 text-gray-600 border border-gray-200'
-                    }`}
-                  >
-                    {algo.label}
-                    {config.algorithms.includes(algo.value) && ' ✓'}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* 3. Umbrales de aprobación */}
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">
-                3. {t('cleaning.approvalThresholds')}
-              </h3>
-              <p className="text-xs text-gray-500 mb-3">
-                {t('cleaning.thresholdsAutoAdjust')}
-              </p>
-              {config.algorithms.map(algo => (
-                <div key={algo} className="mb-3">
-                  <label className="text-xs text-gray-600">{algo}</label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.01"
-                      value={config.thresholds[algo]}
-                      onChange={(e) => updateThreshold(algo, parseFloat(e.target.value))}
-                      className="flex-1"
-                    />
-                    <span className="text-xs font-mono w-12 text-right">
-                      {config.thresholds[algo].toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* 4. Zonas grises */}
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">
-                4. {t('cleaning.grayZones')}
-              </h3>
-              <p className="text-xs text-gray-500 mb-3">
-                {t('cleaning.grayZonesAutoCalibrated')}
-              </p>
-              {config.algorithms.map(algo => (
-                <div key={algo} className="mb-3">
-                  <label className="text-xs text-gray-600">{algo}</label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <input
-                      type="number"
-                      min="0"
-                      max="1"
-                      step="0.01"
-                      value={config.grayZones[algo].min.toFixed(2)}
-                      readOnly
-                      className="input text-xs w-20 bg-gray-50 cursor-not-allowed"
-                      title={t('cleaning.autoCalculated')}
-                    />
-                    <span className="text-xs">-</span>
-                    <input
-                      type="number"
-                      min="0"
-                      max="1"
-                      step="0.01"
-                      value={config.grayZones[algo].max.toFixed(2)}
-                      readOnly
-                      className="input text-xs w-20 bg-gray-50 cursor-not-allowed"
-                      title={t('cleaning.autoCalculated')}
-                    />
-                    <span className="text-xs text-gray-500">
-                      (±0.05)
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* 5. Filtros */}
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">
-                5. {t('cleaning.filters')}
-              </h3>
-              <p className="text-xs text-gray-500 mb-2">
-                {t('cleaning.noFiltersApplied')}
-              </p>
-              <input
-                type="text"
-                placeholder={t('cleaning.addFilter')}
-                className="input text-sm"
-              />
-            </div>
-
-            {/* Botón ejecutar */}
+    <div className="min-h-screen bg-gray-50">
+      <div className="mx-auto max-w-7xl p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
             <button
-              onClick={handleProcessing}
-              disabled={isProcessing || config.algorithms.length === 0}
-              className="w-full btn btn-primary flex items-center justify-center gap-2"
+              onClick={() => navigate('/processes')}
+              className="btn btn-secondary inline-flex items-center gap-2"
             >
-              <Play className="w-4 h-4" />
-              {isProcessing ? t('cleaning.processing') : t('cleaning.executeAnalysis')}
+              <ArrowLeft className="h-4 w-4" />
+              {t('common.back')}
             </button>
-          </div>
-        </div>
-
-        {/* Footer con botón de cerrar sesión */}
-        <div className="border-t border-gray-200 p-4 bg-gray-50">
-          <div className="mb-3 px-2">
-            <p className="text-xs text-gray-600 mb-1">{t('navigation.userAvatar', { name: '' })}</p>
-            <p className="text-sm font-medium text-gray-900">{user?.username || user?.full_name}</p>
+            <h1 className="text-2xl font-semibold text-gray-900">{t('cleaning.title')}</h1>
           </div>
           <button
             onClick={handleLogout}
-            className="w-full btn btn-secondary flex items-center justify-center gap-2 text-red-600 hover:bg-red-50 hover:text-red-700 border-red-200"
+            className="btn btn-secondary inline-flex items-center gap-2 text-red-600 border-red-200 hover:bg-red-50"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="h-4 w-4" />
             {t('navigation.logout')}
           </button>
         </div>
-      </>
-    )}
-  </div>
 
-      {/* Main Content */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-6 max-w-7xl mx-auto">
-          {/* Header con navegación */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-4">
-                {!showConfig && (
-                  <button
-                    onClick={() => navigate('/processes')}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                    title={t('common.back')}
-                  >
-                    <Home className="w-5 h-5 text-gray-600" />
-                  </button>
-                )}
-                <h1 className="text-3xl font-bold text-gray-900">
-                  {t('cleaning.title')}
-                </h1>
-              </div>
-              {!showConfig && (
-                <button
-                  onClick={() => setShowConfig(true)}
-                  className="btn btn-secondary flex items-center gap-2"
-                >
-                  <Settings className="w-4 h-4" />
-                  {t('cleaning.showConfiguration')}
-                </button>
-              )}
-            </div>
-            <p className="text-gray-600">
-              {t('cleaning.subtitle')}
-            </p>
+        {error && (
+          <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
           </div>
+        )}
 
-          {/* Current Configuration */}
-          <div className="card mb-6">
-            <button
-              onClick={() => setShowConfig(!showConfig)}
-              className="w-full flex items-center justify-between"
-            >
-              <div className="flex items-center gap-2">
-                <ChevronRight className={`w-5 h-5 transition-transform ${showConfig ? 'rotate-90' : ''}`} />
-                <span className="font-medium">{t('cleaning.currentConfiguration')}</span>
-              </div>
-            </button>
-            
-            <div className="mt-4 space-y-2">
-              <div className="bg-green-50 border border-green-200 rounded-md p-3">
-                <p className="text-sm text-green-800">
-                  {t('cleaning.loadedTerms', { count: 186 })}
-                </p>
-              </div>
-              <div className="bg-green-50 border border-green-200 rounded-md p-3">
-                <p className="text-sm text-green-800">
-                  {t('cleaning.normalizedVoices', { count: 17 })}
-                </p>
-              </div>
-              <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
-                <p className="text-sm text-blue-800">
-                  {t('cleaning.usingAllVoices')}
-                </p>
-              </div>
+        <section className="card space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-900 inline-flex items-center gap-2">
+              <Settings className="h-5 w-5" /> Configuración de algoritmos
+            </h2>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => navigate(`/known-entities/${entities.find(e => e.key === selectedEntity)?.known_entity || ''}`)}
+                className="btn btn-secondary inline-flex items-center gap-2"
+                disabled={!entities.length}
+              >
+                Ver diccionario
+              </button>
+              <button
+                onClick={() => void loadInitialData()}
+                disabled={loadingConfig}
+                className="btn btn-secondary inline-flex items-center gap-2"
+              >
+                <RotateCw className="h-4 w-4" /> Recargar
+              </button>
+              <button
+                onClick={() => void handleSaveConfig()}
+                disabled={!config || savingConfig}
+                className="btn btn-primary inline-flex items-center gap-2"
+              >
+                <Save className="h-4 w-4" /> {savingConfig ? 'Guardando...' : 'Guardar configuración'}
+              </button>
             </div>
           </div>
 
-          {/* Processing Status */}
-          {isProcessing && (
-            <div className="card mb-6">
-              <h3 className="font-medium mb-4">{t('cleaning.generatingMatrices')}</h3>
-              <div className="space-y-3">
-                {processingSteps.map((step, index) => (
-                  <div key={index}>
-                    <p className="text-sm text-gray-600 mb-1">{step}</p>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-blue-600 h-2 rounded-full animate-pulse" style={{ width: '100%' }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Results */}
-          {isComplete && results && (
+          {loadingConfig || !config ? (
+            <p className="text-sm text-gray-500">Cargando configuración...</p>
+          ) : (
             <>
-              <div className="bg-green-50 border border-green-200 rounded-md p-4 mb-6 flex items-start gap-3">
-                <Info className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-green-800">
-                  {t('cleaning.matricesGenerated')}
-                </p>
-                <button className="ml-auto text-green-600 hover:text-green-800">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Results Summary */}
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold mb-4">{t('cleaning.results')}</h2>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="card">
-                    <p className="text-sm text-gray-600 mb-1">{t('cleaning.totalOccurrences')}</p>
-                    <p className="text-3xl font-bold text-gray-900">
-                      {results.totalOccurrences.toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="card">
-                    <p className="text-sm text-gray-600 mb-1">{t('cleaning.matchedPercentage')}</p>
-                    <p className="text-3xl font-bold text-green-600">
-                      {results.matchedPercentage}%
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      + {results.matchedPercentage}% {t('cleaning.normalized')}
-                    </p>
-                  </div>
-                  <div className="card">
-                    <p className="text-sm text-gray-600 mb-1">{t('cleaning.fuzzyMatch')}</p>
-                    <p className="text-3xl font-bold text-blue-600">
-                      {results.fuzzyMatchPercentage}%
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      + {results.fuzzyMatchPercentage}% {t('cleaning.normalized')}
-                    </p>
-                  </div>
-                  <div className="card">
-                    <p className="text-sm text-gray-600 mb-1">{t('cleaning.uniqueTerms')}</p>
-                    <p className="text-3xl font-bold text-purple-600">
-                      {results.uniqueTerms}
-                    </p>
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="text-sm text-gray-700">Entidad</label>
+                  <select
+                    value={selectedEntity}
+                    onChange={(event) => setSelectedEntity(event.target.value)}
+                    className="input mt-1"
+                  >
+                    {entities.map((item) => (
+                      <option key={item.key} value={item.key}>{item.key}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex items-end gap-4 pb-2">
+                  <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={useCleanEntries}
+                      onChange={(event) => setUseCleanEntries(event.target.checked)}
+                    />
+                    Usar entradas limpias
+                  </label>
+                  <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={forceRefit}
+                      onChange={(event) => setForceRefit(event.target.checked)}
+                    />
+                    Forzar recálculo de caché
+                  </label>
+                </div>
+                <div className="flex items-end justify-end">
+                  <button
+                    onClick={() => void handleRun()}
+                    disabled={running}
+                    className="btn btn-primary inline-flex items-center gap-2"
+                  >
+                    <Play className="h-4 w-4" /> {running ? 'Procesando...' : 'Ejecutar análisis'}
+                  </button>
                 </div>
               </div>
 
-              {/* Distribution */}
-              <div className="card mb-6">
-                <h3 className="text-lg font-semibold mb-4">{t('cleaning.distributionByClassification')}</h3>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full">
-                    <thead>
-                      <tr className="border-b border-gray-200">
-                        <th className="text-left py-2 px-4 text-sm font-medium text-gray-600">#</th>
-                        <th className="text-left py-2 px-4 text-sm font-medium text-gray-600">
-                          {t('cleaning.classification')}
-                        </th>
-                        <th className="text-right py-2 px-4 text-sm font-medium text-gray-600">
-                          {t('cleaning.occurrences')}
-                        </th>
-                        <th className="text-right py-2 px-4 text-sm font-medium text-gray-600">
-                          {t('cleaning.percentage')}
-                        </th>
+              <div className="rounded border border-gray-200 overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="px-3 py-2 text-left">Algoritmo</th>
+                      <th className="px-3 py-2 text-left">Enabled</th>
+                      <th className="px-3 py-2 text-left">Threshold</th>
+                      <th className="px-3 py-2 text-left">Gray Zone Min</th>
+                      <th className="px-3 py-2 text-left">Gray Zone Max</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(config.algorithms).map(([algorithm, algorithmConfig]) => (
+                      <tr key={algorithm} className="border-t border-gray-200">
+                        <td className="px-3 py-2 font-medium">{algorithm}</td>
+                        <td className="px-3 py-2">
+                          <input
+                            type="checkbox"
+                            checked={algorithmConfig.enabled}
+                            onChange={(event) => {
+                              setConfig((prev) => {
+                                if (!prev) {
+                                  return prev;
+                                }
+                                return {
+                                  ...prev,
+                                  algorithms: {
+                                    ...prev.algorithms,
+                                    [algorithm]: {
+                                      ...prev.algorithms[algorithm],
+                                      enabled: event.target.checked,
+                                    },
+                                  },
+                                };
+                              });
+                            }}
+                          />
+                        </td>
+                        <td className="px-3 py-2">
+                          <input
+                            className="input"
+                            type="number"
+                            min={0}
+                            max={1}
+                            step={0.01}
+                            value={algorithmConfig.threshold}
+                            onChange={(event) => {
+                              const nextThreshold = toNumber(event.target.value, algorithmConfig.threshold);
+                              setConfig((prev) => {
+                                if (!prev) {
+                                  return prev;
+                                }
+                                return {
+                                  ...prev,
+                                  algorithms: {
+                                    ...prev.algorithms,
+                                    [algorithm]: {
+                                      ...prev.algorithms[algorithm],
+                                      threshold: nextThreshold,
+                                    },
+                                  },
+                                };
+                              });
+                            }}
+                          />
+                        </td>
+                        <td className="px-3 py-2">
+                          <input
+                            className="input"
+                            type="number"
+                            min={0}
+                            max={1}
+                            step={0.01}
+                            value={algorithmConfig.gray_zone[0]}
+                            onChange={(event) => {
+                              const nextMin = toNumber(event.target.value, algorithmConfig.gray_zone[0]);
+                              setConfig((prev) => {
+                                if (!prev) {
+                                  return prev;
+                                }
+                                return {
+                                  ...prev,
+                                  algorithms: {
+                                    ...prev.algorithms,
+                                    [algorithm]: {
+                                      ...prev.algorithms[algorithm],
+                                      gray_zone: [nextMin, prev.algorithms[algorithm].gray_zone[1]],
+                                    },
+                                  },
+                                };
+                              });
+                            }}
+                          />
+                        </td>
+                        <td className="px-3 py-2">
+                          <input
+                            className="input"
+                            type="number"
+                            min={0}
+                            max={1}
+                            step={0.01}
+                            value={algorithmConfig.gray_zone[1]}
+                            onChange={(event) => {
+                              const nextMax = toNumber(event.target.value, algorithmConfig.gray_zone[1]);
+                              setConfig((prev) => {
+                                if (!prev) {
+                                  return prev;
+                                }
+                                return {
+                                  ...prev,
+                                  algorithms: {
+                                    ...prev.algorithms,
+                                    [algorithm]: {
+                                      ...prev.algorithms[algorithm],
+                                      gray_zone: [prev.algorithms[algorithm].gray_zone[0], nextMax],
+                                    },
+                                  },
+                                };
+                              });
+                            }}
+                          />
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {results.distribution.map((item, index) => (
-                        <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                          <td className="py-2 px-4 text-sm text-gray-600">{index}</td>
-                          <td className="py-2 px-4 text-sm font-medium">{item.classification}</td>
-                          <td className="py-2 px-4 text-sm text-right">{item.occurrences}</td>
-                          <td className="py-2 px-4 text-sm text-right">{item.percentage}%</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Data Preview */}
-              <div className="card mb-6">
-                <h3 className="text-lg font-semibold mb-4">{t('cleaning.dataPreview')}</h3>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-gray-200 bg-gray-50">
-                        <th className="text-left py-2 px-3 font-medium text-gray-600">#</th>
-                        <th className="text-left py-2 px-3 font-medium text-gray-600">
-                          {t('cleaning.term')}
-                        </th>
-                        <th className="text-right py-2 px-3 font-medium text-gray-600">Levenshtein_OCR</th>
-                        <th className="text-right py-2 px-3 font-medium text-gray-600">Jaro_Winkler</th>
-                        <th className="text-left py-2 px-3 font-medium text-gray-600">
-                          {t('cleaning.classification')}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {results.preview.map((row, index) => (
-                        <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                          <td className="py-2 px-3 text-gray-600">{index}</td>
-                          <td className="py-2 px-3">{row.termino}</td>
-                          <td className="py-2 px-3 text-right font-mono">{row.Levenshtein_OCR}</td>
-                          <td className="py-2 px-3 text-right font-mono">{row.Jaro_Winkler}</td>
-                          <td className="py-2 px-3">{row.clasificacion}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Download Results */}
-              <div className="card">
-                <h3 className="text-lg font-semibold mb-4">{t('cleaning.downloadResults')}</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <button className="btn btn-secondary flex items-center justify-center gap-2">
-                    <Download className="w-4 h-4" />
-                    {t('cleaning.downloadCompleteCSV')}
-                  </button>
-                  <button className="btn btn-secondary flex items-center justify-center gap-2">
-                    <Download className="w-4 h-4" />
-                    {t('cleaning.downloadAllCSVZIP')}
-                  </button>
-                  <button className="btn btn-secondary flex items-center justify-center gap-2">
-                    <Download className="w-4 h-4" />
-                    {t('cleaning.downloadTXTReport')}
-                  </button>
-                </div>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </>
           )}
+        </section>
 
-          {/* Empty State */}
-          {!isProcessing && !isComplete && (
-            <div className="card text-center py-12">
-              <Settings className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {t('cleaning.emptyStateTitle')}
-              </h3>
-              <p className="text-gray-600 mb-4">
-                {t('cleaning.emptyStateDescription')}
-              </p>
+        <section className="card space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-900">Estado de caché</h2>
+            <div className="flex items-center gap-2">
               <button
-                onClick={() => setShowConfig(true)}
-                className="btn btn-primary inline-flex items-center gap-2"
+                onClick={handleExport}
+                disabled={exporting || !selectedEntity}
+                className="btn btn-secondary inline-flex items-center gap-2"
               >
-                <Settings className="w-4 h-4" />
-                {t('cleaning.openConfiguration')}
+                <Download className="h-4 w-4" /> {exporting ? 'Exportando...' : 'Exportar CSV'}
+              </button>
+              <button
+                onClick={() => navigate('/processes')}
+                className="btn btn-secondary inline-flex items-center gap-2"
+              >
+                <Home className="h-4 w-4" /> Procesos
               </button>
             </div>
-          )}
-        </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            {Object.keys(cacheStatusByEntity).length === 0 && (
+              <p className="text-sm text-gray-500">Todavía no hay caché entrenada.</p>
+            )}
+            {Object.entries(cacheStatusByEntity).map(([entity, status]) => (
+              <div key={entity} className="rounded border border-gray-200 bg-white px-3 py-2">
+                <p className="text-sm font-medium text-gray-900">{entity}</p>
+                <p className="text-xs text-gray-600">Cache: {status.has_cache ? 'lista' : 'vacía'}</p>
+                <p className="text-xs text-gray-600">Voces: {status.voices_count}</p>
+                <p className="text-xs text-gray-600">Entrenado: {formatIsoDate(status.trained_at)}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {result && (
+          <section className="card space-y-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              <div className="rounded border border-gray-200 bg-white p-3">
+                <p className="text-xs text-gray-500">Entidad</p>
+                <p className="text-base font-semibold text-gray-900">{result.input.entity}</p>
+              </div>
+              <div className="rounded border border-gray-200 bg-white p-3">
+                <p className="text-xs text-gray-500">Términos únicos</p>
+                <p className="text-base font-semibold text-gray-900">{result.summary.terms_count}</p>
+              </div>
+              <div className="rounded border border-gray-200 bg-white p-3">
+                <p className="text-xs text-gray-500">Ocurrencias</p>
+                <p className="text-base font-semibold text-gray-900">{result.summary.total_occurrences}</p>
+              </div>
+              <div className="rounded border border-gray-200 bg-white p-3">
+                <p className="text-xs text-gray-500">Consenso estricto</p>
+                <p className="text-base font-semibold text-green-700">{result.summary.strict_match_percentage}%</p>
+              </div>
+              <div className="rounded border border-gray-200 bg-white p-3">
+                <p className="text-xs text-gray-500">Consenso + débil</p>
+                <p className="text-base font-semibold text-blue-700">{result.summary.fuzzy_match_percentage}%</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+              <select
+                value={classificationFilter}
+                onChange={(event) => setClassificationFilter(event.target.value as (typeof classificationOptions)[number])}
+                className="input"
+              >
+                {classificationOptions.map((item) => (
+                  <option key={item} value={item}>{item}</option>
+                ))}
+              </select>
+              <select
+                value={entityFilter}
+                onChange={(event) => setEntityFilter(event.target.value)}
+                className="input"
+              >
+                <option value="ALL">ALL ENTITIES</option>
+                {resultEntities.map((item) => (
+                  <option key={item} value={item}>{item}</option>
+                ))}
+              </select>
+              <input
+                value={searchFilter}
+                onChange={(event) => setSearchFilter(event.target.value)}
+                placeholder="Buscar término / voz / entidad"
+                className="input md:col-span-2"
+              />
+            </div>
+
+            <div className="overflow-x-auto rounded border border-gray-200">
+              <table className="min-w-full text-xs">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="px-3 py-2 text-left">Término</th>
+                    <th className="px-3 py-2 text-right">Freq</th>
+                    <th className="px-3 py-2 text-left">Entidad</th>
+                    <th className="px-3 py-2 text-left">Voz sugerida</th>
+                    <th className="px-3 py-2 text-left">Clasificación</th>
+                    <th className="px-3 py-2 text-left">Consenso</th>
+                    {enabledAlgorithms.map((algorithm) => (
+                      <th key={algorithm} className="px-3 py-2 text-right">{algorithm}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredRows.map((row) => (
+                    <tr key={`${row.term}-${row.entity}-${row.best_voice}`} className="border-t border-gray-200">
+                      <td className="px-3 py-2 font-medium">{row.term}</td>
+                      <td className="px-3 py-2 text-right">{row.frequency}</td>
+                      <td className="px-3 py-2">{row.entity || '-'}</td>
+                      <td className="px-3 py-2">{row.best_voice || '-'}</td>
+                      <td className="px-3 py-2">{row.classification}</td>
+                      <td className="px-3 py-2">{row.no_match ? 'NO_MATCH' : row.consensus ? 'YES' : 'NO'}</td>
+                      {enabledAlgorithms.map((algorithm) => (
+                        <td key={algorithm} className="px-3 py-2 text-right font-mono">
+                          {row.algorithm_scores[algorithm]?.score?.toFixed(4) ?? '-'}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+
+        <footer className="text-xs text-gray-500">
+          Usuario activo: <span className="font-medium text-gray-700">{user?.username || user?.full_name || '-'}</span>
+        </footer>
       </div>
     </div>
   );
-};
-
-export default CleaningView;
+}

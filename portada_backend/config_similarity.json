@@ -1,0 +1,116 @@
+{
+  "version": 2,
+  "normalize": true,
+  "consensus": {
+    "min_votes": 2,
+    "require_levenshtein_ocr": true
+  },
+  "algorithms": {
+    "levenshtein_ocr": {
+      "enabled": true,
+      "threshold": 0.75,
+      "gray_zone": [
+        0.71,
+        0.749
+      ],
+      "params": {
+        "confusion_cost": 0.4
+      }
+    },
+    "levenshtein_ratio": {
+      "enabled": false,
+      "threshold": 0.75,
+      "gray_zone": [
+        0.71,
+        0.749
+      ],
+      "params": {}
+    },
+    "jaro_winkler": {
+      "enabled": true,
+      "threshold": 0.85,
+      "gray_zone": [
+        0.8,
+        0.849
+      ],
+      "params": {
+        "prefix_weight": 0.1
+      }
+    },
+    "ngram_2": {
+      "enabled": true,
+      "threshold": 0.63,
+      "gray_zone": [
+        0.6,
+        0.629
+      ],
+      "params": {
+        "n": 2
+      }
+    },
+    "ngram_3": {
+      "enabled": false,
+      "threshold": 0.55,
+      "gray_zone": [
+        0.52,
+        0.549
+      ],
+      "params": {
+        "n": 3
+      }
+    },
+    "ngram_4": {
+      "enabled": false,
+      "threshold": 0.5,
+      "gray_zone": [
+        0.46,
+        0.499
+      ],
+      "params": {
+        "n": 4
+      }
+    },
+    "phonetic_dm": {
+      "enabled": false,
+      "threshold": 0.85,
+      "gray_zone": [
+        0.8,
+        0.849
+      ],
+      "params": {}
+    },
+    "soundex": {
+      "enabled": false,
+      "threshold": 0.9,
+      "gray_zone": [
+        0.8,
+        0.899
+      ],
+      "params": {}
+    },
+    "semantica": {
+      "enabled": false,
+      "threshold": 0.72,
+      "gray_zone": [
+        0.65,
+        0.719
+      ],
+      "params": {
+        "mode": "token_jaccard"
+      }
+    },
+    "text2vec": {
+      "enabled": false,
+      "threshold": 0.78,
+      "gray_zone": [
+        0.72,
+        0.779
+      ],
+      "params": {
+        "mode": "char_cosine",
+        "n": 3
+      }
+    }
+  },
+  "updated_at": "2026-03-04T12:57:10.978159+00:00"
+}

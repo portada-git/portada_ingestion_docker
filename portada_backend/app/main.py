@@ -1,12 +1,11 @@
-
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import ingest, queries, audit
+from .routers import ingest, queries, audit, similarity
 
 app = FastAPI(
     title="PortAda API",
     description="API for PortAda Delta Lake System",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 # CORS
@@ -21,6 +20,8 @@ app.add_middleware(
 app.include_router(ingest.router, prefix="/api/v1/ingest", tags=["Ingestion"])
 app.include_router(queries.router, prefix="/api/v1/queries", tags=["Queries"])
 app.include_router(audit.router, prefix="/api/v1/audit", tags=["Audit"])
+app.include_router(similarity.router, prefix="/api/v1/similarity", tags=["Similarity"])
+
 
 @app.get("/api/v1/health")
 def health_check():

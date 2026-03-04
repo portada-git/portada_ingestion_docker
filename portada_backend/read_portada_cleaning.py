@@ -1,0 +1,3 @@
+import inspect
+from portada_data_layer.portada_cleaning import BoatFactCleaning
+print(inspect.getsource(BoatFactCleaning.get_known_entity_voices))
