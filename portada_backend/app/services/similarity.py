@@ -732,6 +732,7 @@ class SimilarityService:
         self, citation_field: str, entries_df, boat_cleaning: BoatFactCleaning
     ):
         if citation_field == "ship_flag":
+            #retorna directamente extracted
             extracted = boat_cleaning.extract_ship_flags(entries_df)
             return extracted.select(
                 F.col("id"),
@@ -825,7 +826,7 @@ class SimilarityService:
             voice = str(voice_value).strip()
             if not voice:
                 continue
-            entity = str(data.get("name") or data.get("entity") or voice)
+            entity = str(data.get("name"))
             voices.append(voice)
             voice_to_entity[voice] = entity
         return voices, voice_to_entity
