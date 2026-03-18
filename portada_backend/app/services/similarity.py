@@ -571,30 +571,29 @@ class SimilarityService:
             raise ValueError("No se encontraron citaciones válidas para comparar")
 
         voices_df = boat_cleaning.get_known_entity_voices(selected_known_entity)
-        voices, voice_to_entity = self._collect_voices(voices_df)
-        if not voices:
+        voices_dict = self._collect_voices_dict(voices_df)
+        if not voices_dict:
             raise ValueError(
                 f"No se encontraron voces válidas para known_entity='{selected_known_entity}'"
             )
 
-        cache_entry = self._ensure_entity_cache(
-            entity=selected_entity,
-            voices=voices,
-            config=config,
-            force_refit=force_refit,
-        )
+        voice_list = VoiceList.from_dict(entity_type=selected_entity, data=voices_dict)
 
-        result_rows = self._classify_terms(
-            term_frequencies=term_frequencies,
-            voices=voices,
-            voice_to_entity=voice_to_entity,
-            config=config,
-            enabled_algorithms=enabled_algorithms,
-            cache_entry=cache_entry,
-        )
-        summary = self._build_summary(
-            result_rows, term_frequencies, voices, cache_entry
-        )
+        # Usar la librería real
+        real_service = RealSimilarityService.from_dict(config)
+        
+        # Adaptar term_frequencies al formato esperado por evaluate: list[dict]
+        terms_input = [{"term": t, "frequency": f} for t, f in term_frequencies.items()]
+        
+        # Ejecutar evaluación real
+        results = real_service.evaluate(terms_input, voice_list)
+
+        # Resumen básico (opcional, la librería no devuelve el summary exacto del backend viejo)
+        summary = {
+            "terms_count": len(term_frequencies),
+            "voices_count": len(voice_list.all_voices()),
+            "classification_distribution": {} # Podríamos calcularlo si el frontend lo necesita
+        }
 
         return {
             "input": {
@@ -613,7 +612,7 @@ class SimilarityService:
             },
             "config": config,
             "summary": summary,
-            "results": result_rows,
+            "results": results,
         }
 
     def _default_config(self) -> Dict[str, Any]:
@@ -1160,3 +1159,19 @@ class SimilarityService:
         boat_cleaning.start_session()
         self._boat_cleaning = boat_cleaning
         return self._boat_cleaning
+
+    def _collect_voices_dict(self, voices_df) -> Dict[str, List[str]]:
+        """
+        Extrae y agrupa las voces por su entidad canónica desde el DataFrame de Spark.
+        Formato de salida compatible con VoiceList.from_dict:
+        { "ENTIDAD_CANONICA": ["voz_1", "voz_2", ...], ... }
+        """
+        rows = voices_df.collect()
+        data: Dict[str, List[str]] = {}
+        for row in rows:
+            row_dict = row.asDict(True)
+            voice = str(row_dict.get("voice", "")).strip()
+            entity = str(row_dict.get("name", "")).strip() # 'name' es la entidad canónica en el esquema de voces
+            if voice and entity:
+                data.setdefault(entity, []).append(voice)
+        return data
