@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from portada_data_layer import PortadaBuilder
+from portada_s_index import SimilarityService as RealSimilarityService, VoiceList
 from portada_data_layer.portada_cleaning import BoatFactCleaning
 from pyspark.sql import functions as F
 
