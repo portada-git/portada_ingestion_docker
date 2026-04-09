@@ -1,2 +1,7 @@
 py-portada-data-layer @ git+https://github.com/portada-git/py_portada_data_layer.git
 portada-s-index
+transformers
+torch
+sentencepiece
+pandas
+pyarrow

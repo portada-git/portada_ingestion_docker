@@ -1,6 +1,6 @@
 {
   "protocol": "file://",
-  "base_path": "/home/danro/1Workspace/PortAda/Portada work/portada_ingestion_docker/delta_lake",
+  "base_path": "/app/delta_lake",
   "app_name": "DataLakePortadaCuration_01",
   "project_data_name": "portada_project",
   "master": "local[*]",

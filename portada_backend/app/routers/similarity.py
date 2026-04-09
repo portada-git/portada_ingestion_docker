@@ -81,6 +81,29 @@ async def run_similarity(payload: SimilarityRunRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.post("/run-direct")
+async def run_similarity_direct(payload: SimilarityRunRequest):
+    """
+    Ejecuta similitud extrayendo datos directamente de JSONs
+    (sin usar la capa de datos que puede fallar).
+    """
+    try:
+        from ..services.similarity_direct import run_similarity_direct as run_direct
+        from ..services.similarity import SimilarityService
+        
+        # Obtener config actual
+        service = SimilarityService.get_instance()
+        config = service.get_config()
+        
+        # Ejecutar con extracción directa
+        return run_direct(
+            entity=payload.entity or "port",
+            config=config,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @router.post("/export")
 async def export_similarity(payload: SimilarityRunRequest, format: str = "csv"):
     try:
