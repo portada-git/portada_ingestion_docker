@@ -8,13 +8,14 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# CORS
+# CORS - Simplified configuration for development
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,  # Changed to False to allow wildcard origins
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 app.include_router(ingest.router, prefix="/api/v1/ingest", tags=["Ingestion"])

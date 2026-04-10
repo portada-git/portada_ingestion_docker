@@ -248,7 +248,7 @@ class ApiService {
       let config: RequestInit & { url: string } = {
         ...options,
         url,
-        credentials: 'include', // IMPORTANT: Include cookies in requests
+        // credentials: 'include', // Removed: not using credentials for CORS simplicity
         headers: {
           ...this.getAuthHeaders(),
           ...options.headers,
@@ -315,7 +315,7 @@ class ApiService {
       let config: RequestInit & { url: string } = {
         method: 'POST',
         url,
-        credentials: 'include', // IMPORTANT: Include cookies in requests
+        // credentials: 'include', // Removed: not using credentials for CORS simplicity
         headers: {
           // Don't set Content-Type for FormData, let browser set it
           'Authorization': this.token ? `Bearer ${this.token}` : '',
@@ -640,7 +640,7 @@ class ApiService {
         ...this.getAuthHeaders(),
       },
       body: JSON.stringify(payload),
-      credentials: 'include',
+      // credentials: 'include', // Removed: not using credentials for CORS simplicity
     });
 
     if (!response.ok) {
