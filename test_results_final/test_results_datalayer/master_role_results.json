@@ -1,0 +1,4022 @@
+[
+  {
+    "term": "pat.",
+    "frequency": 5422,
+    "normalized": "pat",
+    "exact_match": true,
+    "classification": "EXACT",
+    "entity": "PATRON",
+    "voice": "pat",
+    "votes": 0,
+    "algorithm_scores": []
+  },
+  {
+    "term": "gat.",
+    "frequency": 1,
+    "normalized": "gat",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.777778,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.333333,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "cap.",
+    "frequency": 4443,
+    "normalized": "cap",
+    "exact_match": true,
+    "classification": "EXACT",
+    "entity": "CAPITAN",
+    "voice": "cap",
+    "votes": 0,
+    "algorithm_scores": []
+  },
+  {
+    "term": "ep.",
+    "frequency": 34,
+    "normalized": "ep",
+    "exact_match": false,
+    "classification": "ONE_VOTE",
+    "entity": "CAPITAN",
+    "voice": "cp",
+    "votes": 1,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cp",
+        "best_entity": "CAPITAN",
+        "score": 0.8,
+        "threshold": 0.75,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cp",
+        "best_entity": "CAPITAN",
+        "score": 0.666667,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "cp.",
+    "frequency": 93,
+    "normalized": "cp",
+    "exact_match": true,
+    "classification": "EXACT",
+    "entity": "CAPITAN",
+    "voice": "cp",
+    "votes": 0,
+    "algorithm_scores": []
+  },
+  {
+    "term": "capa.",
+    "frequency": 2,
+    "normalized": "capa",
+    "exact_match": false,
+    "classification": "CONSENSUS",
+    "entity": "CAPITAN",
+    "voice": "cap",
+    "votes": 3,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.75,
+        "threshold": 0.75,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.941667,
+        "threshold": 0.85,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.666667,
+        "threshold": 0.63,
+        "voted": true,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "en.",
+    "frequency": 1,
+    "normalized": "en",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cp",
+        "best_entity": "CAPITAN",
+        "score": 0.6,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "teniente",
+        "best_entity": "TENIENTE",
+        "score": 0.75,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "teniente",
+        "best_entity": "TENIENTE",
+        "score": 0.2,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "esp.",
+    "frequency": 8,
+    "normalized": "esp",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.533333,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.555556,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "pt.",
+    "frequency": 269,
+    "normalized": "pt",
+    "exact_match": true,
+    "classification": "EXACT",
+    "entity": "PATRON",
+    "voice": "pt",
+    "votes": 0,
+    "algorithm_scores": []
+  },
+  {
+    "term": "exp.",
+    "frequency": 4,
+    "normalized": "exp",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.533333,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.555556,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "osp.",
+    "frequency": 2,
+    "normalized": "osp",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.333333,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.555556,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "op.",
+    "frequency": 10,
+    "normalized": "op",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.533333,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cp",
+        "best_entity": "CAPITAN",
+        "score": 0.666667,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.1,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "ut.",
+    "frequency": 1,
+    "normalized": "ut",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pt",
+        "best_entity": "PATRON",
+        "score": 0.5,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "pt",
+        "best_entity": "PATRON",
+        "score": 0.666667,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "prt.",
+    "frequency": 1,
+    "normalized": "prt",
+    "exact_match": false,
+    "classification": "GRAY_ZONE",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.806061,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.090909,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "ten.",
+    "frequency": 2,
+    "normalized": "ten",
+    "exact_match": false,
+    "classification": "ONE_VOTE",
+    "entity": "TENIENTE",
+    "voice": "teniente",
+    "votes": 1,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cp",
+        "best_entity": "CAPITAN",
+        "score": 0.4,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "teniente",
+        "best_entity": "TENIENTE",
+        "score": 0.854167,
+        "threshold": 0.85,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "teniente",
+        "best_entity": "TENIENTE",
+        "score": 0.4,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "alf.",
+    "frequency": 1,
+    "normalized": "alf",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "capt",
+        "best_entity": "CAPITAN",
+        "score": 0.4,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "capt",
+        "best_entity": "CAPITAN",
+        "score": 0.527778,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "???",
+    "frequency": 21,
+    "normalized": "",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "pre.",
+    "frequency": 1,
+    "normalized": "pre",
+    "exact_match": false,
+    "classification": "GRAY_ZONE",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "patron",
+        "best_entity": "PATRON",
+        "score": 0.333333,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.806061,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.090909,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "dat.",
+    "frequency": 1,
+    "normalized": "dat",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.777778,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.333333,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "Mr.",
+    "frequency": 4,
+    "normalized": "mr",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "mayor",
+        "best_entity": "MAYOR",
+        "score": 0.4,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "mayor",
+        "best_entity": "MAYOR",
+        "score": 0.61,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "ot.",
+    "frequency": 1,
+    "normalized": "ot",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.533333,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "pt",
+        "best_entity": "PATRON",
+        "score": 0.666667,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "piloto",
+        "best_entity": "PILOTO",
+        "score": 0.2,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "emp.",
+    "frequency": 4,
+    "normalized": "emp",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.533333,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.555556,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "cop.",
+    "frequency": 2,
+    "normalized": "cop",
+    "exact_match": false,
+    "classification": "ONE_VOTE",
+    "entity": "CAPITAN",
+    "voice": "cap",
+    "votes": 1,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.866667,
+        "threshold": 0.75,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.8,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "comand",
+        "best_entity": "COMANDANTE",
+        "score": 0.166667,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "psp.",
+    "frequency": 1,
+    "normalized": "psp",
+    "exact_match": false,
+    "classification": "GRAY_ZONE",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.333333,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "p",
+        "best_entity": "PATRON",
+        "score": 0.8,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "patrón",
+    "frequency": 8,
+    "normalized": "patron",
+    "exact_match": true,
+    "classification": "EXACT",
+    "entity": "PATRON",
+    "voice": "patron",
+    "votes": 0,
+    "algorithm_scores": []
+  },
+  {
+    "term": "p.",
+    "frequency": 161,
+    "normalized": "p",
+    "exact_match": true,
+    "classification": "EXACT",
+    "entity": "PATRON",
+    "voice": "p",
+    "votes": 0,
+    "algorithm_scores": []
+  },
+  {
+    "term": "put.",
+    "frequency": 2,
+    "normalized": "put",
+    "exact_match": false,
+    "classification": "GRAY_ZONE",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.8,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "pl.",
+    "frequency": 11,
+    "normalized": "pl",
+    "exact_match": false,
+    "classification": "ONE_VOTE",
+    "entity": "PATRON",
+    "voice": "p",
+    "votes": 1,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pt",
+        "best_entity": "PATRON",
+        "score": 0.5,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "p",
+        "best_entity": "PATRON",
+        "score": 0.85,
+        "threshold": 0.85,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "czp.",
+    "frequency": 1,
+    "normalized": "czp",
+    "exact_match": false,
+    "classification": "GRAY_ZONE",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.8,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "r.",
+    "frequency": 1,
+    "normalized": "r",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "p",
+        "best_entity": "PATRON",
+        "score": 0.6,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.69697,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "au.",
+    "frequency": 1,
+    "normalized": "au",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.333333,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "capt",
+        "best_entity": "CAPITAN",
+        "score": 0.583333,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "cup.",
+    "frequency": 12,
+    "normalized": "cup",
+    "exact_match": false,
+    "classification": "GRAY_ZONE",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.8,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "cnp.",
+    "frequency": 1,
+    "normalized": "cnp",
+    "exact_match": false,
+    "classification": "GRAY_ZONE",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.8,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "pit.",
+    "frequency": 2,
+    "normalized": "pit",
+    "exact_match": false,
+    "classification": "ONE_VOTE",
+    "entity": "PILOTO",
+    "voice": "piloto",
+    "votes": 1,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "piloto",
+        "best_entity": "PILOTO",
+        "score": 0.866667,
+        "threshold": 0.85,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "capitan",
+        "best_entity": "CAPITAN",
+        "score": 0.333333,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "patr.",
+    "frequency": 5,
+    "normalized": "patr",
+    "exact_match": false,
+    "classification": "CONSENSUS",
+    "entity": "PATRON",
+    "voice": "pat",
+    "votes": 3,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.75,
+        "threshold": 0.75,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.941667,
+        "threshold": 0.85,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.666667,
+        "threshold": 0.63,
+        "voted": true,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "delurich",
+    "frequency": 1,
+    "normalized": "delurich",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.181818,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "subordinado",
+        "best_entity": "SUBORDINADO",
+        "score": 0.549242,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0625,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "p",
+    "frequency": 2,
+    "normalized": "p",
+    "exact_match": true,
+    "classification": "EXACT",
+    "entity": "PATRON",
+    "voice": "p",
+    "votes": 0,
+    "algorithm_scores": []
+  },
+  {
+    "term": "cp",
+    "frequency": 2,
+    "normalized": "cp",
+    "exact_match": true,
+    "classification": "EXACT",
+    "entity": "CAPITAN",
+    "voice": "cp",
+    "votes": 0,
+    "algorithm_scores": []
+  },
+  {
+    "term": "c",
+    "frequency": 1,
+    "normalized": "c",
+    "exact_match": true,
+    "classification": "EXACT",
+    "entity": "CAPITAN",
+    "voice": "c",
+    "votes": 0,
+    "algorithm_scores": []
+  },
+  {
+    "term": "pi.",
+    "frequency": 2,
+    "normalized": "pi",
+    "exact_match": false,
+    "classification": "ONE_VOTE",
+    "entity": "PATRON",
+    "voice": "p",
+    "votes": 1,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pt",
+        "best_entity": "PATRON",
+        "score": 0.5,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "p",
+        "best_entity": "PATRON",
+        "score": 0.85,
+        "threshold": 0.85,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "piloto",
+        "best_entity": "PILOTO",
+        "score": 0.2,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "teniente de navio",
+    "frequency": 2,
+    "normalized": "teniente de navio",
+    "exact_match": true,
+    "classification": "EXACT",
+    "entity": "TENIENTE",
+    "voice": "teniente de navio",
+    "votes": 0,
+    "algorithm_scores": []
+  },
+  {
+    "term": "comandante",
+    "frequency": 4,
+    "normalized": "comandante",
+    "exact_match": true,
+    "classification": "EXACT",
+    "entity": "COMANDANTE",
+    "voice": "comandante",
+    "votes": 0,
+    "algorithm_scores": []
+  },
+  {
+    "term": "n.",
+    "frequency": 1,
+    "normalized": "n",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "p",
+        "best_entity": "PATRON",
+        "score": 0.6,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "teniente",
+        "best_entity": "TENIENTE",
+        "score": 0.708333,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "par.",
+    "frequency": 5,
+    "normalized": "par",
+    "exact_match": false,
+    "classification": "ONE_VOTE",
+    "entity": "PATRON",
+    "voice": "patron",
+    "votes": 1,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "patron",
+        "best_entity": "PATRON",
+        "score": 0.866667,
+        "threshold": 0.85,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.333333,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "D.",
+    "frequency": 1,
+    "normalized": "d",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "comand",
+        "best_entity": "COMANDANTE",
+        "score": 0.166667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "cag.",
+    "frequency": 1,
+    "normalized": "cag",
+    "exact_match": false,
+    "classification": "GRAY_ZONE",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.822222,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.333333,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "rp.",
+    "frequency": 1,
+    "normalized": "rp",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cp",
+        "best_entity": "CAPITAN",
+        "score": 0.5,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cp",
+        "best_entity": "CAPITAN",
+        "score": 0.666667,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "t.",
+    "frequency": 2,
+    "normalized": "t",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pt",
+        "best_entity": "PATRON",
+        "score": 0.5,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "teniente",
+        "best_entity": "TENIENTE",
+        "score": 0.7375,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "nt.",
+    "frequency": 1,
+    "normalized": "nt",
+    "exact_match": false,
+    "classification": "ONE_VOTE",
+    "entity": "PATRON",
+    "voice": "pt",
+    "votes": 1,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pt",
+        "best_entity": "PATRON",
+        "score": 0.8,
+        "threshold": 0.75,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "pt",
+        "best_entity": "PATRON",
+        "score": 0.666667,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "teniente",
+        "best_entity": "TENIENTE",
+        "score": 0.2,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "ost.",
+    "frequency": 1,
+    "normalized": "ost",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "capt",
+        "best_entity": "CAPITAN",
+        "score": 0.4,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.616162,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "c. pat.",
+    "frequency": 1,
+    "normalized": "c pat",
+    "exact_match": false,
+    "classification": "ONE_VOTE",
+    "entity": "PATRON",
+    "voice": "pat",
+    "votes": 1,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "capt",
+        "best_entity": "CAPITAN",
+        "score": 0.6,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cp",
+        "best_entity": "CAPITAN",
+        "score": 0.82,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.666667,
+        "threshold": 0.63,
+        "voted": true,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "can.",
+    "frequency": 2,
+    "normalized": "can",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.866667,
+        "threshold": 0.75,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "comand",
+        "best_entity": "COMANDANTE",
+        "score": 0.85,
+        "threshold": 0.85,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "capitan",
+        "best_entity": "CAPITAN",
+        "score": 0.333333,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "nat.",
+    "frequency": 1,
+    "normalized": "nat",
+    "exact_match": false,
+    "classification": "ONE_VOTE",
+    "entity": "PATRON",
+    "voice": "pat",
+    "votes": 1,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.866667,
+        "threshold": 0.75,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.777778,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.333333,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "pt",
+    "frequency": 1,
+    "normalized": "pt",
+    "exact_match": true,
+    "classification": "EXACT",
+    "entity": "PATRON",
+    "voice": "pt",
+    "votes": 0,
+    "algorithm_scores": []
+  },
+  {
+    "term": "cad.",
+    "frequency": 1,
+    "normalized": "cad",
+    "exact_match": false,
+    "classification": "GRAY_ZONE",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.822222,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.333333,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "cd.",
+    "frequency": 1,
+    "normalized": "cd",
+    "exact_match": false,
+    "classification": "ONE_VOTE",
+    "entity": "CAPITAN",
+    "voice": "c",
+    "votes": 1,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cp",
+        "best_entity": "CAPITAN",
+        "score": 0.5,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "c",
+        "best_entity": "CAPITAN",
+        "score": 0.85,
+        "threshold": 0.85,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "pal.",
+    "frequency": 3,
+    "normalized": "pal",
+    "exact_match": false,
+    "classification": "GRAY_ZONE",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.822222,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.333333,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "teniente",
+    "frequency": 2,
+    "normalized": "teniente",
+    "exact_match": true,
+    "classification": "EXACT",
+    "entity": "TENIENTE",
+    "voice": "teniente",
+    "votes": 0,
+    "algorithm_scores": []
+  },
+  {
+    "term": "rat.",
+    "frequency": 3,
+    "normalized": "rat",
+    "exact_match": false,
+    "classification": "ONE_VOTE",
+    "entity": "PATRON",
+    "voice": "pat",
+    "votes": 1,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.866667,
+        "threshold": 0.75,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.777778,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.333333,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "cat.",
+    "frequency": 1,
+    "normalized": "cat",
+    "exact_match": false,
+    "classification": "CONSENSUS",
+    "entity": "CAPITAN",
+    "voice": "capt",
+    "votes": 2,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "capt",
+        "best_entity": "CAPITAN",
+        "score": 0.75,
+        "threshold": 0.75,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "capt",
+        "best_entity": "CAPITAN",
+        "score": 0.933333,
+        "threshold": 0.85,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.333333,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "Brabut",
+    "frequency": 1,
+    "normalized": "brabut",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "capt",
+        "best_entity": "CAPITAN",
+        "score": 0.333333,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "capt",
+        "best_entity": "CAPITAN",
+        "score": 0.611111,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "caplt.",
+    "frequency": 2,
+    "normalized": "caplt",
+    "exact_match": false,
+    "classification": "CONSENSUS",
+    "entity": "CAPITAN",
+    "voice": "capt",
+    "votes": 2,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "capt",
+        "best_entity": "CAPITAN",
+        "score": 0.8,
+        "threshold": 0.75,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "capt",
+        "best_entity": "CAPITAN",
+        "score": 0.953333,
+        "threshold": 0.85,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.5,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "pac.",
+    "frequency": 1,
+    "normalized": "pac",
+    "exact_match": false,
+    "classification": "GRAY_ZONE",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.822222,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.333333,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "patron",
+    "frequency": 4,
+    "normalized": "patron",
+    "exact_match": true,
+    "classification": "EXACT",
+    "entity": "PATRON",
+    "voice": "patron",
+    "votes": 0,
+    "algorithm_scores": []
+  },
+  {
+    "term": "cab.",
+    "frequency": 1,
+    "normalized": "cab",
+    "exact_match": false,
+    "classification": "GRAY_ZONE",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.822222,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.333333,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "capít.",
+    "frequency": 1,
+    "normalized": "capit",
+    "exact_match": false,
+    "classification": "CONSENSUS",
+    "entity": "CAPITAN",
+    "voice": "capt",
+    "votes": 3,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "capt",
+        "best_entity": "CAPITAN",
+        "score": 0.8,
+        "threshold": 0.75,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "capt",
+        "best_entity": "CAPITAN",
+        "score": 0.953333,
+        "threshold": 0.85,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "capitan",
+        "best_entity": "CAPITAN",
+        "score": 0.666667,
+        "threshold": 0.63,
+        "voted": true,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "patt.",
+    "frequency": 1,
+    "normalized": "patt",
+    "exact_match": false,
+    "classification": "CONSENSUS",
+    "entity": "PATRON",
+    "voice": "pat",
+    "votes": 3,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.75,
+        "threshold": 0.75,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.941667,
+        "threshold": 0.85,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.666667,
+        "threshold": 0.63,
+        "voted": true,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "comp.",
+    "frequency": 1,
+    "normalized": "comp",
+    "exact_match": false,
+    "classification": "GRAY_ZONE",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.65,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "comand",
+        "best_entity": "COMANDANTE",
+        "score": 0.825,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "comand",
+        "best_entity": "COMANDANTE",
+        "score": 0.333333,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "Mc.",
+    "frequency": 1,
+    "normalized": "mc",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "c",
+        "best_entity": "CAPITAN",
+        "score": 0.5,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "comand",
+        "best_entity": "COMANDANTE",
+        "score": 0.611111,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "csp.",
+    "frequency": 3,
+    "normalized": "csp",
+    "exact_match": false,
+    "classification": "GRAY_ZONE",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.8,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "pnt.",
+    "frequency": 1,
+    "normalized": "pnt",
+    "exact_match": false,
+    "classification": "GRAY_ZONE",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.8,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "teniente",
+        "best_entity": "TENIENTE",
+        "score": 0.166667,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "capa",
+    "frequency": 1,
+    "normalized": "capa",
+    "exact_match": false,
+    "classification": "CONSENSUS",
+    "entity": "CAPITAN",
+    "voice": "cap",
+    "votes": 3,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.75,
+        "threshold": 0.75,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.941667,
+        "threshold": 0.85,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.666667,
+        "threshold": 0.63,
+        "voted": true,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "teniente de navío",
+    "frequency": 5,
+    "normalized": "teniente de navio",
+    "exact_match": true,
+    "classification": "EXACT",
+    "entity": "TENIENTE",
+    "voice": "teniente de navio",
+    "votes": 0,
+    "algorithm_scores": []
+  },
+  {
+    "term": "la",
+    "frequency": 1,
+    "normalized": "la",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.333333,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.611111,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "carit.",
+    "frequency": 1,
+    "normalized": "carit",
+    "exact_match": false,
+    "classification": "GRAY_ZONE",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "capt",
+        "best_entity": "CAPITAN",
+        "score": 0.72,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "capitan",
+        "best_entity": "CAPITAN",
+        "score": 0.832381,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "capitan",
+        "best_entity": "CAPITAN",
+        "score": 0.25,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "su comandante",
+    "frequency": 1,
+    "normalized": "su comandante",
+    "exact_match": false,
+    "classification": "CONSENSUS",
+    "entity": "COMANDANTE",
+    "voice": "comandante",
+    "votes": 3,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "comandante",
+        "best_entity": "COMANDANTE",
+        "score": 0.769231,
+        "threshold": 0.75,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "comandante",
+        "best_entity": "COMANDANTE",
+        "score": 0.923077,
+        "threshold": 0.85,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "comandante",
+        "best_entity": "COMANDANTE",
+        "score": 0.8,
+        "threshold": 0.63,
+        "voted": true,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "S.",
+    "frequency": 1,
+    "normalized": "s",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "subordinado",
+        "best_entity": "SUBORDINADO",
+        "score": 0.090909,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "subordinado",
+        "best_entity": "SUBORDINADO",
+        "score": 0.727273,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "capitan",
+    "frequency": 1,
+    "normalized": "capitan",
+    "exact_match": true,
+    "classification": "EXACT",
+    "entity": "CAPITAN",
+    "voice": "capitan",
+    "votes": 0,
+    "algorithm_scores": []
+  },
+  {
+    "term": "teniente de náyvo",
+    "frequency": 1,
+    "normalized": "teniente de nayvo",
+    "exact_match": false,
+    "classification": "CONSENSUS",
+    "entity": "TENIENTE",
+    "voice": "teniente de navio",
+    "votes": 2,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "teniente de navio",
+        "best_entity": "TENIENTE",
+        "score": 0.882353,
+        "threshold": 0.75,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "teniente de navio",
+        "best_entity": "TENIENTE",
+        "score": 0.976471,
+        "threshold": 0.85,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "teniente de navio",
+        "best_entity": "TENIENTE",
+        "score": 0.571429,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "teniente de marino",
+    "frequency": 1,
+    "normalized": "teniente de marino",
+    "exact_match": false,
+    "classification": "CONSENSUS",
+    "entity": "TENIENTE",
+    "voice": "teniente de navio",
+    "votes": 2,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "teniente de navio",
+        "best_entity": "TENIENTE",
+        "score": 0.833333,
+        "threshold": 0.75,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "teniente de navio",
+        "best_entity": "TENIENTE",
+        "score": 0.953513,
+        "threshold": 0.85,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "teniente de navio",
+        "best_entity": "TENIENTE",
+        "score": 0.411765,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "cupit.",
+    "frequency": 1,
+    "normalized": "cupit",
+    "exact_match": false,
+    "classification": "GRAY_ZONE",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "capt",
+        "best_entity": "CAPITAN",
+        "score": 0.6,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cp",
+        "best_entity": "CAPITAN",
+        "score": 0.82,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "capitan",
+        "best_entity": "CAPITAN",
+        "score": 0.25,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "cip.",
+    "frequency": 1,
+    "normalized": "cip",
+    "exact_match": false,
+    "classification": "GRAY_ZONE",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.8,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "Fw.",
+    "frequency": 1,
+    "normalized": "fw",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "cao.",
+    "frequency": 1,
+    "normalized": "cao",
+    "exact_match": false,
+    "classification": "GRAY_ZONE",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.822222,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.333333,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "pan.",
+    "frequency": 1,
+    "normalized": "pan",
+    "exact_match": false,
+    "classification": "GRAY_ZONE",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.822222,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.333333,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "troton",
+    "frequency": 1,
+    "normalized": "troton",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "piloto",
+        "best_entity": "PILOTO",
+        "score": 0.333333,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "patron",
+        "best_entity": "PATRON",
+        "score": 0.777778,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "patron",
+        "best_entity": "PATRON",
+        "score": 0.428571,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "c.p.",
+    "frequency": 1,
+    "normalized": "c p",
+    "exact_match": false,
+    "classification": "ONE_VOTE",
+    "entity": "CAPITAN",
+    "voice": "cp",
+    "votes": 1,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.8,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "cp",
+        "best_entity": "CAPITAN",
+        "score": 1.0,
+        "threshold": 0.63,
+        "voted": true,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "at.",
+    "frequency": 1,
+    "normalized": "at",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "patron",
+        "best_entity": "PATRON",
+        "score": 0.777778,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.5,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "vat.",
+    "frequency": 1,
+    "normalized": "vat",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.777778,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.333333,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "e.p.",
+    "frequency": 1,
+    "normalized": "e p",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.533333,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "teniente de navio",
+        "best_entity": "TENIENTE",
+        "score": 0.594771,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "subcomandante",
+    "frequency": 1,
+    "normalized": "subcomandante",
+    "exact_match": false,
+    "classification": "CONSENSUS",
+    "entity": "COMANDANTE",
+    "voice": "comandante",
+    "votes": 3,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "comandante",
+        "best_entity": "COMANDANTE",
+        "score": 0.769231,
+        "threshold": 0.75,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "comandante",
+        "best_entity": "COMANDANTE",
+        "score": 0.923077,
+        "threshold": 0.85,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "comandante",
+        "best_entity": "COMANDANTE",
+        "score": 0.727273,
+        "threshold": 0.63,
+        "voted": true,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "null",
+    "frequency": 1,
+    "normalized": "null",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "piloto",
+        "best_entity": "PILOTO",
+        "score": 0.166667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "piloto",
+        "best_entity": "PILOTO",
+        "score": 0.472222,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "pr.",
+    "frequency": 1,
+    "normalized": "pr",
+    "exact_match": false,
+    "classification": "ONE_VOTE",
+    "entity": "PATRON",
+    "voice": "p",
+    "votes": 1,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pt",
+        "best_entity": "PATRON",
+        "score": 0.5,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "p",
+        "best_entity": "PATRON",
+        "score": 0.85,
+        "threshold": 0.85,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.1,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "pot.",
+    "frequency": 4,
+    "normalized": "pot",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.866667,
+        "threshold": 0.75,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "piloto",
+        "best_entity": "PILOTO",
+        "score": 0.85,
+        "threshold": 0.85,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "piloto",
+        "best_entity": "PILOTO",
+        "score": 0.166667,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "o.p.",
+    "frequency": 4,
+    "normalized": "o p",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.333333,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.555556,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.1,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "ospit.",
+    "frequency": 1,
+    "normalized": "ospit",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "capitan",
+        "best_entity": "CAPITAN",
+        "score": 0.428571,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "piloto",
+        "best_entity": "PILOTO",
+        "score": 0.7,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "capitan",
+        "best_entity": "CAPITAN",
+        "score": 0.25,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "ptt.",
+    "frequency": 1,
+    "normalized": "ptt",
+    "exact_match": false,
+    "classification": "ONE_VOTE",
+    "entity": "PATRON",
+    "voice": "pt",
+    "votes": 1,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "pt",
+        "best_entity": "PATRON",
+        "score": 0.911111,
+        "threshold": 0.85,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "pt",
+        "best_entity": "PATRON",
+        "score": 0.5,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "il.",
+    "frequency": 1,
+    "normalized": "il",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "piloto",
+        "best_entity": "PILOTO",
+        "score": 0.333333,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "piloto",
+        "best_entity": "PILOTO",
+        "score": 0.777778,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "piloto",
+        "best_entity": "PILOTO",
+        "score": 0.2,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "cpi.",
+    "frequency": 1,
+    "normalized": "cpi",
+    "exact_match": false,
+    "classification": "ONE_VOTE",
+    "entity": "CAPITAN",
+    "voice": "cp",
+    "votes": 1,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cp",
+        "best_entity": "CAPITAN",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cp",
+        "best_entity": "CAPITAN",
+        "score": 0.911111,
+        "threshold": 0.85,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "cp",
+        "best_entity": "CAPITAN",
+        "score": 0.5,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "pet.",
+    "frequency": 4,
+    "normalized": "pet",
+    "exact_match": false,
+    "classification": "GRAY_ZONE",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.8,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.090909,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "p.t.",
+    "frequency": 1,
+    "normalized": "p t",
+    "exact_match": false,
+    "classification": "ONE_VOTE",
+    "entity": "PATRON",
+    "voice": "pt",
+    "votes": 1,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.8,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "pt",
+        "best_entity": "PATRON",
+        "score": 1.0,
+        "threshold": 0.63,
+        "voted": true,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "cepit.",
+    "frequency": 1,
+    "normalized": "cepit",
+    "exact_match": false,
+    "classification": "GRAY_ZONE",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "capt",
+        "best_entity": "CAPITAN",
+        "score": 0.6,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cp",
+        "best_entity": "CAPITAN",
+        "score": 0.82,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "capitan",
+        "best_entity": "CAPITAN",
+        "score": 0.25,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "com.",
+    "frequency": 1,
+    "normalized": "com",
+    "exact_match": false,
+    "classification": "ONE_VOTE",
+    "entity": "COMANDANTE",
+    "voice": "comand",
+    "votes": 1,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.533333,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "comand",
+        "best_entity": "COMANDANTE",
+        "score": 0.883333,
+        "threshold": 0.85,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "comand",
+        "best_entity": "COMANDANTE",
+        "score": 0.4,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "pel.",
+    "frequency": 2,
+    "normalized": "pel",
+    "exact_match": false,
+    "classification": "GRAY_ZONE",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "piloto",
+        "best_entity": "PILOTO",
+        "score": 0.333333,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "p",
+        "best_entity": "PATRON",
+        "score": 0.8,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "comand.",
+    "frequency": 1,
+    "normalized": "comand",
+    "exact_match": true,
+    "classification": "EXACT",
+    "entity": "COMANDANTE",
+    "voice": "comand",
+    "votes": 0,
+    "algorithm_scores": []
+  },
+  {
+    "term": "pes.",
+    "frequency": 1,
+    "normalized": "pes",
+    "exact_match": false,
+    "classification": "GRAY_ZONE",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.333333,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "p",
+        "best_entity": "PATRON",
+        "score": 0.8,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "pat",
+    "frequency": 4,
+    "normalized": "pat",
+    "exact_match": true,
+    "classification": "EXACT",
+    "entity": "PATRON",
+    "voice": "pat",
+    "votes": 0,
+    "algorithm_scores": []
+  },
+  {
+    "term": "pst.",
+    "frequency": 1,
+    "normalized": "pst",
+    "exact_match": false,
+    "classification": "GRAY_ZONE",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.8,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "pp.",
+    "frequency": 1,
+    "normalized": "pp",
+    "exact_match": false,
+    "classification": "ONE_VOTE",
+    "entity": "PATRON",
+    "voice": "p",
+    "votes": 1,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cp",
+        "best_entity": "CAPITAN",
+        "score": 0.5,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "p",
+        "best_entity": "PATRON",
+        "score": 0.85,
+        "threshold": 0.85,
+        "voted": true,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "p.1.",
+    "frequency": 1,
+    "normalized": "p 1",
+    "exact_match": false,
+    "classification": "GRAY_ZONE",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.333333,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "p",
+        "best_entity": "PATRON",
+        "score": 0.8,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "erp.",
+    "frequency": 1,
+    "normalized": "erp",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.533333,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.555556,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "ap.",
+    "frequency": 1,
+    "normalized": "ap",
+    "exact_match": false,
+    "classification": "GRAY_ZONE",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "capt",
+        "best_entity": "CAPITAN",
+        "score": 0.833333,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.5,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "map.",
+    "frequency": 1,
+    "normalized": "map",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.777778,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.333333,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "p.s.",
+    "frequency": 1,
+    "normalized": "p s",
+    "exact_match": false,
+    "classification": "GRAY_ZONE",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "pat",
+        "best_entity": "PATRON",
+        "score": 0.333333,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "p",
+        "best_entity": "PATRON",
+        "score": 0.8,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": true
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "propietario",
+        "best_entity": "PROPIETARIO",
+        "score": 0.0,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "bap.",
+    "frequency": 1,
+    "normalized": "bap",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.666667,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.777778,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.333333,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  },
+  {
+    "term": "da.",
+    "frequency": 1,
+    "normalized": "da",
+    "exact_match": false,
+    "classification": "REJECTED",
+    "entity": "",
+    "voice": "",
+    "votes": 0,
+    "algorithm_scores": [
+      {
+        "algorithm": "levenshtein_ocr",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.333333,
+        "threshold": 0.75,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "jaro_winkler",
+        "best_voice": "cap",
+        "best_entity": "CAPITAN",
+        "score": 0.611111,
+        "threshold": 0.85,
+        "voted": false,
+        "in_gray_zone": false
+      },
+      {
+        "algorithm": "ngram_2",
+        "best_voice": "comandante",
+        "best_entity": "COMANDANTE",
+        "score": 0.125,
+        "threshold": 0.63,
+        "voted": false,
+        "in_gray_zone": false
+      }
+    ]
+  }
+]

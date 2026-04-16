@@ -1,0 +1,579 @@
+{
+  "timestamp": "2026-04-14T16:06:15.273814",
+  "total_entries": 10815,
+  "algorithms": {
+    "levenshtein_ocr": {
+      "port": {
+        "known_count": 5212,
+        "unique_terms": 2266,
+        "total_citations": 10801,
+        "results_count": 2266,
+        "coverage": 68.83,
+        "classification": {
+          "EXACT": 196,
+          "CONSENSUS": 693,
+          "REJECTED": 808,
+          "GRAY_ZONE": 569
+        }
+      },
+      "ship_type": {
+        "known_count": 229,
+        "unique_terms": 382,
+        "total_citations": 10798,
+        "results_count": 382,
+        "coverage": 95.18,
+        "classification": {
+          "EXACT": 54,
+          "REJECTED": 142,
+          "GRAY_ZONE": 76,
+          "CONSENSUS": 110
+        }
+      },
+      "flag": {
+        "known_count": 354,
+        "unique_terms": 361,
+        "total_citations": 5721,
+        "results_count": 361,
+        "coverage": 63.8,
+        "classification": {
+          "EXACT": 70,
+          "GRAY_ZONE": 79,
+          "CONSENSUS": 76,
+          "REJECTED": 136
+        }
+      },
+      "master_role": {
+        "known_count": 18,
+        "unique_terms": 115,
+        "total_citations": 10655,
+        "results_count": 115,
+        "coverage": 98.44,
+        "classification": {
+          "EXACT": 18,
+          "GRAY_ZONE": 32,
+          "CONSENSUS": 18,
+          "REJECTED": 47
+        }
+      }
+    },
+    "levenshtein_ratio": {
+      "port": {
+        "known_count": 5212,
+        "unique_terms": 2266,
+        "total_citations": 10801,
+        "results_count": 2266,
+        "coverage": 68.76,
+        "classification": {
+          "EXACT": 196,
+          "CONSENSUS": 686,
+          "REJECTED": 836,
+          "GRAY_ZONE": 548
+        }
+      },
+      "ship_type": {
+        "known_count": 229,
+        "unique_terms": 382,
+        "total_citations": 10798,
+        "results_count": 382,
+        "coverage": 94.8,
+        "classification": {
+          "EXACT": 54,
+          "REJECTED": 167,
+          "GRAY_ZONE": 66,
+          "CONSENSUS": 95
+        }
+      },
+      "flag": {
+        "known_count": 354,
+        "unique_terms": 361,
+        "total_citations": 5721,
+        "results_count": 361,
+        "coverage": 63.31,
+        "classification": {
+          "EXACT": 70,
+          "GRAY_ZONE": 74,
+          "CONSENSUS": 67,
+          "REJECTED": 150
+        }
+      },
+      "master_role": {
+        "known_count": 18,
+        "unique_terms": 115,
+        "total_citations": 10655,
+        "results_count": 115,
+        "coverage": 98.0,
+        "classification": {
+          "EXACT": 18,
+          "GRAY_ZONE": 35,
+          "REJECTED": 51,
+          "CONSENSUS": 11
+        }
+      }
+    },
+    "jaro_winkler": {
+      "port": {
+        "known_count": 5212,
+        "unique_terms": 2266,
+        "total_citations": 10801,
+        "results_count": 2266,
+        "coverage": 81.21,
+        "classification": {
+          "EXACT": 196,
+          "CONSENSUS": 1069,
+          "GRAY_ZONE": 896,
+          "REJECTED": 105
+        }
+      },
+      "ship_type": {
+        "known_count": 229,
+        "unique_terms": 382,
+        "total_citations": 10798,
+        "results_count": 382,
+        "coverage": 95.7,
+        "classification": {
+          "EXACT": 54,
+          "REJECTED": 99,
+          "CONSENSUS": 109,
+          "GRAY_ZONE": 120
+        }
+      },
+      "flag": {
+        "known_count": 354,
+        "unique_terms": 361,
+        "total_citations": 5721,
+        "results_count": 361,
+        "coverage": 62.93,
+        "classification": {
+          "EXACT": 70,
+          "CONSENSUS": 80,
+          "GRAY_ZONE": 133,
+          "REJECTED": 78
+        }
+      },
+      "master_role": {
+        "known_count": 18,
+        "unique_terms": 115,
+        "total_citations": 10655,
+        "results_count": 115,
+        "coverage": 98.03,
+        "classification": {
+          "EXACT": 18,
+          "REJECTED": 41,
+          "CONSENSUS": 14,
+          "GRAY_ZONE": 42
+        }
+      }
+    },
+    "ngram_2": {
+      "port": {
+        "known_count": 5212,
+        "unique_terms": 2266,
+        "total_citations": 10801,
+        "results_count": 2266,
+        "coverage": 74.36,
+        "classification": {
+          "EXACT": 196,
+          "CONSENSUS": 983,
+          "REJECTED": 559,
+          "GRAY_ZONE": 528
+        }
+      },
+      "ship_type": {
+        "known_count": 229,
+        "unique_terms": 382,
+        "total_citations": 10798,
+        "results_count": 382,
+        "coverage": 95.13,
+        "classification": {
+          "EXACT": 54,
+          "REJECTED": 195,
+          "CONSENSUS": 104,
+          "GRAY_ZONE": 29
+        }
+      },
+      "flag": {
+        "known_count": 354,
+        "unique_terms": 361,
+        "total_citations": 5721,
+        "results_count": 361,
+        "coverage": 63.05,
+        "classification": {
+          "EXACT": 70,
+          "CONSENSUS": 81,
+          "REJECTED": 176,
+          "GRAY_ZONE": 34
+        }
+      },
+      "master_role": {
+        "known_count": 18,
+        "unique_terms": 115,
+        "total_citations": 10655,
+        "results_count": 115,
+        "coverage": 98.05,
+        "classification": {
+          "EXACT": 18,
+          "REJECTED": 77,
+          "CONSENSUS": 16,
+          "GRAY_ZONE": 4
+        }
+      }
+    },
+    "ngram_3": {
+      "port": {
+        "known_count": 5212,
+        "unique_terms": 2266,
+        "total_citations": 10801,
+        "results_count": 2266,
+        "coverage": 63.11,
+        "classification": {
+          "EXACT": 196,
+          "CONSENSUS": 459,
+          "REJECTED": 1279,
+          "GRAY_ZONE": 332
+        }
+      },
+      "ship_type": {
+        "known_count": 229,
+        "unique_terms": 382,
+        "total_citations": 10798,
+        "results_count": 382,
+        "coverage": 93.18,
+        "classification": {
+          "EXACT": 54,
+          "REJECTED": 273,
+          "CONSENSUS": 44,
+          "GRAY_ZONE": 11
+        }
+      },
+      "flag": {
+        "known_count": 354,
+        "unique_terms": 361,
+        "total_citations": 5721,
+        "results_count": 361,
+        "coverage": 61.93,
+        "classification": {
+          "EXACT": 70,
+          "REJECTED": 246,
+          "CONSENSUS": 39,
+          "GRAY_ZONE": 6
+        }
+      },
+      "master_role": {
+        "known_count": 18,
+        "unique_terms": 115,
+        "total_citations": 10655,
+        "results_count": 115,
+        "coverage": 97.99,
+        "classification": {
+          "EXACT": 18,
+          "REJECTED": 85,
+          "CONSENSUS": 11,
+          "GRAY_ZONE": 1
+        }
+      }
+    },
+    "ngram_4": {
+      "port": {
+        "known_count": 5212,
+        "unique_terms": 2266,
+        "total_citations": 10801,
+        "results_count": 2266,
+        "coverage": 57.56,
+        "classification": {
+          "EXACT": 196,
+          "REJECTED": 1605,
+          "CONSENSUS": 260,
+          "GRAY_ZONE": 205
+        }
+      },
+      "ship_type": {
+        "known_count": 229,
+        "unique_terms": 382,
+        "total_citations": 10798,
+        "results_count": 382,
+        "coverage": 92.96,
+        "classification": {
+          "EXACT": 54,
+          "REJECTED": 294,
+          "CONSENSUS": 27,
+          "GRAY_ZONE": 7
+        }
+      },
+      "flag": {
+        "known_count": 354,
+        "unique_terms": 361,
+        "total_citations": 5721,
+        "results_count": 361,
+        "coverage": 61.62,
+        "classification": {
+          "EXACT": 70,
+          "REJECTED": 264,
+          "CONSENSUS": 24,
+          "GRAY_ZONE": 3
+        }
+      },
+      "master_role": {
+        "known_count": 18,
+        "unique_terms": 115,
+        "total_citations": 10655,
+        "results_count": 115,
+        "coverage": 97.9,
+        "classification": {
+          "EXACT": 18,
+          "REJECTED": 90,
+          "CONSENSUS": 6,
+          "GRAY_ZONE": 1
+        }
+      }
+    },
+    "phonetic_dm": {
+      "port": {
+        "known_count": 5212,
+        "unique_terms": 2266,
+        "total_citations": 10801,
+        "results_count": 2266,
+        "coverage": 99.63,
+        "classification": {
+          "EXACT": 196,
+          "CONSENSUS": 2066,
+          "REJECTED": 4
+        }
+      },
+      "ship_type": {
+        "known_count": 229,
+        "unique_terms": 382,
+        "total_citations": 10798,
+        "results_count": 382,
+        "coverage": 99.68,
+        "classification": {
+          "EXACT": 54,
+          "CONSENSUS": 322,
+          "GRAY_ZONE": 5,
+          "REJECTED": 1
+        }
+      },
+      "flag": {
+        "known_count": 354,
+        "unique_terms": 361,
+        "total_citations": 5721,
+        "results_count": 361,
+        "coverage": 71.67,
+        "classification": {
+          "EXACT": 70,
+          "CONSENSUS": 289,
+          "REJECTED": 2
+        }
+      },
+      "master_role": {
+        "known_count": 18,
+        "unique_terms": 115,
+        "total_citations": 10655,
+        "results_count": 115,
+        "coverage": 99.56,
+        "classification": {
+          "EXACT": 18,
+          "CONSENSUS": 81,
+          "REJECTED": 8,
+          "GRAY_ZONE": 8
+        }
+      }
+    },
+    "soundex": {
+      "port": {
+        "known_count": 5212,
+        "unique_terms": 2266,
+        "total_citations": 10801,
+        "results_count": 2266,
+        "coverage": 99.62,
+        "classification": {
+          "EXACT": 196,
+          "CONSENSUS": 2065,
+          "REJECTED": 5
+        }
+      },
+      "ship_type": {
+        "known_count": 229,
+        "unique_terms": 382,
+        "total_citations": 10798,
+        "results_count": 382,
+        "coverage": 99.12,
+        "classification": {
+          "EXACT": 54,
+          "CONSENSUS": 296,
+          "REJECTED": 32
+        }
+      },
+      "flag": {
+        "known_count": 354,
+        "unique_terms": 361,
+        "total_citations": 5721,
+        "results_count": 361,
+        "coverage": 71.56,
+        "classification": {
+          "EXACT": 70,
+          "CONSENSUS": 283,
+          "REJECTED": 8
+        }
+      },
+      "master_role": {
+        "known_count": 18,
+        "unique_terms": 115,
+        "total_citations": 10655,
+        "results_count": 115,
+        "coverage": 98.9,
+        "classification": {
+          "EXACT": 18,
+          "REJECTED": 36,
+          "CONSENSUS": 61
+        }
+      }
+    },
+    "semantica": {
+      "port": {
+        "known_count": 5212,
+        "unique_terms": 2266,
+        "total_citations": 10801,
+        "results_count": 2266,
+        "coverage": 61.18,
+        "classification": {
+          "EXACT": 196,
+          "REJECTED": 1831,
+          "CONSENSUS": 237,
+          "GRAY_ZONE": 2
+        }
+      },
+      "ship_type": {
+        "known_count": 229,
+        "unique_terms": 382,
+        "total_citations": 10798,
+        "results_count": 382,
+        "coverage": 93.07,
+        "classification": {
+          "EXACT": 54,
+          "REJECTED": 292,
+          "CONSENSUS": 36
+        }
+      },
+      "flag": {
+        "known_count": 354,
+        "unique_terms": 361,
+        "total_citations": 5721,
+        "results_count": 361,
+        "coverage": 61.07,
+        "classification": {
+          "EXACT": 70,
+          "REJECTED": 281,
+          "CONSENSUS": 10
+        }
+      },
+      "master_role": {
+        "known_count": 18,
+        "unique_terms": 115,
+        "total_citations": 10655,
+        "results_count": 115,
+        "coverage": 97.96,
+        "classification": {
+          "EXACT": 18,
+          "REJECTED": 87,
+          "CONSENSUS": 10
+        }
+      }
+    },
+    "text2vec": {
+      "port": {
+        "known_count": 5212,
+        "unique_terms": 2266,
+        "total_citations": 10801,
+        "results_count": 2266,
+        "coverage": 71.22,
+        "classification": {
+          "EXACT": 196,
+          "CONSENSUS": 775,
+          "REJECTED": 741,
+          "GRAY_ZONE": 554
+        }
+      },
+      "ship_type": {
+        "known_count": 229,
+        "unique_terms": 382,
+        "total_citations": 10798,
+        "results_count": 382,
+        "coverage": 93.37,
+        "classification": {
+          "EXACT": 54,
+          "REJECTED": 213,
+          "CONSENSUS": 54,
+          "GRAY_ZONE": 61
+        }
+      },
+      "flag": {
+        "known_count": 354,
+        "unique_terms": 361,
+        "total_citations": 5721,
+        "results_count": 361,
+        "coverage": 62.05,
+        "classification": {
+          "EXACT": 70,
+          "REJECTED": 203,
+          "GRAY_ZONE": 42,
+          "CONSENSUS": 46
+        }
+      },
+      "master_role": {
+        "known_count": 18,
+        "unique_terms": 115,
+        "total_citations": 10655,
+        "results_count": 115,
+        "coverage": 98.0,
+        "classification": {
+          "EXACT": 18,
+          "REJECTED": 82,
+          "CONSENSUS": 12,
+          "GRAY_ZONE": 3
+        }
+      }
+    },
+    "semantic_model": {
+      "port": {
+        "error": "semantic_model requiere 'text2vec' o 'sentence-transformers'.\nInstala con: pip install text2vec\no: pip install sentence-transformers"
+      },
+      "ship_type": {
+        "error": "semantic_model requiere 'text2vec' o 'sentence-transformers'.\nInstala con: pip install text2vec\no: pip install sentence-transformers"
+      },
+      "flag": {
+        "error": "semantic_model requiere 'text2vec' o 'sentence-transformers'.\nInstala con: pip install text2vec\no: pip install sentence-transformers"
+      },
+      "master_role": {
+        "error": "semantic_model requiere 'text2vec' o 'sentence-transformers'.\nInstala con: pip install text2vec\no: pip install sentence-transformers"
+      }
+    },
+    "fasttext": {
+      "port": {
+        "error": "fasttext no está instalado.\npip install fasttext"
+      },
+      "ship_type": {
+        "error": "fasttext no está instalado.\npip install fasttext"
+      },
+      "flag": {
+        "error": "fasttext no está instalado.\npip install fasttext"
+      },
+      "master_role": {
+        "error": "fasttext no está instalado.\npip install fasttext"
+      }
+    },
+    "byt5": {
+      "port": {
+        "error": "Got unsupported ScalarType BFloat16"
+      },
+      "ship_type": {
+        "error": "Got unsupported ScalarType BFloat16"
+      },
+      "flag": {
+        "error": "Got unsupported ScalarType BFloat16"
+      },
+      "master_role": {
+        "error": "Got unsupported ScalarType BFloat16"
+      }
+    }
+  }
+}

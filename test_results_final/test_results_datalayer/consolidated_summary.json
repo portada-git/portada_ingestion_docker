@@ -1,0 +1,73 @@
+{
+  "timestamp": "2026-04-14T04:00:00",
+  "total_entries": 10815,
+  "entities": [
+    {
+      "entity": "port",
+      "known_count": 5212,
+      "citations_count": 10815,
+      "unique_terms": 2267,
+      "total_citations": 10802,
+      "results_count": 2267,
+      "coverage": 65.56,
+      "classification": {
+        "EXACT": 196,
+        "CONSENSUS": 533,
+        "ONE_VOTE": 785,
+        "REJECTED": 297,
+        "GRAY_ZONE": 413,
+        "WEAK": 43
+      }
+    },
+    {
+      "entity": "ship_type",
+      "known_count": 229,
+      "citations_count": 10815,
+      "unique_terms": 382,
+      "total_citations": 10798,
+      "results_count": 382,
+      "coverage": 94.31,
+      "classification": {
+        "EXACT": 54,
+        "REJECTED": 111,
+        "ONE_VOTE": 83,
+        "CONSENSUS": 77,
+        "GRAY_ZONE": 50,
+        "WEAK": 7
+      }
+    },
+    {
+      "entity": "flag",
+      "known_count": 354,
+      "citations_count": 10815,
+      "unique_terms": 362,
+      "total_citations": 5799,
+      "results_count": 362,
+      "coverage": 62.39,
+      "classification": {
+        "EXACT": 70,
+        "ONE_VOTE": 56,
+        "CONSENSUS": 63,
+        "REJECTED": 88,
+        "GRAY_ZONE": 83,
+        "WEAK": 2
+      }
+    },
+    {
+      "entity": "master_role",
+      "known_count": 18,
+      "citations_count": 10815,
+      "unique_terms": 116,
+      "total_citations": 10656,
+      "results_count": 116,
+      "coverage": 97.99,
+      "classification": {
+        "EXACT": 18,
+        "REJECTED": 40,
+        "ONE_VOTE": 19,
+        "CONSENSUS": 11,
+        "GRAY_ZONE": 28
+      }
+    }
+  ]
+}
