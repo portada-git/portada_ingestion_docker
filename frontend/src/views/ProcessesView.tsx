@@ -24,7 +24,7 @@ const ProcessesView: React.FC = () => {
       icon: Sparkles,
       color: 'green',
       enabled: true,
-      path: '/cleaning',
+      path: '/similarity-results',
     },
     {
       id: 'disambiguation',

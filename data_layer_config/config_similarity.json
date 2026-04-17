@@ -1,116 +1,92 @@
 {
-  "version": 2,
+  "version": 1,
   "normalize": true,
   "consensus": {
     "min_votes": 2,
-    "require_levenshtein_ocr": true
+    "require_levenshtein_ocr": false
   },
   "algorithms": {
-    "levenshtein_ocr": {
+    "levenshtein_ratio": {
       "enabled": true,
       "threshold": 0.75,
-      "gray_zone": [
-        0.71,
-        0.749
-      ],
-      "params": {
-        "confusion_cost": 0.4
-      }
+      "gray_zone": [0.65, 0.75],
+      "params": {}
     },
-    "levenshtein_ratio": {
+    "levenshtein_ocr": {
       "enabled": false,
       "threshold": 0.75,
-      "gray_zone": [
-        0.71,
-        0.749
-      ],
-      "params": {}
+      "gray_zone": [0.65, 0.75],
+      "params": { "confusion_cost": 0.4 }
     },
     "jaro_winkler": {
       "enabled": true,
-      "threshold": 0.85,
-      "gray_zone": [
-        0.8,
-        0.849
-      ],
-      "params": {
-        "prefix_weight": 0.1
-      }
+      "threshold": 0.88,
+      "gray_zone": [0.78, 0.88],
+      "params": {}
     },
     "ngram_2": {
-      "enabled": true,
-      "threshold": 0.63,
-      "gray_zone": [
-        0.6,
-        0.629
-      ],
-      "params": {
-        "n": 2
-      }
+      "enabled": false,
+      "threshold": 0.5,
+      "gray_zone": [0.4, 0.5],
+      "params": {}
     },
     "ngram_3": {
-      "enabled": false,
-      "threshold": 0.55,
-      "gray_zone": [
-        0.52,
-        0.549
-      ],
-      "params": {
-        "n": 3
-      }
+      "enabled": true,
+      "threshold": 0.5,
+      "gray_zone": [0.4, 0.5],
+      "params": {}
     },
     "ngram_4": {
       "enabled": false,
-      "threshold": 0.5,
-      "gray_zone": [
-        0.46,
-        0.499
-      ],
-      "params": {
-        "n": 4
-      }
+      "threshold": 0.45,
+      "gray_zone": [0.35, 0.45],
+      "params": {}
     },
     "phonetic_dm": {
       "enabled": false,
-      "threshold": 0.85,
-      "gray_zone": [
-        0.8,
-        0.849
-      ],
+      "threshold": 0.5,
+      "gray_zone": [0.3, 0.5],
       "params": {}
     },
     "soundex": {
       "enabled": false,
-      "threshold": 0.9,
-      "gray_zone": [
-        0.8,
-        0.899
-      ],
+      "threshold": 0.5,
+      "gray_zone": [0.3, 0.5],
       "params": {}
     },
     "semantica": {
-      "enabled": false,
-      "threshold": 0.72,
-      "gray_zone": [
-        0.65,
-        0.719
-      ],
-      "params": {
-        "mode": "token_jaccard"
-      }
+      "enabled": true,
+      "threshold": 0.5,
+      "gray_zone": [0.35, 0.5],
+      "params": {}
     },
     "text2vec": {
       "enabled": false,
-      "threshold": 0.78,
-      "gray_zone": [
-        0.72,
-        0.779
-      ],
+      "threshold": 0.6,
+      "gray_zone": [0.5, 0.6],
+      "params": { "n": 3 }
+    },
+    "fasttext": {
+      "enabled": false,
+      "threshold": 0.8,
+      "gray_zone": [0.7, 0.8],
+      "params": { "model_path": "models/fasttext/cc.es.300.bin" }
+    },
+    "byt5": {
+      "enabled": false,
+      "threshold": 0.8,
+      "gray_zone": [0.7, 0.8],
+      "params": { "model": "google/byt5-small", "device": "cpu" }
+    },
+    "semantic_model": {
+      "enabled": false,
+      "threshold": 0.8,
+      "gray_zone": [0.7, 0.8],
       "params": {
-        "mode": "char_cosine",
-        "n": 3
+        "backend": "auto",
+        "model": "shibing624/text2vec-base-multilingual",
+        "device": "cpu"
       }
     }
-  },
-  "updated_at": "2026-03-04T13:33:10.382573+00:00"
+  }
 }

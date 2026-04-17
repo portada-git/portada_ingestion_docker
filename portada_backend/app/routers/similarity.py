@@ -1,163 +1,175 @@
-from typing import Optional
+"""
+Router para servir resultados de análisis de similitud al frontend
+"""
 
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import FileResponse
+from pathlib import Path
+import json
+from typing import Dict, List, Optional
 from pydantic import BaseModel
-import pandas as pd
-import io
 
-from ..services.similarity import SimilarityService
+router = APIRouter(prefix="/api/similarity", tags=["similarity"])
 
-router = APIRouter()
+RESULTS_DIR = Path(__file__).parent.parent.parent / "similarity_results"
 
+# ═══════════════════════════════════════════════════════════════════════════
+# MODELOS
+# ═══════════════════════════════════════════════════════════════════════════
 
-class SimilarityRunRequest(BaseModel):
-    entity: Optional[str] = None
-    citation_field: Optional[str] = None
-    known_entity: Optional[str] = None
-    use_clean_entries: bool = True
-    publication_name: Optional[str] = None
-    user: Optional[str] = None
-    y: Optional[int] = None
-    m: Optional[int] = None
-    d: Optional[int] = None
-    edition: Optional[str] = None
-    force_refit: bool = False
+class EntitySummary(BaseModel):
+    name: str
+    status: str
+    known_voices: int
+    unique_terms: int
+    coverage: float
+    classification: Dict[str, int]
 
+class Summary(BaseModel):
+    timestamp: str
+    total_entries: int
+    entities_summary: List[EntitySummary]
 
-@router.get("/config")
-async def get_similarity_config():
-    try:
-        service = SimilarityService.get_instance()
-        return service.get_config()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+class MatchResult(BaseModel):
+    term: str
+    frequency: int
+    classification: str
+    canonical_entity: Optional[str] = None
+    similarity_score: Optional[float] = None
+    algorithms_votes: Optional[Dict[str, any]] = None
 
+class EntityDetail(BaseModel):
+    name: str
+    status: str
+    error: Optional[str] = None
+    known_voices: int
+    unique_terms: int
+    total_citations: int
+    coverage: float
+    classification: Dict[str, int]
+    top_matches: List[MatchResult]
+    gray_zone_cases: List[MatchResult]
+    rejected_cases: List[MatchResult]
 
-@router.post("/config")
-async def save_similarity_config(config: dict):
-    try:
-        service = SimilarityService.get_instance()
-        return service.save_config(config)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+# ═══════════════════════════════════════════════════════════════════════════
+# ENDPOINTS
+# ═══════════════════════════════════════════════════════════════════════════
 
+@router.get("/summary", response_model=Summary)
+async def get_summary():
+    """
+    Obtiene el resumen del análisis de similitud
+    """
+    summary_file = RESULTS_DIR / "summary.json"
+    
+    if not summary_file.exists():
+        raise HTTPException(
+            status_code=404,
+            detail="No hay resultados disponibles. Ejecuta el proceso de análisis primero."
+        )
+    
+    with open(summary_file, encoding="utf-8") as f:
+        data = json.load(f)
+    
+    return data
 
-@router.get("/status")
-async def get_similarity_status():
-    try:
-        service = SimilarityService.get_instance()
-        return service.status()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
+@router.get("/entity/{entity_name}", response_model=EntityDetail)
+async def get_entity_detail(entity_name: str):
+    """
+    Obtiene el detalle completo de una entidad específica
+    """
+    entity_file = RESULTS_DIR / f"entity_{entity_name}.json"
+    
+    if not entity_file.exists():
+        raise HTTPException(
+            status_code=404,
+            detail=f"No hay resultados para la entidad '{entity_name}'"
+        )
+    
+    with open(entity_file, encoding="utf-8") as f:
+        data = json.load(f)
+    
+    return data
 
 @router.get("/entities")
-async def get_similarity_entities():
-    try:
-        service = SimilarityService.get_instance()
-        return {"entities": service.get_entities()}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/run")
-async def run_similarity(payload: SimilarityRunRequest):
-    try:
-        service = SimilarityService.get_instance()
-        return service.run_similarity(
-            entity=payload.entity,
-            citation_field=payload.citation_field,
-            known_entity=payload.known_entity,
-            use_clean_entries=payload.use_clean_entries,
-            publication_name=payload.publication_name,
-            user=payload.user,
-            y=payload.y,
-            m=payload.m,
-            d=payload.d,
-            edition=payload.edition,
-            force_refit=payload.force_refit,
-        )
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-@router.post("/run-direct")
-async def run_similarity_direct(payload: SimilarityRunRequest):
+async def list_entities():
     """
-    Ejecuta similitud extrayendo datos directamente de JSONs
-    (sin usar la capa de datos que puede fallar).
+    Lista todas las entidades disponibles
     """
-    try:
-        from ..services.similarity_direct import run_similarity_direct as run_direct
-        from ..services.similarity import SimilarityService
-        
-        # Obtener config actual
-        service = SimilarityService.get_instance()
-        config = service.get_config()
-        
-        # Ejecutar con extracción directa
-        return run_direct(
-            entity=payload.entity or "port",
-            config=config,
+    if not RESULTS_DIR.exists():
+        return {"entities": []}
+    
+    entity_files = list(RESULTS_DIR.glob("entity_*.json"))
+    entities = [f.stem.replace("entity_", "") for f in entity_files]
+    
+    return {"entities": sorted(entities)}
+
+@router.get("/download/full")
+async def download_full_results():
+    """
+    Descarga el archivo completo de resultados
+    """
+    results_file = RESULTS_DIR / "similarity_analysis_results.json"
+    
+    if not results_file.exists():
+        raise HTTPException(
+            status_code=404,
+            detail="No hay resultados disponibles"
         )
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    
+    return FileResponse(
+        path=results_file,
+        filename="similarity_analysis_results.json",
+        media_type="application/json"
+    )
 
+@router.get("/status")
+async def get_status():
+    """
+    Verifica si hay resultados disponibles y cuándo se generaron
+    """
+    summary_file = RESULTS_DIR / "summary.json"
+    
+    if not summary_file.exists():
+        return {
+            "available": False,
+            "message": "No hay resultados disponibles. Ejecuta el proceso de análisis."
+        }
+    
+    with open(summary_file, encoding="utf-8") as f:
+        data = json.load(f)
+    
+    return {
+        "available": True,
+        "timestamp": data.get("timestamp"),
+        "total_entries": data.get("total_entries"),
+        "entities_count": len(data.get("entities_summary", []))
+    }
 
-@router.post("/export")
-async def export_similarity(payload: SimilarityRunRequest, format: str = "csv"):
-    try:
-        service = SimilarityService.get_instance()
-        data = service.run_similarity(
-            entity=payload.entity,
-            citation_field=payload.citation_field,
-            known_entity=payload.known_entity,
-            use_clean_entries=payload.use_clean_entries,
-            publication_name=payload.publication_name,
-            user=payload.user,
-            y=payload.y,
-            m=payload.m,
-            d=payload.d,
-            edition=payload.edition,
-            force_refit=payload.force_refit,
+@router.get("/results")
+async def get_results():
+    """
+    Obtiene el archivo completo de resultados JSON
+    """
+    results_file = RESULTS_DIR / "similarity_results.json"
+    
+    if not results_file.exists():
+        raise HTTPException(
+            status_code=404,
+            detail="No hay resultados disponibles. Ejecuta el proceso de análisis primero."
         )
+    
+    with open(results_file, encoding="utf-8") as f:
+        data = json.load(f)
+    
+    return data
 
-        results = data.get("results", [])
-        if not results:
-            raise HTTPException(
-                status_code=404, detail="No hay resultados para exportar"
-            )
-
-        # Aplanamos los algorithm_scores para el CSV
-        flattened_results = []
-        for r in results:
-            row = {
-                "term": r["term"],
-                "frequency": r["frequency"],
-                "entity": r["entity"],
-                "best_voice": r["best_voice"],
-                "classification": r["classification"],
-                "consensus": r["consensus"],
-                "votes_approval": r["votes_approval"],
-                "votes_entity": r["votes_entity"],
-            }
-            # Agregar scores individuales
-            for algo, score_data in r.get("algorithm_scores", {}).items():
-                row[f"score_{algo}"] = score_data.get("score")
-            flattened_results.append(row)
-
-        df = pd.DataFrame(flattened_results)
-
-        if format.lower() == "csv":
-            stream = io.StringIO()
-            df.to_csv(stream, index=False)
-            response = Response(content=stream.getvalue(), media_type="text/csv")
-            filename = f"similarity_{payload.entity or 'results'}.csv"
-            response.headers["Content-Disposition"] = f"attachment; filename={filename}"
-            return response
-        else:
-            # JSON format
-            return {"results": flattened_results}
-
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+@router.post("/trigger-analysis")
+async def trigger_analysis():
+    """
+    Endpoint para disparar el proceso de análisis (futuro)
+    """
+    return {
+        "message": "Por ahora, ejecuta el script manualmente: run_generate_similarity.bat",
+        "status": "not_implemented"
+    }

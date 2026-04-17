@@ -4,3 +4,8 @@ transformers
 sentencepiece
 pandas
 pyarrow
+openpyxl
+# Dependencias para algoritmos de similitud
+metaphone
+jellyfish
+sentence-transformers
