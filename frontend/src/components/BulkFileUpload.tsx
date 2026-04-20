@@ -304,7 +304,7 @@ const UnifiedFileUpload: React.FC<UnifiedFileUploadProps> = ({
     setIsProcessing(true);
     // Navigate to processes dashboard after a short delay to let uploads start
     setTimeout(() => {
-      navigate("/processes");
+      navigate("/processes-dashboard");
     }, 1000);
   };
 
@@ -458,7 +458,7 @@ const UnifiedFileUpload: React.FC<UnifiedFileUploadProps> = ({
           </p>
 
           <Link
-            to="/processes"
+            to="/processes-dashboard"
             className="inline-flex items-center text-blue-600 hover:text-blue-500 font-medium"
           >
             <ExternalLink className="w-4 h-4 mr-2" />

@@ -16,3 +16,4 @@ logs_dev.sh
 rebuild_dev.sh
 dev_help.sh
 DEV_README.md
+.examples

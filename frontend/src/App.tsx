@@ -18,6 +18,7 @@ import ProcessDashboardView from "./views/ProcessDashboardView";
 import ProcessesView from "./views/ProcessesView";
 import CleaningView from "./views/CleaningView";
 import { DailyIngestionSummaryView } from "./views/DailyIngestionSummaryView";
+import SimilarityResults from "./pages/SimilarityResults";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotificationContainer from "./components/NotificationContainer";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -109,6 +110,7 @@ const App: React.FC = () => {
                   {/* Rutas sin Layout (pantalla completa) */}
                   <Route path="/processes" element={<ProcessesView />} />
                   <Route path="/cleaning" element={<CleaningView />} />
+                  <Route path="/similarity-results" element={<SimilarityResults />} />
                   
                   {/* Rutas con Layout (con sidebar) */}
                   <Route

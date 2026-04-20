@@ -14,6 +14,7 @@ from portada_data_layer.portada_cleaning import BoatFactCleaning
 from pyspark.sql import functions as F
 
 from .datalayer import DataLayerService
+from .byt5_encoder import ByT5Encoder
 
 
 ENTITY_SPECS: Dict[str, Dict[str, Any]] = {
@@ -100,6 +101,12 @@ ALGORITHM_DEFAULTS: Dict[str, Dict[str, Any]] = {
         "threshold": 0.78,
         "gray_zone": [0.72, 0.779],
         "params": {"mode": "char_cosine", "n": 3},
+    },
+    "byt5_semantic": {
+        "enabled": False,
+        "threshold": 0.70,
+        "gray_zone": [0.65, 0.699],
+        "params": {"model_name": "agusnieto77/byt5-portada-contrastivo"},
     },
 }
 
@@ -381,6 +388,7 @@ class SimilarityService:
             "soundex": self._algo_soundex,
             "semantica": self._algo_semantica,
             "text2vec": self._algo_text2vec,
+            "byt5_semantic": self._algo_byt5_semantic,
         }
 
     @classmethod
@@ -495,6 +503,18 @@ class SimilarityService:
             raise ValueError(
                 "La configuración requiere al menos un algoritmo habilitado"
             )
+
+        # Si usa raw entries, usar extracción directa (sin capa de datos que falla)
+        if not use_clean_entries:
+            try:
+                from .similarity_direct import run_similarity_direct
+                return run_similarity_direct(
+                    entity=selected_entity,
+                    config=config,
+                )
+            except Exception as e:
+                # Si falla la extracción directa, intentar con la capa de datos
+                print(f"[WARN] Extracción directa falló: {e}, intentando con capa de datos...")
 
         boat_cleaning = self._get_boat_cleaning()
         if use_clean_entries:
@@ -1138,6 +1158,20 @@ class SimilarityService:
     def _algo_text2vec(self, left: str, right: str, params: Dict[str, Any]) -> float:
         n = int(params.get("n", 3))
         return char_cosine(left, right, n=n)
+
+    def _algo_byt5_semantic(self, left: str, right: str, params: Dict[str, Any]) -> float:
+        """
+        Algoritmo de similitud semántica usando el modelo ByT5 de Hugging Face.
+        Calcula similitud coseno entre embeddings generados por el modelo.
+        """
+        try:
+            model_name = params.get("model_name", "agusnieto77/byt5-portada-contrastivo")
+            encoder = ByT5Encoder.get_instance(model_name)
+            return encoder.cosine_similarity(left, right)
+        except Exception as e:
+            # Si falla la carga del modelo, retornar 0.0 para no romper el flujo
+            print(f"[WARN] ByT5 similarity failed: {e}")
+            return 0.0
 
     def _read_json_file(self, file_path: Path) -> Dict[str, Any]:
         if not file_path.exists():

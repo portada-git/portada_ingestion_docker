@@ -86,7 +86,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
     { name: t("navigation.ingestion"), href: "/ingestion", icon: Upload },
     {
       name: "Procesos",
-      href: "/processes",
+      href: "/processes-dashboard",
       icon: Activity,
       badge: uploadStats.activeTasks > 0 ? uploadStats.activeTasks : undefined,
     },
