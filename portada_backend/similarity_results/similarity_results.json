@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-04-17T07:59:00.343624",
+  "timestamp": "2026-04-20T22:37:14.444134",
   "total_entries": 10815,
   "entities": {
     "port": {
@@ -137690,6 +137690,42 @@
           ]
         }
       ]
+    },
+    "ship_tons": {
+      "name": "ship_tons",
+      "status": "no_citations",
+      "known_voices": 1,
+      "unique_terms": 0,
+      "total_citations": 0,
+      "coverage": 0.0,
+      "results": []
+    },
+    "comodity": {
+      "name": "comodity",
+      "status": "no_citations",
+      "known_voices": 3216,
+      "unique_terms": 0,
+      "total_citations": 0,
+      "coverage": 0.0,
+      "results": []
+    },
+    "unit": {
+      "name": "unit",
+      "status": "no_citations",
+      "known_voices": 156,
+      "unique_terms": 0,
+      "total_citations": 0,
+      "coverage": 0.0,
+      "results": []
+    },
+    "travel_duration": {
+      "name": "travel_duration",
+      "status": "no_citations",
+      "known_voices": 2,
+      "unique_terms": 0,
+      "total_citations": 0,
+      "coverage": 0.0,
+      "results": []
     }
   }
 }

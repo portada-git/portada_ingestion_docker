@@ -15,8 +15,12 @@ from pydantic import BaseModel
 router = APIRouter(prefix="/api/v1/similarity", tags=["similarity"])
 
 # La ruta debe apuntar a donde está montado el volumen en el contenedor
-# O usar una ruta relativa desde el archivo
-RESULTS_DIR = Path(__file__).parent.parent.parent / "similarity_results"
+# En el contenedor: /app/similarity_results
+# En desarrollo local: usar ruta relativa
+if Path("/app/similarity_results").exists():
+    RESULTS_DIR = Path("/app/similarity_results")
+else:
+    RESULTS_DIR = Path(__file__).parent.parent.parent / "similarity_results"
 
 # ═══════════════════════════════════════════════════════════════════════════
 # MODELOS

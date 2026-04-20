@@ -77,13 +77,13 @@ def main():
             print(f"[ERROR] No se pudo copiar {src}")
             sys.exit(1)
     
-    # Copiar script de generación
+    # Copiar script de generación (con parsing de cargo_list para 8 entidades)
     print("\n" + "=" * 80)
-    print("COPIANDO SCRIPT DE GENERACION")
+    print("COPIANDO SCRIPT DE GENERACION (8 ENTIDADES)")
     print("=" * 80)
     
-    script_src = project_root / "portada_backend/scripts/generate_similarity_results.py"
-    script_dst = "/app/generate_similarity_results.py"
+    script_src = project_root / "portada_backend/scripts/generate_similarity_with_cleaning.py"
+    script_dst = "/app/generate_similarity_with_cleaning.py"
     
     if not script_src.exists():
         print(f"[ERROR] Script no encontrado: {script_src}")
