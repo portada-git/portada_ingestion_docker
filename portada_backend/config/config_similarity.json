@@ -76,7 +76,7 @@
       "enabled": false,
       "threshold": 0.8,
       "gray_zone": [0.7, 0.8],
-      "params": { "model": "google/byt5-small", "device": "cpu" }
+      "params": { "model": "agusnieto77/byt5-portada-contrastivo", "device": "cpu" }
     },
     "semantic_model": {
       "enabled": false,

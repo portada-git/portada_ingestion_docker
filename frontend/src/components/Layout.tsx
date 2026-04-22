@@ -60,7 +60,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { name: t("navigation.ingestion"), href: "/ingestion", icon: Upload },
     {
       name: t("navigation.processes"),
-      href: "/processes",
+      href: "/processes-dashboard",
       icon: Activity,
       badge: uploadStats.activeTasks > 0 ? uploadStats.activeTasks : undefined,
     },
