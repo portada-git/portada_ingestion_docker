@@ -73,6 +73,8 @@ RUN mkdir -p /opt/dagster/dagster_home && \
 # Per escriure logs o dades a /opt/spark
 RUN chown -R spark:spark /opt/spark
 
+RUN chmod -R 1777 /tmp
+
 USER spark
 
 ARG CACHE_BUST_APP=1

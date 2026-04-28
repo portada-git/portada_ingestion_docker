@@ -1,15 +1,15 @@
 # dagster.yaml
-run_launcher:
-  module: dagster.core.launcher # <--- Canvi clau
-  class: QueuedRunLauncher
-
-run_coordinator:
-  module: dagster.core.run_coordinator # <--- També per seguretat
-  class: QueuedRunCoordinator
-
+#run_launcher:
+#  module: dagster.core.launcher # <--- Canvi clau
+#  class: QueuedRunLauncher
+#
+#run_coordinator:
+#  module: dagster.core.run_coordinator # <--- També per seguretat
+#  class: QueuedRunCoordinator
+#
 concurrency:
   runs:
-    max_concurrent_runs: 6
+    max_concurrent_runs: 10
     tag_concurrency_limits:
       - key: "process"
         value: "ingestion"

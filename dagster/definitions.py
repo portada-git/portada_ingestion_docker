@@ -70,7 +70,7 @@ defs = Definitions(
     assets=[*boat_fact_all_assets, *entity_all_assets, *boat_fact_cleaning_assets],
     resources={
         "py_spark_resource": py_spark_resource,
-        "datalayer": DeltaDataLayerResource(py_spark_resource=py_spark_resource),
+        "datalayer": DeltaDataLayerResource(config_path=cfg_path, py_spark_resource=py_spark_resource),
         "redis_config": redi_cfg
     },
     sensors=[ingestion_error_sensor],

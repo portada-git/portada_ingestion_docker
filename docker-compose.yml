@@ -60,6 +60,7 @@ services:
 
   # 3. Dagster Webserver (Interfície de control)
   dagster_webserver:
+    user: "${UID}:185"
     build: ./dagster
     container_name: dagster_webserver
     command: dagster-webserver -h 0.0.0.0 -p 3000 -w workspace.yaml
@@ -78,6 +79,7 @@ services:
 
   # 4. Dagster Daemon (L'encarregat d'executar els Jobs)
   dagster_daemon:
+    user: "${UID}:185"
     build: ./dagster
     container_name: dagster_daemon
     command: dagster-daemon run
