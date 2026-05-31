@@ -1,0 +1,25 @@
+# Keep root build context small for the api image.
+# The api Dockerfile only needs portada_backend and local portada-s-index.
+
+*
+
+!portada_backend/
+!portada_backend/**
+!portada-s-index/
+!portada-s-index/**
+
+# Heavy / generated backend artifacts not needed in the image build context.
+portada_backend/.venv/
+portada_backend/__pycache__/
+portada_backend/**/__pycache__/
+portada_backend/cache/
+portada_backend/models/
+portada_backend/output/
+portada_backend/similarity_results/
+
+# Heavy local package artifacts.
+portada-s-index/.venv/
+portada-s-index/dist/
+portada-s-index/build/
+portada-s-index/**/__pycache__/
+portada-s-index/*.egg-info/

@@ -4,16 +4,16 @@
 
 ```bash
 # Detener y eliminar el contenedor actual
-docker-compose down
+docker compose down
 
 # Reconstruir la imagen (forzando rebuild sin cache)
-docker-compose build --no-cache api
+docker compose build --no-cache api
 
 # O reconstruir todo
-docker-compose build --no-cache
+docker compose build --no-cache
 
 # Levantar los servicios
-docker-compose up -d
+docker compose up -d
 ```
 
 ## 2. Verificar que el contenedor está corriendo
@@ -84,7 +84,7 @@ Abre tu navegador en: `http://localhost:5173/similarity-results`
 ### Si el contenedor no está corriendo:
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 ### Si hay problemas de permisos:

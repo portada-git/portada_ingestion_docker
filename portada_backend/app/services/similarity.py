@@ -42,12 +42,6 @@ ENTITY_ALIASES: Dict[str, str] = {
 }
 
 ALGORITHM_DEFAULTS: Dict[str, Dict[str, Any]] = {
-    "levenshtein_ocr": {
-        "enabled": True,
-        "threshold": 0.75,
-        "gray_zone": [0.71, 0.749],
-        "params": {"confusion_cost": 0.4},
-    },
     "levenshtein_ratio": {
         "enabled": False,
         "threshold": 0.75,
@@ -84,12 +78,6 @@ ALGORITHM_DEFAULTS: Dict[str, Dict[str, Any]] = {
         "gray_zone": [0.8, 0.849],
         "params": {},
     },
-    "soundex": {
-        "enabled": False,
-        "threshold": 0.9,
-        "gray_zone": [0.8, 0.899],
-        "params": {},
-    },
     "semantica": {
         "enabled": False,
         "threshold": 0.72,
@@ -115,33 +103,9 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "normalize": True,
     "consensus": {
         "min_votes": 2,
-        "require_levenshtein_ocr": True,
     },
     "algorithms": ALGORITHM_DEFAULTS,
 }
-
-OCR_CONFUSION_GROUPS = [
-    {"c", "e"},
-    {"p", "n", "r"},
-    {"a", "o"},
-    {"l", "i", "1"},
-    {"m", "n"},
-    {"u", "v"},
-    {"g", "q"},
-    {"h", "b"},
-    {"d", "cl"},
-    {"rn", "m"},
-    {"f", "t"},
-    {"s", "5"},
-]
-
-_OCR_CONFUSION_PAIRS: set[Tuple[str, str]] = set()
-for group in OCR_CONFUSION_GROUPS:
-    items = list(group)
-    for idx, left in enumerate(items):
-        for right in items[idx + 1 :]:
-            _OCR_CONFUSION_PAIRS.add((left, right))
-            _OCR_CONFUSION_PAIRS.add((right, left))
 
 
 def _utc_now() -> str:
@@ -179,36 +143,6 @@ def levenshtein_distance(a: str, b: str) -> int:
 def levenshtein_ratio(a: str, b: str) -> float:
     max_len = max(len(a), len(b), 1)
     return 1.0 - (levenshtein_distance(a, b) / max_len)
-
-
-def levenshtein_distance_ocr(a: str, b: str, confusion_cost: float = 0.4) -> float:
-    if a == b:
-        return 0.0
-    if not a:
-        return float(len(b))
-    if not b:
-        return float(len(a))
-
-    previous = [float(i) for i in range(len(b) + 1)]
-    for i, ca in enumerate(a, start=1):
-        current = [float(i)]
-        for j, cb in enumerate(b, start=1):
-            substitution_cost = (
-                0.0
-                if ca == cb
-                else confusion_cost
-                if (ca, cb) in _OCR_CONFUSION_PAIRS
-                else 1.0
-            )
-            current.append(
-                min(
-                    current[j - 1] + 1.0,
-                    previous[j] + 1.0,
-                    previous[j - 1] + substitution_cost,
-                )
-            )
-        previous = current
-    return previous[-1]
 
 
 def jaro_winkler_similarity(a: str, b: str, prefix_weight: float = 0.1) -> float:
@@ -277,43 +211,6 @@ def ngram_similarity(a: str, b: str, n: int = 2) -> float:
     return inter / union if union else 0.0
 
 
-def soundex(text: str) -> str:
-    if not text:
-        return ""
-    first = text[0].upper()
-    mapping = {
-        "B": "1",
-        "F": "1",
-        "P": "1",
-        "V": "1",
-        "C": "2",
-        "G": "2",
-        "J": "2",
-        "K": "2",
-        "Q": "2",
-        "S": "2",
-        "X": "2",
-        "Z": "2",
-        "D": "3",
-        "T": "3",
-        "L": "4",
-        "M": "5",
-        "N": "5",
-        "R": "6",
-    }
-    result = [first]
-    prev = mapping.get(first, "")
-    for char in text[1:].upper():
-        code = mapping.get(char, "")
-        if code and code != prev:
-            result.append(code)
-        if len(result) == 4:
-            break
-        prev = code
-    while len(result) < 4:
-        result.append("0")
-    return "".join(result)
-
 
 def simple_metaphone(text: str) -> str:
     txt = text.upper()
@@ -363,6 +260,10 @@ def char_cosine(a: str, b: str, n: int = 3) -> float:
     return dot / (mag_a * mag_b)
 
 
+def required_consensus_votes(executed_algorithms_count: int) -> int:
+    return (executed_algorithms_count // 2) + 1
+
+
 class SimilarityService:
     _instance = None
 
@@ -378,14 +279,12 @@ class SimilarityService:
         self._algorithm_functions: Dict[
             str, Callable[[str, str, Dict[str, Any]], float]
         ] = {
-            "levenshtein_ocr": self._algo_levenshtein_ocr,
             "levenshtein_ratio": self._algo_levenshtein_ratio,
             "jaro_winkler": self._algo_jaro_winkler,
             "ngram_2": self._algo_ngram,
             "ngram_3": self._algo_ngram,
             "ngram_4": self._algo_ngram,
             "phonetic_dm": self._algo_phonetic_dm,
-            "soundex": self._algo_soundex,
             "semantica": self._algo_semantica,
             "text2vec": self._algo_text2vec,
             "byt5_semantic": self._algo_byt5_semantic,
@@ -655,21 +554,9 @@ class SimilarityService:
             normalized["consensus"]["min_votes"] = int(
                 input_consensus.get("min_votes", normalized["consensus"]["min_votes"])
             )
-            normalized["consensus"]["require_levenshtein_ocr"] = bool(
-                input_consensus.get(
-                    "require_levenshtein_ocr",
-                    normalized["consensus"]["require_levenshtein_ocr"],
-                )
-            )
         else:
             normalized["consensus"]["min_votes"] = int(
                 payload.get("min_votes_consensus", normalized["consensus"]["min_votes"])
-            )
-            normalized["consensus"]["require_levenshtein_ocr"] = bool(
-                payload.get(
-                    "require_levenshtein_ocr",
-                    normalized["consensus"]["require_levenshtein_ocr"],
-                )
             )
 
         for algo_key, algo_default in ALGORITHM_DEFAULTS.items():
@@ -935,7 +822,7 @@ class SimilarityService:
             by_classification[classification] += freq
             if classification == "CONSENSUADO":
                 strict_occ += freq
-            if classification in {"CONSENSUADO", "CONSENSUADO_DEBIL"}:
+            if classification == "CONSENSUADO":
                 fuzzy_occ += freq
 
         return {
@@ -969,10 +856,7 @@ class SimilarityService:
     ) -> List[Dict[str, Any]]:
         rows: List[Dict[str, Any]] = []
         normalize = bool(config.get("normalize", True))
-        min_votes = int(config.get("consensus", {}).get("min_votes", 2))
-        require_lev = bool(
-            config.get("consensus", {}).get("require_levenshtein_ocr", True)
-        )
+        min_votes = required_consensus_votes(len(enabled_algorithms))
 
         normalized_voice_to_voice = {
             normalize_text(voice): voice for voice in cache_entry.get("voices", [])
@@ -1004,7 +888,6 @@ class SimilarityService:
             algorithm_scores: Dict[str, Dict[str, Any]] = {}
             votes_approval = 0
             in_gray_zone = False
-            lev_voice = ""
 
             for algo_key in enabled_algorithms:
                 algo_cfg = config["algorithms"][algo_key]
@@ -1035,15 +918,12 @@ class SimilarityService:
                     votes_by_entity.setdefault(entity, []).append(
                         (algo_key, best_voice)
                     )
-                    if algo_key == "levenshtein_ocr":
-                        lev_voice = best_voice
                 elif in_gray:
                     in_gray_zone = True
 
             consensus_entity = ""
             consensus_voice = ""
             votes_entity = 0
-            lev_in_consensus = False
 
             if votes_by_entity:
                 consensus_entity = max(
@@ -1053,18 +933,11 @@ class SimilarityService:
                 consensus_algorithms = [
                     algo for algo, _ in votes_by_entity[consensus_entity]
                 ]
-                lev_in_consensus = "levenshtein_ocr" in consensus_algorithms
-                if lev_in_consensus and lev_voice:
-                    consensus_voice = lev_voice
-                else:
-                    consensus_voice = votes_by_entity[consensus_entity][0][1]
+                _ = consensus_algorithms
+                consensus_voice = votes_by_entity[consensus_entity][0][1]
 
-            if votes_entity >= min_votes and (not require_lev or lev_in_consensus):
+            if votes_entity >= min_votes:
                 classification = "CONSENSUADO"
-            elif votes_approval >= min_votes:
-                classification = "CONSENSUADO_DEBIL"
-            elif votes_approval == 1:
-                classification = "SOLO_1_VOTO"
             elif in_gray_zone:
                 classification = "ZONA_GRIS"
             else:
@@ -1077,7 +950,7 @@ class SimilarityService:
                     "entity": consensus_entity,
                     "best_voice": consensus_voice,
                     "classification": classification,
-                    "consensus": classification in {"CONSENSUADO", "CONSENSUADO_DEBIL"},
+                    "consensus": classification == "CONSENSUADO",
                     "no_match": classification == "RECHAZADO",
                     "votes_approval": votes_approval,
                     "votes_entity": votes_entity,
@@ -1107,18 +980,6 @@ class SimilarityService:
                 best_voice = voice
         return best_score, best_voice
 
-    def _algo_levenshtein_ocr(
-        self, left: str, right: str, params: Dict[str, Any]
-    ) -> float:
-        if not left and not right:
-            return 1.0
-        max_len = max(len(left), len(right), 1)
-        confusion_cost = float(params.get("confusion_cost", 0.4))
-        return 1.0 - (
-            levenshtein_distance_ocr(left, right, confusion_cost=confusion_cost)
-            / max_len
-        )
-
     def _algo_levenshtein_ratio(
         self, left: str, right: str, params: Dict[str, Any]
     ) -> float:
@@ -1144,10 +1005,6 @@ class SimilarityService:
         if code_left == code_right:
             return 1.0
         return levenshtein_ratio(code_left, code_right)
-
-    def _algo_soundex(self, left: str, right: str, params: Dict[str, Any]) -> float:
-        _ = params
-        return 1.0 if soundex(left) == soundex(right) else 0.0
 
     def _algo_semantica(self, left: str, right: str, params: Dict[str, Any]) -> float:
         mode = params.get("mode", "token_jaccard")

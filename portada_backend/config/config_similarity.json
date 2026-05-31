@@ -2,89 +2,136 @@
   "version": 1,
   "normalize": true,
   "consensus": {
-    "min_votes": 2,
-    "require_levenshtein_ocr": false
+    "min_votes": 2
   },
   "algorithms": {
     "levenshtein_ratio": {
       "enabled": true,
       "threshold": 0.75,
-      "gray_zone": [0.65, 0.75],
+      "gray_zone": [
+        0.65,
+        0.75
+      ],
       "params": {}
-    },
-    "levenshtein_ocr": {
-      "enabled": false,
-      "threshold": 0.75,
-      "gray_zone": [0.65, 0.75],
-      "params": { "confusion_cost": 0.4 }
     },
     "jaro_winkler": {
       "enabled": true,
       "threshold": 0.88,
-      "gray_zone": [0.78, 0.88],
+      "gray_zone": [
+        0.78,
+        0.88
+      ],
       "params": {}
     },
     "ngram_2": {
       "enabled": false,
       "threshold": 0.5,
-      "gray_zone": [0.4, 0.5],
+      "gray_zone": [
+        0.4,
+        0.5
+      ],
       "params": {}
     },
     "ngram_3": {
       "enabled": true,
       "threshold": 0.5,
-      "gray_zone": [0.4, 0.5],
+      "gray_zone": [
+        0.4,
+        0.5
+      ],
       "params": {}
     },
     "ngram_4": {
       "enabled": false,
       "threshold": 0.45,
-      "gray_zone": [0.35, 0.45],
+      "gray_zone": [
+        0.35,
+        0.45
+      ],
       "params": {}
     },
     "phonetic_dm": {
       "enabled": false,
       "threshold": 0.5,
-      "gray_zone": [0.3, 0.5],
-      "params": {}
-    },
-    "soundex": {
-      "enabled": false,
-      "threshold": 0.5,
-      "gray_zone": [0.3, 0.5],
+      "gray_zone": [
+        0.3,
+        0.5
+      ],
       "params": {}
     },
     "semantica": {
       "enabled": true,
       "threshold": 0.5,
-      "gray_zone": [0.35, 0.5],
+      "gray_zone": [
+        0.35,
+        0.5
+      ],
       "params": {}
     },
     "text2vec": {
       "enabled": false,
       "threshold": 0.6,
-      "gray_zone": [0.5, 0.6],
-      "params": { "n": 3 }
+      "gray_zone": [
+        0.5,
+        0.6
+      ],
+      "params": {
+        "n": 3
+      }
     },
     "fasttext": {
-      "enabled": false,
+      "enabled": true,
       "threshold": 0.8,
-      "gray_zone": [0.7, 0.8],
-      "params": { "model_path": "models/fasttext/cc.es.300.bin" }
+      "gray_zone": [
+        0.7,
+        0.8
+      ],
+      "params": {
+        "model_path": "models/fasttext/cc.es.300.bin"
+      }
     },
     "byt5": {
-      "enabled": false,
+      "enabled": true,
       "threshold": 0.8,
-      "gray_zone": [0.7, 0.8],
-      "params": { "model": "agusnieto77/byt5-portada-contrastivo", "device": "cpu" }
-    },
-    "semantic_model": {
-      "enabled": false,
-      "threshold": 0.8,
-      "gray_zone": [0.7, 0.8],
+      "gray_zone": [
+        0.7,
+        0.8
+      ],
       "params": {
-        "backend": "auto",
+        "model": "agusnieto77/byt5-portada-contrastivo",
+        "device": "cpu"
+      }
+    },
+    "semantic_text2vec": {
+      "enabled": true,
+      "threshold": [
+        0.95,
+        0.7
+      ],
+      "params": {
         "model": "shibing624/text2vec-base-multilingual",
+        "device": "cpu"
+      }
+    },
+    "sentence_transformer_LABSE": {
+      "enabled": true,
+      "threshold": [
+        0.95,
+        0.7
+      ],
+      "params": {
+        "model": "sentence-transformers/LaBSE",
+        "device": "cpu"
+      }
+    },
+    "sentence_transformer_mpnet": {
+      "enabled": true,
+      "threshold": [
+        0.95,
+        0.7
+      ],
+      "params": {
+        "model": "sentence-transformers/paraphrase-multilingual-mpnet-base-v2",
         "device": "cpu"
       }
     }

@@ -1,6 +1,6 @@
 {
   "protocol": "file://",
-  "base_path": "/app/delta_test/docker",
+  "base_path": "/app/delta_lake",
   "app_name": "DataLakePortadaCuration_01",
   "project_data_name": "portada_project",
   "master": "local[*]",
