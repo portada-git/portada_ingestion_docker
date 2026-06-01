@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import importlib.util
 from collections import Counter
 from datetime import datetime
 from pathlib import Path
@@ -21,6 +22,7 @@ DEFAULT_SIMILARITY_CONFIG_PATH = "/app/config/config_similarity.json"
 DEFAULT_SCHEMA_PATH = "/app/config/schema.json"
 DEFAULT_MAPPING_PATH = "/app/config/mapping_to_clean_chars.json"
 DEFAULT_OUTPUT_DIR = "/app/similarity_results"
+DEFAULT_KNOWN_ENTITIES_PATH = "/app/known_entities.json"
 
 ENTITIES = [
     "port",
@@ -37,6 +39,40 @@ ENTITIES = [
 def read_json(path: str | Path) -> dict[str, Any]:
     with open(path, encoding="utf-8") as f:
         return json.load(f)
+
+
+def disable_unavailable_optional_algorithms(
+    similarity_config: dict[str, Any],
+    available_modules: dict[str, bool] | None = None,
+) -> list[str]:
+    """Desactiva algoritmos opcionales cuando falta su dependencia Python."""
+    if available_modules is None:
+        available_modules = {
+            "text2vec": importlib.util.find_spec("text2vec") is not None,
+            "sentence_transformers": importlib.util.find_spec("sentence_transformers") is not None,
+            "fasttext": importlib.util.find_spec("fasttext") is not None,
+        }
+
+    dependency_by_algorithm = {
+        "semantic_text2vec": "text2vec",
+        "sentence_transformer_LABSE": "sentence_transformers",
+        "sentence_transformer_labse": "sentence_transformers",
+        "sentence_transformer_mpnet": "sentence_transformers",
+        "fasttext": "fasttext",
+    }
+
+    disabled: list[str] = []
+    algorithms = similarity_config.get("algorithms", {})
+    for algorithm_name, dependency_name in dependency_by_algorithm.items():
+        algorithm_config = algorithms.get(algorithm_name)
+        if not algorithm_config or not algorithm_config.get("enabled"):
+            continue
+        if not available_modules.get(dependency_name, False):
+            algorithm_config["enabled"] = False
+            algorithm_config["disabled_reason"] = f"Dependencia opcional no instalada: {dependency_name}"
+            disabled.append(algorithm_name)
+
+    return disabled
 
 
 def build_layer(
@@ -68,23 +104,53 @@ def _row_to_dict(row: Any) -> dict[str, Any]:
     return dict(row)
 
 
-def collect_known_voices(layer: Any, entity_name: str) -> dict[str, list[str]]:
-    """Lee voces conocidas desde Delta mediante py-portada-data-layer."""
-    df_entities = layer.read_raw_entities(entity_name)
-    if df_entities is None or df_entities.count() == 0:
-        return {}
-
-    df_known = layer.get_known_entity_voices(df_entities=df_entities)
+def collect_known_voices(
+    layer: Any,
+    entity_name: str,
+    fallback_known_entities_path: str | Path | None = DEFAULT_KNOWN_ENTITIES_PATH,
+) -> dict[str, list[str]]:
+    """Lee voces conocidas desde Delta y cae a JSON si esa entidad no existe all?."""
     voices: dict[str, list[str]] = {}
 
-    for row in df_known.collect():
-        data = _row_to_dict(row)
-        canonical = str(data.get("name", "")).strip()
-        voice = str(data.get("voice", "")).strip()
-        if canonical and voice and voice.lower() not in {"null", "none"}:
-            voices.setdefault(canonical, [])
-            if voice not in voices[canonical]:
-                voices[canonical].append(voice)
+    try:
+        df_entities = layer.read_raw_entities(entity_name)
+        if df_entities is not None and df_entities.count() > 0:
+            df_known = layer.get_known_entity_voices(df_entities=df_entities)
+            for row in df_known.collect():
+                data = _row_to_dict(row)
+                canonical = str(data.get("name", "")).strip()
+                voice = str(data.get("voice", "")).strip()
+                if canonical and voice and voice.lower() not in {"null", "none"}:
+                    voices.setdefault(canonical, [])
+                    if voice not in voices[canonical]:
+                        voices[canonical].append(voice)
+    except Exception as exc:
+        print(f"[WARN] No se pudieron leer entidades '{entity_name}' desde Delta: {exc}")
+
+    if voices or not fallback_known_entities_path:
+        return voices
+
+    fallback_path = Path(fallback_known_entities_path)
+    if not fallback_path.exists():
+        return voices
+
+    known_entities = read_json(fallback_path)
+    known_data = known_entities.get(entity_name, {})
+    if not isinstance(known_data, dict):
+        return voices
+
+    for canonical, raw_voices in known_data.items():
+        canonical_clean = str(canonical).strip()
+        if not canonical_clean:
+            continue
+        if isinstance(raw_voices, list):
+            cleaned_voices = [str(v).strip() for v in raw_voices if str(v).strip()]
+        elif raw_voices:
+            cleaned_voices = [str(raw_voices).strip()]
+        else:
+            cleaned_voices = []
+        if cleaned_voices:
+            voices[canonical_clean] = list(dict.fromkeys(cleaned_voices))
 
     return voices
 
@@ -162,6 +228,7 @@ def run_similarity_generation(
     service: Any,
     voice_list_factory: Any,
     entities: list[str] | None = None,
+    fallback_known_entities_path: str | Path | None = DEFAULT_KNOWN_ENTITIES_PATH,
 ) -> dict[str, Any]:
     df_entries = layer.read_raw_entries()
     if df_entries is None:
@@ -188,7 +255,7 @@ def run_similarity_generation(
         }
 
         try:
-            voices_dict = collect_known_voices(layer, entity_name)
+            voices_dict = collect_known_voices(layer, entity_name, fallback_known_entities_path)
             entity_result["known_voices"] = len(voices_dict)
             if not voices_dict:
                 entity_result["status"] = "no_known_entities"
@@ -234,6 +301,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--mapping", default=DEFAULT_MAPPING_PATH)
     parser.add_argument("--output-dir", default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--output-file", default="similarity_results_datalayer.json")
+    parser.add_argument("--known-entities", default=DEFAULT_KNOWN_ENTITIES_PATH)
     parser.add_argument("--entities", nargs="*", default=ENTITIES)
     return parser.parse_args()
 
@@ -250,8 +318,13 @@ def main() -> int:
     print("=" * 80)
 
     layer = build_layer(args.data_layer_config, args.schema, args.mapping)
-    service = SimilarityService.from_dict(read_json(args.similarity_config))
-    results = run_similarity_generation(layer, service, VoiceList, args.entities)
+    similarity_config = read_json(args.similarity_config)
+    disabled_algorithms = disable_unavailable_optional_algorithms(similarity_config)
+    if disabled_algorithms:
+        print(f"[WARN] Algoritmos opcionales desactivados por dependencias faltantes: {disabled_algorithms}")
+    service = SimilarityService.from_dict(similarity_config)
+    results = run_similarity_generation(layer, service, VoiceList, args.entities, args.known_entities)
+    results["disabled_algorithms"] = disabled_algorithms
 
     output_path = output_dir / args.output_file
     with open(output_path, "w", encoding="utf-8") as f:

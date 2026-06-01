@@ -1,4 +1,6 @@
-﻿import importlib.util
+import importlib.util
+import json
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -69,6 +71,12 @@ class FakeLayer:
         return FakeDataFrame([FakeRow(citation="Vapor"), FakeRow(citation="Vapor")])
 
 
+class MissingEntityLayer(FakeLayer):
+    def read_raw_entities(self, entity):
+        self.read_entities.append(entity)
+        return None
+
+
 class FakeVoiceList:
     @staticmethod
     def from_dict(entity_type, data):
@@ -102,6 +110,48 @@ class DataLayerSimilarityScriptTests(unittest.TestCase):
             "Barcelona": ["Bcn", "Barna"],
             "Valencia": ["Valencia"],
         })
+
+    def test_collect_known_voices_falls_back_to_json_when_entity_is_missing_in_datalayer(self):
+        module = load_module()
+        layer = MissingEntityLayer()
+        with tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=".json", delete=False) as f:
+            json.dump({"unit": {"tonelada": ["tn", "tons"], "kilo": ["kg"]}}, f)
+            fallback_path = f.name
+
+        try:
+            voices = module.collect_known_voices(layer, "unit", fallback_known_entities_path=fallback_path)
+        finally:
+            Path(fallback_path).unlink(missing_ok=True)
+
+        self.assertEqual(layer.read_entities, ["unit"])
+        self.assertEqual(voices, {"tonelada": ["tn", "tons"], "kilo": ["kg"]})
+
+
+    def test_disable_unavailable_optional_algorithms_keeps_required_algorithms_enabled(self):
+        module = load_module()
+        config = {
+            "algorithms": {
+                "levenshtein_ratio": {"enabled": True},
+                "semantic_text2vec": {"enabled": True},
+                "sentence_transformer_LABSE": {"enabled": True},
+                "sentence_transformer_mpnet": {"enabled": True},
+                "fasttext": {"enabled": True},
+            }
+        }
+
+        disabled = module.disable_unavailable_optional_algorithms(
+            config,
+            available_modules={"text2vec": False, "sentence_transformers": False, "fasttext": True},
+        )
+
+        self.assertEqual(disabled, [
+            "semantic_text2vec",
+            "sentence_transformer_LABSE",
+            "sentence_transformer_mpnet",
+        ])
+        self.assertTrue(config["algorithms"]["levenshtein_ratio"]["enabled"])
+        self.assertTrue(config["algorithms"]["fasttext"]["enabled"])
+        self.assertFalse(config["algorithms"]["semantic_text2vec"]["enabled"])
 
     def test_run_similarity_generation_reads_entries_and_known_voices_from_datalayer(self):
         module = load_module()

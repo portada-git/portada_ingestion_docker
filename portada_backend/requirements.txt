@@ -8,3 +8,4 @@ openpyxl
 metaphone
 sentence-transformers
 fasttext
+text2vec

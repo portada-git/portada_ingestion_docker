@@ -1,0 +1,87 @@
+{
+  "timestamp": "2026-05-31T21:32:09.887881",
+  "source": "py-portada-data-layer",
+  "total_entries": 10815,
+  "entities": {
+    "port": {
+      "name": "port",
+      "status": "error",
+      "known_voices": 4909,
+      "unique_terms": 0,
+      "total_citations": 0,
+      "coverage": 0.0,
+      "results": [],
+      "error": "text2vec no está instalado.\npip install text2vec"
+    },
+    "ship_type": {
+      "name": "ship_type",
+      "status": "error",
+      "known_voices": 71,
+      "unique_terms": 0,
+      "total_citations": 0,
+      "coverage": 0.0,
+      "results": [],
+      "error": "text2vec no está instalado.\npip install text2vec"
+    },
+    "flag": {
+      "name": "flag",
+      "status": "error",
+      "known_voices": 131,
+      "unique_terms": 0,
+      "total_citations": 0,
+      "coverage": 0.0,
+      "results": [],
+      "error": "text2vec no está instalado.\npip install text2vec"
+    },
+    "ship_tons": {
+      "name": "ship_tons",
+      "status": "error",
+      "known_voices": 1,
+      "unique_terms": 0,
+      "total_citations": 0,
+      "coverage": 0.0,
+      "results": [],
+      "error": "text2vec no está instalado.\npip install text2vec"
+    },
+    "travel_duration": {
+      "name": "travel_duration",
+      "status": "error",
+      "known_voices": 2,
+      "unique_terms": 0,
+      "total_citations": 0,
+      "coverage": 0.0,
+      "results": [],
+      "error": "text2vec no está instalado.\npip install text2vec"
+    },
+    "master_role": {
+      "name": "master_role",
+      "status": "error",
+      "known_voices": 9,
+      "unique_terms": 0,
+      "total_citations": 0,
+      "coverage": 0.0,
+      "results": [],
+      "error": "text2vec no está instalado.\npip install text2vec"
+    },
+    "comodity": {
+      "name": "comodity",
+      "status": "error",
+      "known_voices": 3216,
+      "unique_terms": 0,
+      "total_citations": 0,
+      "coverage": 0.0,
+      "results": [],
+      "error": "text2vec no está instalado.\npip install text2vec"
+    },
+    "unit": {
+      "name": "unit",
+      "status": "error",
+      "known_voices": 156,
+      "unique_terms": 0,
+      "total_citations": 0,
+      "coverage": 0.0,
+      "results": [],
+      "error": "text2vec no está instalado.\npip install text2vec"
+    }
+  }
+}
