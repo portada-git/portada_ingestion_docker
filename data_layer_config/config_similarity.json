@@ -83,7 +83,7 @@
                                                     }
                                      },
                        "text2vec":  {
-                                        "enabled":  false,
+                                        "enabled":  true,
                                         "threshold":  0.6,
                                         "gray_zone":  [
                                                           0.5,
@@ -105,7 +105,7 @@
                                                    }
                                     },
                        "byt5":  {
-                                    "enabled":  false,
+                                    "enabled":  true,
                                     "threshold":  0.8,
                                     "gray_zone":  [
                                                       0.7,
@@ -118,7 +118,7 @@
                                                }
                                 },
                        "semantic_text2vec":  {
-                                                 "enabled":  false,
+                                                 "enabled":  true,
                                                  "threshold":  [
                                                                    0.95,
                                                                    0.7

@@ -28,7 +28,7 @@ COPY portada_backend/requirements.txt .
 COPY portada-s-index /tmp/portada-s-index
 # Install PyTorch CPU-only version (much smaller than CUDA version)
 RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
-    pip install --no-cache-dir /tmp/portada-s-index && \
+    pip install --no-cache-dir "/tmp/portada-s-index[all]" && \
     pip install --no-cache-dir --timeout=300 --retries=5 -r requirements.txt && \
     rm -rf /root/.cache/pip && \
     find /usr/local/lib/python3.12 -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true && \

@@ -1,4 +1,4 @@
-﻿{
+{
     "version":  1,
     "normalize":  true,
     "consensus":  {
@@ -28,7 +28,7 @@
                                                        }
                                         },
                        "ngram_2":  {
-                                       "enabled":  false,
+                                       "enabled":  true,
                                        "threshold":  0.5,
                                        "gray_zone":  [
                                                          0.4,
@@ -50,7 +50,7 @@
                                                   }
                                    },
                        "ngram_4":  {
-                                       "enabled":  false,
+                                       "enabled":  true,
                                        "threshold":  0.45,
                                        "gray_zone":  [
                                                          0.35,
@@ -83,7 +83,7 @@
                                                     }
                                      },
                        "text2vec":  {
-                                        "enabled":  false,
+                                        "enabled":  true,
                                         "threshold":  0.6,
                                         "gray_zone":  [
                                                           0.5,
@@ -117,7 +117,7 @@
                                                }
                                 },
                        "semantic_text2vec":  {
-                                                 "enabled":  false,
+                                                 "enabled":  true,
                                                  "threshold":  [
                                                                    0.95,
                                                                    0.7

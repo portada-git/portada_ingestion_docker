@@ -37,6 +37,7 @@ ENTITIES = [
 
 
 def read_json(path: str | Path) -> dict[str, Any]:
+    # Lectura JSON centralizada para evitar duplicación.
     with open(path, encoding="utf-8") as f:
         return json.load(f)
 
@@ -63,6 +64,7 @@ def disable_unavailable_optional_algorithms(
 
     disabled: list[str] = []
     algorithms = similarity_config.get("algorithms", {})
+    # Si falta dependencia opcional, desactivamos ese algoritmo para no romper evaluate().
     for algorithm_name, dependency_name in dependency_by_algorithm.items():
         algorithm_config = algorithms.get(algorithm_name)
         if not algorithm_config or not algorithm_config.get("enabled"):
@@ -80,6 +82,7 @@ def build_layer(
     schema_path: str | None = None,
     mapping_path: str | None = None,
 ):
+    # Inicializa py-portada-data-layer + BoatFactCleaning + sesión Spark.
     from portada_data_layer import PortadaBuilder
     from portada_data_layer.portada_cleaning import BoatFactCleaning
 
@@ -97,6 +100,7 @@ def build_layer(
 
 
 def _row_to_dict(row: Any) -> dict[str, Any]:
+    # Unifica Row/dict a dict.
     if hasattr(row, "asDict"):
         return row.asDict(True)
     if isinstance(row, dict):
@@ -156,6 +160,7 @@ def collect_known_voices(
 
 
 def _counter_from_rows(rows: Iterable[Any], field: str = "citation") -> Counter:
+    # Calcula frecuencia por citación (la usa SimilarityService).
     counter: Counter = Counter()
     for row in rows:
         data = _row_to_dict(row)
@@ -219,6 +224,7 @@ def collect_citations(layer: Any, df_entries: Any, entity_name: str) -> Counter:
 
 def clean_entries_for_similarity(layer: Any, df_entries: Any) -> Any:
     """Aplica el pipeline de limpieza de BoatFactCleaning antes de extraer citaciones."""
+    # Importante: limpieza en memoria; NO persiste bronze/clean en este script.
     cleaned = layer.cleaning_entries(df_entries, saving_original_data=False)
     return layer.normalize_strings_for_ship_entries(cleaned)
 
@@ -230,6 +236,7 @@ def run_similarity_generation(
     entities: list[str] | None = None,
     fallback_known_entities_path: str | Path | None = DEFAULT_KNOWN_ENTITIES_PATH,
 ) -> dict[str, Any]:
+    # 1) Entradas RAW desde Delta
     df_entries = layer.read_raw_entries()
     if df_entries is None:
         raise RuntimeError("No se pudieron leer entradas RAW desde py-portada-data-layer")
@@ -243,6 +250,7 @@ def run_similarity_generation(
         "entities": {},
     }
 
+    # 2) Desambiguación por entidad
     for entity_name in entities or ENTITIES:
         entity_result = {
             "name": entity_name,
@@ -270,6 +278,7 @@ def run_similarity_generation(
 
             terms_input = [{"term": term, "frequency": freq} for term, freq in citations_counter.items()]
             voice_list = voice_list_factory.from_dict(entity_type=entity_name, data=voices_dict)
+            # 3) Matching multi-algoritmo con clasificación final
             results_list = service.evaluate(terms_input, voice_list)
 
             total_freq = sum(r.get("frequency", 0) for r in results_list)
@@ -309,6 +318,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     from portada_s_index import SimilarityService, VoiceList
 
+    # Parámetros CLI
     args = parse_args()
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -317,6 +327,7 @@ def main() -> int:
     print("GENERACIÓN DE SIMILITUDES CON py-portada-data-layer")
     print("=" * 80)
 
+    # Inicialización de capa + config
     layer = build_layer(args.data_layer_config, args.schema, args.mapping)
     similarity_config = read_json(args.similarity_config)
     disabled_algorithms = disable_unavailable_optional_algorithms(similarity_config)
@@ -326,10 +337,12 @@ def main() -> int:
     results = run_similarity_generation(layer, service, VoiceList, args.entities, args.known_entities)
     results["disabled_algorithms"] = disabled_algorithms
 
+    # Persistencia del resultado agregado
     output_path = output_dir / args.output_file
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
 
+    # Cierre ordenado de sesión Spark
     if getattr(layer, "spark", None) is not None:
         layer.stop_session()
 
