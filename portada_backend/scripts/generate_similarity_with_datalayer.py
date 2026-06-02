@@ -2,7 +2,7 @@
 Genera resultados de similitud usando py-portada-data-layer para leer datos.
 
 Este script NO sustituye al flujo actual. Es una variante aparte para validar
-quÃƒÆ’Ã‚Â© ocurre si la extracciÃƒÆ’Ã‚Â³n de entradas y entidades conocidas pasa por
+qué ocurre si la extracción de entradas y entidades conocidas pasa por
 BoatFactCleaning en vez de usar Spark directo + /app/known_entities.json.
 """
 
@@ -47,7 +47,7 @@ def format_seconds(start_time: float) -> str:
 
 
 def read_json(path: str | Path) -> dict[str, Any]:
-    # Lectura JSON centralizada para evitar duplicaciÃƒÆ’Ã‚Â³n.
+    # Lectura JSON centralizada para evitar duplicación.
     with open(path, encoding="utf-8") as f:
         return json.load(f)
 
@@ -94,7 +94,7 @@ def build_layer(
     schema_path: str | None = None,
     mapping_path: str | None = None,
 ):
-    # Inicializa py-portada-data-layer + BoatFactCleaning + sesiÃƒÆ’Ã‚Â³n Spark.
+    # Inicializa py-portada-data-layer + BoatFactCleaning + sesión Spark.
     step_start = time.perf_counter()
     log_step(f"Inicializando data-layer con config: {data_layer_config_path}")
     from portada_data_layer import PortadaBuilder
@@ -103,7 +103,7 @@ def build_layer(
     config_layer = read_json(data_layer_config_path)
     builder = PortadaBuilder(config_layer)
     layer = BoatFactCleaning(builder=builder)
-    log_step("Arrancando sesiÃƒÂ³n Spark/data-layer")
+    log_step("Arrancando sesión Spark/data-layer")
     layer.start_session()
 
     if schema_path and Path(schema_path).exists():
@@ -130,7 +130,7 @@ def collect_known_voices(
     entity_name: str,
     fallback_known_entities_path: str | Path | None = DEFAULT_KNOWN_ENTITIES_PATH,
 ) -> dict[str, list[str]]:
-    """Lee voces conocidas desde Delta y cae a JSON si esa entidad no existe all?."""
+    """Lee voces conocidas desde Delta y recurre a JSON de fallback si la entidad no existe."""
     step_start = time.perf_counter()
     log_step(f"[{entity_name}] Leyendo voces conocidas")
     voices: dict[str, list[str]] = {}
@@ -181,7 +181,7 @@ def collect_known_voices(
 
 
 def _counter_from_rows(rows: Iterable[Any], field: str = "citation") -> Counter:
-    # Calcula frecuencia por citaciÃƒÆ’Ã‚Â³n (la usa SimilarityService).
+    # Calcula frecuencia por citación (la usa SimilarityService).
     counter: Counter = Counter()
     for row in rows:
         data = _row_to_dict(row)
@@ -197,7 +197,7 @@ def _counter_from_rows(rows: Iterable[Any], field: str = "citation") -> Counter:
 def collect_citations(layer: Any, df_entries: Any, entity_name: str) -> Counter:
     step_start = time.perf_counter()
     log_step(f"[{entity_name}] Extrayendo citaciones")
-    """Extrae citaciones usando mÃƒÆ’Ã‚Â©todos de BoatFactCleaning siempre que existan."""
+    """Extrae citaciones usando métodos de BoatFactCleaning siempre que existan."""
     if entity_name == "port":
         df_citations = layer.extract_ports(df_entries, from_port_of_calls=False, from_arrival_port=False)
     elif entity_name == "ship_type":
@@ -221,7 +221,7 @@ def collect_citations(layer: Any, df_entries: Any, entity_name: str) -> Counter:
     elif entity_name == "travel_duration" and hasattr(layer, "extract_travel_durations"):
         df_citations = layer.extract_travel_durations(df_entries)
     elif entity_name == "travel_duration":
-        # La versiÃƒÆ’Ã‚Â³n analizada de py-portada-data-layer no expone extractor dedicado.
+        # La versión analizada de py-portada-data-layer no expone extractor dedicado.
         # Seguimos leyendo el DataFrame desde la capa, pero seleccionamos los campos
         # conocidos para no perder cobertura de esta entidad.
         candidate_fields = [
@@ -244,7 +244,7 @@ def collect_citations(layer: Any, df_entries: Any, entity_name: str) -> Counter:
         log_step(f"[{entity_name}] Sin citaciones ({format_seconds(step_start)})")
         return Counter()
     counter = _counter_from_rows(df_citations.collect())
-    log_step(f"[{entity_name}] Citaciones extraÃƒÂ­das: {sum(counter.values())} totales, {len(counter)} ÃƒÂºnicas ({format_seconds(step_start)})")
+    log_step(f"[{entity_name}] Citaciones extraídas: {sum(counter.values())} totales, {len(counter)} únicas ({format_seconds(step_start)})")
     return counter
 
 
@@ -285,7 +285,7 @@ def run_similarity_generation(
         "entities": {},
     }
 
-    # 2) DesambiguaciÃ³n por entidad
+    # 2) Desambiguación por entidad
     selected_entities = entities or ENTITIES
     log_step(f"Entidades a procesar: {selected_entities}")
     for entity_idx, entity_name in enumerate(selected_entities, start=1):
@@ -318,10 +318,10 @@ def run_similarity_generation(
                 continue
 
             terms_input = [{"term": term, "frequency": freq} for term, freq in citations_counter.items()]
-            log_step(f"[{entity_name}] Preparando VoiceList con {len(voices_dict)} canÃ³nicas")
+            log_step(f"[{entity_name}] Preparando VoiceList con {len(voices_dict)} canónicas")
             voice_list = voice_list_factory.from_dict(entity_type=entity_name, data=voices_dict)
-            # 3) Matching multi-algoritmo con clasificaciÃ³n final
-            log_step(f"[{entity_name}] Ejecutando evaluate sobre {len(terms_input)} tÃ©rminos")
+            # 3) Matching multi-algoritmo con clasificación final
+            log_step(f"[{entity_name}] Ejecutando evaluate sobre {len(terms_input)} términos")
             results_list = service.evaluate(terms_input, voice_list)
             log_step(f"[{entity_name}] evaluate completado con {len(results_list)} resultados")
 
@@ -371,7 +371,7 @@ def main() -> int:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print("=" * 80)
-    print("GENERACIÃƒÆ’Ã¢â‚¬Å“N DE SIMILITUDES CON py-portada-data-layer")
+    print("GENERACIÓN DE SIMILITUDES CON py-portada-data-layer")
     print("=" * 80)
     log_step(f"Output configurado: {output_dir / args.output_file}")
 
@@ -398,7 +398,7 @@ def main() -> int:
         json.dump(results, f, ensure_ascii=False, indent=2)
     log_step(f"JSON final escrito: {output_path}")
 
-    # Cierre ordenado de sesiÃƒÆ’Ã‚Â³n Spark
+    # Cierre ordenado de sesión Spark
     if getattr(layer, "spark", None) is not None:
         log_step("Cerrando sesión Spark")
         layer.stop_session()
