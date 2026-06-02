@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-05-31T21:32:09.887881",
+  "timestamp": "2026-06-01T20:05:51.835860",
   "source": "py-portada-data-layer",
   "total_entries": 10815,
   "entities": {
@@ -11,7 +11,7 @@
       "total_citations": 0,
       "coverage": 0.0,
       "results": [],
-      "error": "text2vec no está instalado.\npip install text2vec"
+      "error": "Modelo FastText no encontrado: models/fasttext/cc.es.300.bin\nDescarga el modelo desde https://fasttext.cc/docs/en/crawl-vectors.html"
     },
     "ship_type": {
       "name": "ship_type",
@@ -21,7 +21,7 @@
       "total_citations": 0,
       "coverage": 0.0,
       "results": [],
-      "error": "text2vec no está instalado.\npip install text2vec"
+      "error": "Modelo FastText no encontrado: models/fasttext/cc.es.300.bin\nDescarga el modelo desde https://fasttext.cc/docs/en/crawl-vectors.html"
     },
     "flag": {
       "name": "flag",
@@ -31,7 +31,7 @@
       "total_citations": 0,
       "coverage": 0.0,
       "results": [],
-      "error": "text2vec no está instalado.\npip install text2vec"
+      "error": "Modelo FastText no encontrado: models/fasttext/cc.es.300.bin\nDescarga el modelo desde https://fasttext.cc/docs/en/crawl-vectors.html"
     },
     "ship_tons": {
       "name": "ship_tons",
@@ -41,7 +41,7 @@
       "total_citations": 0,
       "coverage": 0.0,
       "results": [],
-      "error": "text2vec no está instalado.\npip install text2vec"
+      "error": "Modelo FastText no encontrado: models/fasttext/cc.es.300.bin\nDescarga el modelo desde https://fasttext.cc/docs/en/crawl-vectors.html"
     },
     "travel_duration": {
       "name": "travel_duration",
@@ -51,7 +51,7 @@
       "total_citations": 0,
       "coverage": 0.0,
       "results": [],
-      "error": "text2vec no está instalado.\npip install text2vec"
+      "error": "Modelo FastText no encontrado: models/fasttext/cc.es.300.bin\nDescarga el modelo desde https://fasttext.cc/docs/en/crawl-vectors.html"
     },
     "master_role": {
       "name": "master_role",
@@ -61,7 +61,7 @@
       "total_citations": 0,
       "coverage": 0.0,
       "results": [],
-      "error": "text2vec no está instalado.\npip install text2vec"
+      "error": "Modelo FastText no encontrado: models/fasttext/cc.es.300.bin\nDescarga el modelo desde https://fasttext.cc/docs/en/crawl-vectors.html"
     },
     "comodity": {
       "name": "comodity",
@@ -71,7 +71,7 @@
       "total_citations": 0,
       "coverage": 0.0,
       "results": [],
-      "error": "text2vec no está instalado.\npip install text2vec"
+      "error": "Modelo FastText no encontrado: models/fasttext/cc.es.300.bin\nDescarga el modelo desde https://fasttext.cc/docs/en/crawl-vectors.html"
     },
     "unit": {
       "name": "unit",
@@ -81,7 +81,8 @@
       "total_citations": 0,
       "coverage": 0.0,
       "results": [],
-      "error": "text2vec no está instalado.\npip install text2vec"
+      "error": "Modelo FastText no encontrado: models/fasttext/cc.es.300.bin\nDescarga el modelo desde https://fasttext.cc/docs/en/crawl-vectors.html"
     }
-  }
+  },
+  "disabled_algorithms": []
 }

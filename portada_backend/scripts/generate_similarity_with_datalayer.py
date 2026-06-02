@@ -2,7 +2,7 @@
 Genera resultados de similitud usando py-portada-data-layer para leer datos.
 
 Este script NO sustituye al flujo actual. Es una variante aparte para validar
-qué ocurre si la extracción de entradas y entidades conocidas pasa por
+quÃƒÆ’Ã‚Â© ocurre si la extracciÃƒÆ’Ã‚Â³n de entradas y entidades conocidas pasa por
 BoatFactCleaning en vez de usar Spark directo + /app/known_entities.json.
 """
 
@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import importlib.util
+import time
 from collections import Counter
 from datetime import datetime
 from pathlib import Path
@@ -36,8 +37,17 @@ ENTITIES = [
 ]
 
 
+def log_step(message: str) -> None:
+    """Log de progreso visible en tiempo real dentro de Docker."""
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] {message}", flush=True)
+
+
+def format_seconds(start_time: float) -> str:
+    return f"{time.perf_counter() - start_time:.1f}s"
+
+
 def read_json(path: str | Path) -> dict[str, Any]:
-    # Lectura JSON centralizada para evitar duplicación.
+    # Lectura JSON centralizada para evitar duplicaciÃƒÆ’Ã‚Â³n.
     with open(path, encoding="utf-8") as f:
         return json.load(f)
 
@@ -47,12 +57,14 @@ def disable_unavailable_optional_algorithms(
     available_modules: dict[str, bool] | None = None,
 ) -> list[str]:
     """Desactiva algoritmos opcionales cuando falta su dependencia Python."""
+    log_step("Verificando dependencias opcionales de algoritmos")
     if available_modules is None:
         available_modules = {
             "text2vec": importlib.util.find_spec("text2vec") is not None,
             "sentence_transformers": importlib.util.find_spec("sentence_transformers") is not None,
             "fasttext": importlib.util.find_spec("fasttext") is not None,
         }
+    log_step(f"Dependencias detectadas: {available_modules}")
 
     dependency_by_algorithm = {
         "semantic_text2vec": "text2vec",
@@ -82,18 +94,23 @@ def build_layer(
     schema_path: str | None = None,
     mapping_path: str | None = None,
 ):
-    # Inicializa py-portada-data-layer + BoatFactCleaning + sesión Spark.
+    # Inicializa py-portada-data-layer + BoatFactCleaning + sesiÃƒÆ’Ã‚Â³n Spark.
+    step_start = time.perf_counter()
+    log_step(f"Inicializando data-layer con config: {data_layer_config_path}")
     from portada_data_layer import PortadaBuilder
     from portada_data_layer.portada_cleaning import BoatFactCleaning
 
     config_layer = read_json(data_layer_config_path)
     builder = PortadaBuilder(config_layer)
     layer = BoatFactCleaning(builder=builder)
+    log_step("Arrancando sesiÃƒÂ³n Spark/data-layer")
     layer.start_session()
 
     if schema_path and Path(schema_path).exists():
+        log_step(f"Cargando schema de limpieza: {schema_path}")
         layer.use_schema(read_json(schema_path))
     if mapping_path and Path(mapping_path).exists():
+        log_step(f"Cargando mapping de limpieza: {mapping_path}")
         layer.use_mapping_to_clean_chars(read_json(mapping_path))
 
     return layer
@@ -114,6 +131,8 @@ def collect_known_voices(
     fallback_known_entities_path: str | Path | None = DEFAULT_KNOWN_ENTITIES_PATH,
 ) -> dict[str, list[str]]:
     """Lee voces conocidas desde Delta y cae a JSON si esa entidad no existe all?."""
+    step_start = time.perf_counter()
+    log_step(f"[{entity_name}] Leyendo voces conocidas")
     voices: dict[str, list[str]] = {}
 
     try:
@@ -132,8 +151,10 @@ def collect_known_voices(
         print(f"[WARN] No se pudieron leer entidades '{entity_name}' desde Delta: {exc}")
 
     if voices or not fallback_known_entities_path:
+        log_step(f"[{entity_name}] Voces conocidas cargadas: {len(voices)} ({format_seconds(step_start)})")
         return voices
 
+    log_step(f"[{entity_name}] Usando fallback de voces conocidas si hace falta: {fallback_known_entities_path}")
     fallback_path = Path(fallback_known_entities_path)
     if not fallback_path.exists():
         return voices
@@ -160,7 +181,7 @@ def collect_known_voices(
 
 
 def _counter_from_rows(rows: Iterable[Any], field: str = "citation") -> Counter:
-    # Calcula frecuencia por citación (la usa SimilarityService).
+    # Calcula frecuencia por citaciÃƒÆ’Ã‚Â³n (la usa SimilarityService).
     counter: Counter = Counter()
     for row in rows:
         data = _row_to_dict(row)
@@ -174,7 +195,9 @@ def _counter_from_rows(rows: Iterable[Any], field: str = "citation") -> Counter:
 
 
 def collect_citations(layer: Any, df_entries: Any, entity_name: str) -> Counter:
-    """Extrae citaciones usando métodos de BoatFactCleaning siempre que existan."""
+    step_start = time.perf_counter()
+    log_step(f"[{entity_name}] Extrayendo citaciones")
+    """Extrae citaciones usando mÃƒÆ’Ã‚Â©todos de BoatFactCleaning siempre que existan."""
     if entity_name == "port":
         df_citations = layer.extract_ports(df_entries, from_port_of_calls=False, from_arrival_port=False)
     elif entity_name == "ship_type":
@@ -198,7 +221,7 @@ def collect_citations(layer: Any, df_entries: Any, entity_name: str) -> Counter:
     elif entity_name == "travel_duration" and hasattr(layer, "extract_travel_durations"):
         df_citations = layer.extract_travel_durations(df_entries)
     elif entity_name == "travel_duration":
-        # La versión analizada de py-portada-data-layer no expone extractor dedicado.
+        # La versiÃƒÆ’Ã‚Â³n analizada de py-portada-data-layer no expone extractor dedicado.
         # Seguimos leyendo el DataFrame desde la capa, pero seleccionamos los campos
         # conocidos para no perder cobertura de esta entidad.
         candidate_fields = [
@@ -218,15 +241,23 @@ def collect_citations(layer: Any, df_entries: Any, entity_name: str) -> Counter:
         raise ValueError(f"Entidad no soportada: {entity_name}")
 
     if df_citations is None or df_citations.count() == 0:
+        log_step(f"[{entity_name}] Sin citaciones ({format_seconds(step_start)})")
         return Counter()
-    return _counter_from_rows(df_citations.collect())
+    counter = _counter_from_rows(df_citations.collect())
+    log_step(f"[{entity_name}] Citaciones extraÃƒÂ­das: {sum(counter.values())} totales, {len(counter)} ÃƒÂºnicas ({format_seconds(step_start)})")
+    return counter
 
 
 def clean_entries_for_similarity(layer: Any, df_entries: Any) -> Any:
     """Aplica el pipeline de limpieza de BoatFactCleaning antes de extraer citaciones."""
     # Importante: limpieza en memoria; NO persiste bronze/clean en este script.
+    step_start = time.perf_counter()
+    log_step("Aplicando limpieza BoatFactCleaning en memoria")
     cleaned = layer.cleaning_entries(df_entries, saving_original_data=False)
-    return layer.normalize_strings_for_ship_entries(cleaned)
+    log_step("Normalizando strings de entradas limpias")
+    normalized = layer.normalize_strings_for_ship_entries(cleaned)
+    log_step(f"Limpieza en memoria completada en {format_seconds(step_start)}")
+    return normalized
 
 
 def run_similarity_generation(
@@ -236,13 +267,17 @@ def run_similarity_generation(
     entities: list[str] | None = None,
     fallback_known_entities_path: str | Path | None = DEFAULT_KNOWN_ENTITIES_PATH,
 ) -> dict[str, Any]:
+    run_start = time.perf_counter()
     # 1) Entradas RAW desde Delta
+    log_step("Leyendo entradas RAW desde py-portada-data-layer")
     df_entries = layer.read_raw_entries()
     if df_entries is None:
         raise RuntimeError("No se pudieron leer entradas RAW desde py-portada-data-layer")
 
     df_entries = clean_entries_for_similarity(layer, df_entries)
+    log_step("Contando entradas limpias")
     entry_count = df_entries.count()
+    log_step(f"Entradas listas para similitud: {entry_count}")
     all_results = {
         "timestamp": datetime.now().isoformat(),
         "source": "py-portada-data-layer",
@@ -250,8 +285,12 @@ def run_similarity_generation(
         "entities": {},
     }
 
-    # 2) Desambiguación por entidad
-    for entity_name in entities or ENTITIES:
+    # 2) DesambiguaciÃ³n por entidad
+    selected_entities = entities or ENTITIES
+    log_step(f"Entidades a procesar: {selected_entities}")
+    for entity_idx, entity_name in enumerate(selected_entities, start=1):
+        entity_start = time.perf_counter()
+        log_step(f"[{entity_idx}/{len(selected_entities)}] Iniciando entidad: {entity_name}")
         entity_result = {
             "name": entity_name,
             "status": "pending",
@@ -268,18 +307,23 @@ def run_similarity_generation(
             if not voices_dict:
                 entity_result["status"] = "no_known_entities"
                 all_results["entities"][entity_name] = entity_result
+                log_step(f"[{entity_name}] Saltada: {entity_result['status']}")
                 continue
 
             citations_counter = collect_citations(layer, df_entries, entity_name)
             if not citations_counter:
                 entity_result["status"] = "no_citations"
                 all_results["entities"][entity_name] = entity_result
+                log_step(f"[{entity_name}] Saltada: {entity_result['status']}")
                 continue
 
             terms_input = [{"term": term, "frequency": freq} for term, freq in citations_counter.items()]
+            log_step(f"[{entity_name}] Preparando VoiceList con {len(voices_dict)} canÃ³nicas")
             voice_list = voice_list_factory.from_dict(entity_type=entity_name, data=voices_dict)
-            # 3) Matching multi-algoritmo con clasificación final
+            # 3) Matching multi-algoritmo con clasificaciÃ³n final
+            log_step(f"[{entity_name}] Ejecutando evaluate sobre {len(terms_input)} tÃ©rminos")
             results_list = service.evaluate(terms_input, voice_list)
+            log_step(f"[{entity_name}] evaluate completado con {len(results_list)} resultados")
 
             total_freq = sum(r.get("frequency", 0) for r in results_list)
             resolved_freq = sum(
@@ -293,9 +337,11 @@ def run_similarity_generation(
             entity_result["coverage"] = round((resolved_freq / total_freq * 100) if total_freq else 0, 2)
             entity_result["status"] = "success"
             entity_result["results"] = results_list
+            log_step(f"[{entity_name}] OK coverage={entity_result['coverage']}% ({format_seconds(entity_start)})")
         except Exception as exc:
             entity_result["status"] = "error"
             entity_result["error"] = str(exc)[:300]
+            log_step(f"[{entity_name}] ERROR: {entity_result['error']} ({format_seconds(entity_start)})")
 
         all_results["entities"][entity_name] = entity_result
 
@@ -318,35 +364,47 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     from portada_s_index import SimilarityService, VoiceList
 
+    script_start = time.perf_counter()
     # Parámetros CLI
     args = parse_args()
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print("=" * 80)
-    print("GENERACIÓN DE SIMILITUDES CON py-portada-data-layer")
+    print("GENERACIÃƒÆ’Ã¢â‚¬Å“N DE SIMILITUDES CON py-portada-data-layer")
     print("=" * 80)
+    log_step(f"Output configurado: {output_dir / args.output_file}")
 
     # Inicialización de capa + config
     layer = build_layer(args.data_layer_config, args.schema, args.mapping)
+    log_step(f"Cargando config de similitud: {args.similarity_config}")
     similarity_config = read_json(args.similarity_config)
     disabled_algorithms = disable_unavailable_optional_algorithms(similarity_config)
     if disabled_algorithms:
         print(f"[WARN] Algoritmos opcionales desactivados por dependencias faltantes: {disabled_algorithms}")
+    enabled_algorithms = [
+        name for name, cfg in similarity_config.get("algorithms", {}).items() if cfg.get("enabled")
+    ]
+    log_step(f"Algoritmos habilitados ({len(enabled_algorithms)}): {enabled_algorithms}")
     service = SimilarityService.from_dict(similarity_config)
+    log_step("SimilarityService creado")
     results = run_similarity_generation(layer, service, VoiceList, args.entities, args.known_entities)
     results["disabled_algorithms"] = disabled_algorithms
 
     # Persistencia del resultado agregado
     output_path = output_dir / args.output_file
+    log_step(f"Escribiendo JSON final: {output_path}")
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
+    log_step(f"JSON final escrito: {output_path}")
 
-    # Cierre ordenado de sesión Spark
+    # Cierre ordenado de sesiÃƒÆ’Ã‚Â³n Spark
     if getattr(layer, "spark", None) is not None:
+        log_step("Cerrando sesión Spark")
         layer.stop_session()
 
     print(f"Resultados guardados en: {output_path}")
+    log_step(f"Proceso completo en {format_seconds(script_start)}")
     print("=" * 80)
     return 0
 
