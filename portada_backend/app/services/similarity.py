@@ -507,11 +507,12 @@ class SimilarityService:
         # Ejecutar evaluación real
         results = real_service.evaluate(terms_input, voice_list)
 
-        # Resumen básico (opcional, la librería no devuelve el summary exacto del backend viejo)
+        # Resumen básico: el frontend clasifica dinámicamente usando los scores crudos.
         summary = {
             "terms_count": len(term_frequencies),
             "voices_count": len(voice_list.all_voices()),
-            "classification_distribution": {} # Podríamos calcularlo si el frontend lo necesita
+            "available_algorithms": real_service.active_algorithms,
+            "allowed_algorithms": real_service.config.allowed_names_for_entity(selected_entity),
         }
 
         return {

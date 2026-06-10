@@ -9,11 +9,13 @@ import sys
 import os
 from pathlib import Path
 
+PORTADA_S_INDEX_VERSION = "0.2.0"
+
 def run_command(cmd, description):
     """Ejecuta un comando y muestra el resultado"""
     print(f"\n{description}...")
     try:
-        result = subprocess.run(cmd, shell=True, check=True, capture_output=True, text=True)
+        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
         if result.stdout:
             print(result.stdout)
         print(f"[OK] {description} completado")
@@ -40,10 +42,9 @@ def main():
     # Verificar que el contenedor existe
     print("\nVerificando contenedor...")
     result = subprocess.run(
-        f"docker ps -a --filter name={container_name} --format '{{{{.Names}}}}'",
-        shell=True,
+        ["docker", "ps", "-a", "--filter", f"name={container_name}", "--format", "{{.Names}}"],
         capture_output=True,
-        text=True
+        text=True,
     )
     
     if container_name not in result.stdout:
@@ -52,14 +53,54 @@ def main():
         sys.exit(1)
     
     print(f"[OK] Contenedor '{container_name}' encontrado")
+
+    # Actualizar librería publicada dentro del contenedor.
+    # Se ejecuta como root porque la imagen define USER spark y site-packages no es escribible.
+    print("\n" + "=" * 80)
+    print("ACTUALIZANDO PORTADA-S-INDEX EN EL CONTENEDOR")
+    print("=" * 80)
+
+    install_cmd = [
+        "docker",
+        "exec",
+        "-u",
+        "root",
+        container_name,
+        "python",
+        "-m",
+        "pip",
+        "install",
+        "--no-cache-dir",
+        "--upgrade",
+        "--no-deps",
+        f"portada-s-index=={PORTADA_S_INDEX_VERSION}",
+    ]
+    if not run_command(install_cmd, f"Instalando portada-s-index=={PORTADA_S_INDEX_VERSION}"):
+        print("[ERROR] No se pudo actualizar portada-s-index en el contenedor")
+        sys.exit(1)
+
+    prepare_delta_test_cmd = [
+        "docker",
+        "exec",
+        "-u",
+        "root",
+        container_name,
+        "sh",
+        "-lc",
+        "mkdir -p /app/delta_test/docker/portada_project/data_versions && "
+        "chown -R spark:spark /app/delta_test",
+    ]
+    if not run_command(prepare_delta_test_cmd, "Preparando permisos de /app/delta_test"):
+        print("[ERROR] No se pudo preparar /app/delta_test para py-portada-data-layer")
+        sys.exit(1)
     
     # Rutas de archivos de configuración (relativas al directorio raíz del proyecto)
     project_root = Path(__file__).parent.parent
     config_files = [
         (project_root / ".examples/portada-s-index/config_jsons_delcorreo/schema.json", "/app/config/schema.json"),
         (project_root / ".examples/portada-s-index/config_jsons_delcorreo/mapping_to_clean_chars.json", "/app/config/mapping_to_clean_chars.json"),
-        (project_root / ".examples/portada-s-index/config_jsons_delcorreo/delta_data_layer_config.json", "/app/config/delta_data_layer_config.json"),
-        (project_root / ".examples/portada-s-index/test_posrtada_s_index/config.json", "/app/config/config_similarity.json"),
+        (project_root / "data_layer_config/delta_data_layer_config.json", "/app/config/delta_data_layer_config.json"),
+        (project_root / "data_layer_config/config_similarity.json", "/app/config/config_similarity.json"),
     ]
     
     # Copiar archivos de configuración
@@ -72,24 +113,24 @@ def main():
             print(f"[WARNING] Archivo no encontrado: {src}")
             continue
         
-        cmd = f"docker cp {str(src)} {container_name}:{dst}"
+        cmd = ["docker", "cp", str(src), f"{container_name}:{dst}"]
         if not run_command(cmd, f"Copiando {src.name}"):
             print(f"[ERROR] No se pudo copiar {src}")
             sys.exit(1)
     
-    # Copiar script de generación (con parsing de cargo_list para 8 entidades)
+    # Copiar script de generación basado en py-portada-data-layer
     print("\n" + "=" * 80)
-    print("COPIANDO SCRIPT DE GENERACION (8 ENTIDADES)")
+    print("COPIANDO SCRIPT DE GENERACION CON DATALAYER")
     print("=" * 80)
     
-    script_src = project_root / "portada_backend/scripts/generate_similarity_with_cleaning.py"
-    script_dst = "/app/generate_similarity_with_cleaning.py"
+    script_src = project_root / "portada_backend/scripts/generate_similarity_with_datalayer.py"
+    script_dst = "/app/generate_similarity_with_datalayer.py"
     
     if not script_src.exists():
         print(f"[ERROR] Script no encontrado: {script_src}")
         sys.exit(1)
     
-    cmd = f"docker cp {str(script_src)} {container_name}:{script_dst}"
+    cmd = ["docker", "cp", str(script_src), f"{container_name}:{script_dst}"]
     if not run_command(cmd, "Copiando script"):
         print("[ERROR] No se pudo copiar el script")
         sys.exit(1)
@@ -100,8 +141,8 @@ def main():
     print("=" * 80)
     print("\nEsto puede tardar 10-15 minutos...\n")
     
-    cmd = f"docker exec -it {container_name} python {script_dst}"
-    result = subprocess.run(cmd, shell=True)
+    cmd = ["docker", "exec", container_name, "python", script_dst]
+    result = subprocess.run(cmd)
     
     if result.returncode != 0:
         print("\n[ERROR] El proceso de generación falló")
@@ -116,10 +157,10 @@ def main():
     print("COPIANDO RESULTADOS AL HOST")
     print("=" * 80)
     
-    src_file = "/tmp/similarity_results/similarity_results.json"
+    src_file = "/tmp/similarity_results/similarity_results_datalayer.json"
     dst_file = results_dir / "similarity_results.json"
     
-    cmd = f"docker cp {container_name}:{src_file} {str(dst_file)}"
+    cmd = ["docker", "cp", f"{container_name}:{src_file}", str(dst_file)]
     if run_command(cmd, "Copiando resultados"):
         print(f"\n[OK] Resultados guardados en: {dst_file}")
     else:

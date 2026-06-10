@@ -22,7 +22,7 @@ DEFAULT_DATA_LAYER_CONFIG_PATH = "/app/config/delta_data_layer_config.json"
 DEFAULT_SIMILARITY_CONFIG_PATH = "/app/config/config_similarity.json"
 DEFAULT_SCHEMA_PATH = "/app/config/schema.json"
 DEFAULT_MAPPING_PATH = "/app/config/mapping_to_clean_chars.json"
-DEFAULT_OUTPUT_DIR = "/app/similarity_results"
+DEFAULT_OUTPUT_DIR = "/tmp/similarity_results"
 DEFAULT_KNOWN_ENTITIES_PATH = "/app/known_entities.json"
 
 ENTITIES = [
@@ -63,6 +63,8 @@ def disable_unavailable_optional_algorithms(
             "text2vec": importlib.util.find_spec("text2vec") is not None,
             "sentence_transformers": importlib.util.find_spec("sentence_transformers") is not None,
             "fasttext": importlib.util.find_spec("fasttext") is not None,
+            "transformers": importlib.util.find_spec("transformers") is not None,
+            "torch": importlib.util.find_spec("torch") is not None,
         }
     log_step(f"Dependencias detectadas: {available_modules}")
 
@@ -72,6 +74,7 @@ def disable_unavailable_optional_algorithms(
         "sentence_transformer_labse": "sentence_transformers",
         "sentence_transformer_mpnet": "sentence_transformers",
         "fasttext": "fasttext",
+        "byt5": "byt5",
     }
 
     disabled: list[str] = []
@@ -79,14 +82,85 @@ def disable_unavailable_optional_algorithms(
     # Si falta dependencia opcional, desactivamos ese algoritmo para no romper evaluate().
     for algorithm_name, dependency_name in dependency_by_algorithm.items():
         algorithm_config = algorithms.get(algorithm_name)
-        if not algorithm_config or not algorithm_config.get("enabled"):
+        if not algorithm_config:
             continue
-        if not available_modules.get(dependency_name, False):
+        dependency_available = (
+            available_modules.get("transformers", False)
+            and available_modules.get("torch", False)
+            if dependency_name == "byt5"
+            else available_modules.get(dependency_name, False)
+        )
+        if not dependency_available:
             algorithm_config["enabled"] = False
             algorithm_config["disabled_reason"] = f"Dependencia opcional no instalada: {dependency_name}"
+            if similarity_config.get("algorithm_per_entity"):
+                algorithms.pop(algorithm_name, None)
+                for names in similarity_config["algorithm_per_entity"].values():
+                    while algorithm_name in names:
+                        names.remove(algorithm_name)
             disabled.append(algorithm_name)
 
+    if "semantic_model" in algorithms and not (
+        available_modules.get("text2vec", False)
+        or available_modules.get("sentence_transformers", False)
+    ):
+        algorithms["semantic_model"]["enabled"] = False
+        algorithms["semantic_model"]["disabled_reason"] = (
+            "Dependencia opcional no instalada: text2vec o sentence_transformers"
+        )
+        if similarity_config.get("algorithm_per_entity"):
+            algorithms.pop("semantic_model", None)
+            for names in similarity_config["algorithm_per_entity"].values():
+                while "semantic_model" in names:
+                    names.remove("semantic_model")
+        disabled.append("semantic_model")
+
     return disabled
+
+
+def normalize_runtime_devices(
+    similarity_config: dict[str, Any],
+    cuda_available: bool | None = None,
+) -> list[str]:
+    """Ajusta dispositivos de modelos Torch al runtime real del contenedor."""
+    if cuda_available is None:
+        try:
+            import torch
+
+            cuda_available = bool(torch.cuda.is_available())
+        except Exception:
+            cuda_available = False
+
+    if cuda_available:
+        return []
+
+    changes: list[str] = []
+    algorithms = similarity_config.get("algorithms", {})
+
+    for algorithm_name in ("byt5", "semantic_model"):
+        params = algorithms.get(algorithm_name, {}).get("params", {})
+        if params.get("device") == "cuda":
+            params["device"] = "cpu"
+            changes.append(f"{algorithm_name}.device cuda->cpu")
+
+    byt5_params = algorithms.get("byt5", {}).get("params", {})
+    if str(byt5_params.get("torch_dtype", "")).lower() in {"bfloat16", "bf16", "float16", "fp16"}:
+        old_dtype = byt5_params.get("torch_dtype")
+        byt5_params["torch_dtype"] = "float32"
+        changes.append(f"byt5.torch_dtype {old_dtype}->float32")
+
+    return changes
+
+
+def get_available_algorithms(service: Any) -> list[str]:
+    return list(getattr(service, "active_algorithms", []))
+
+
+def get_allowed_algorithms(service: Any, entity_name: str) -> list[str]:
+    config = getattr(service, "config", None)
+    if config and hasattr(config, "allowed_names_for_entity"):
+        return list(config.allowed_names_for_entity(entity_name))
+    return []
 
 
 def build_layer(
@@ -297,7 +371,8 @@ def run_similarity_generation(
             "known_voices": 0,
             "unique_terms": 0,
             "total_citations": 0,
-            "coverage": 0.0,
+            "available_algorithms": get_available_algorithms(service),
+            "allowed_algorithms": get_allowed_algorithms(service, entity_name),
             "results": [],
         }
 
@@ -325,19 +400,11 @@ def run_similarity_generation(
             results_list = service.evaluate(terms_input, voice_list)
             log_step(f"[{entity_name}] evaluate completado con {len(results_list)} resultados")
 
-            total_freq = sum(r.get("frequency", 0) for r in results_list)
-            resolved_freq = sum(
-                r.get("frequency", 0)
-                for r in results_list
-                if r.get("classification") in {"EXACT", "CONSENSUS"}
-            )
-
             entity_result["unique_terms"] = len(terms_input)
             entity_result["total_citations"] = sum(citations_counter.values())
-            entity_result["coverage"] = round((resolved_freq / total_freq * 100) if total_freq else 0, 2)
             entity_result["status"] = "success"
             entity_result["results"] = results_list
-            log_step(f"[{entity_name}] OK coverage={entity_result['coverage']}% ({format_seconds(entity_start)})")
+            log_step(f"[{entity_name}] OK raw_results={len(results_list)} ({format_seconds(entity_start)})")
         except Exception as exc:
             entity_result["status"] = "error"
             entity_result["error"] = str(exc)[:300]
@@ -380,16 +447,18 @@ def main() -> int:
     log_step(f"Cargando config de similitud: {args.similarity_config}")
     similarity_config = read_json(args.similarity_config)
     disabled_algorithms = disable_unavailable_optional_algorithms(similarity_config)
+    runtime_device_changes = normalize_runtime_devices(similarity_config)
     if disabled_algorithms:
         print(f"[WARN] Algoritmos opcionales desactivados por dependencias faltantes: {disabled_algorithms}")
-    enabled_algorithms = [
-        name for name, cfg in similarity_config.get("algorithms", {}).items() if cfg.get("enabled")
-    ]
-    log_step(f"Algoritmos habilitados ({len(enabled_algorithms)}): {enabled_algorithms}")
+    if runtime_device_changes:
+        print(f"[WARN] Ajustes de dispositivo por runtime sin CUDA: {runtime_device_changes}")
     service = SimilarityService.from_dict(similarity_config)
+    available_algorithms = get_available_algorithms(service)
+    log_step(f"Algoritmos a calcular ({len(available_algorithms)}): {available_algorithms}")
     log_step("SimilarityService creado")
     results = run_similarity_generation(layer, service, VoiceList, args.entities, args.known_entities)
     results["disabled_algorithms"] = disabled_algorithms
+    results["runtime_device_changes"] = runtime_device_changes
 
     # Persistencia del resultado agregado
     output_path = output_dir / args.output_file

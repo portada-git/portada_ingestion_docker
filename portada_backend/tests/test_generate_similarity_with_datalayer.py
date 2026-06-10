@@ -86,6 +86,11 @@ class FakeVoiceList:
 class FakeSimilarityService:
     def __init__(self):
         self.calls = []
+        self.active_algorithms = ["levenshtein_ratio", "jaro_winkler", "ngram_3"]
+        self.config = self
+
+    def allowed_names_for_entity(self, entity_type):
+        return ["ngram_3"]
 
     def evaluate(self, terms_input, voice_list):
         self.calls.append((terms_input, voice_list))
@@ -93,7 +98,12 @@ class FakeSimilarityService:
             {
                 "term": "Vapor",
                 "frequency": 2,
-                "classification": "CONSENSUS",
+                "allowed_algorithms": ["ngram_3"],
+                "algorithm_scores": [
+                    {"algorithm": "levenshtein_ratio", "score": 0.8},
+                    {"algorithm": "jaro_winkler", "score": 0.9},
+                    {"algorithm": "ngram_3", "score": 1.0},
+                ],
             }
         ]
 
@@ -153,6 +163,39 @@ class DataLayerSimilarityScriptTests(unittest.TestCase):
         self.assertTrue(config["algorithms"]["fasttext"]["enabled"])
         self.assertFalse(config["algorithms"]["semantic_text2vec"]["enabled"])
 
+    def test_normalize_runtime_devices_falls_back_to_cpu_when_cuda_is_unavailable(self):
+        module = load_module()
+        config = {
+            "algorithms": {
+                "byt5": {
+                    "params": {
+                        "device": "cuda",
+                        "torch_dtype": "bfloat16",
+                    }
+                },
+                "semantic_model": {
+                    "params": {
+                        "device": "cuda",
+                    }
+                },
+                "levenshtein_ratio": {"params": {}},
+            }
+        }
+
+        changes = module.normalize_runtime_devices(config, cuda_available=False)
+
+        self.assertEqual(config["algorithms"]["byt5"]["params"]["device"], "cpu")
+        self.assertEqual(config["algorithms"]["byt5"]["params"]["torch_dtype"], "float32")
+        self.assertEqual(config["algorithms"]["semantic_model"]["params"]["device"], "cpu")
+        self.assertEqual(
+            changes,
+            [
+                "byt5.device cuda->cpu",
+                "semantic_model.device cuda->cpu",
+                "byt5.torch_dtype bfloat16->float32",
+            ],
+        )
+
     def test_run_similarity_generation_reads_entries_and_known_voices_from_datalayer(self):
         module = load_module()
         layer = FakeLayer()
@@ -169,7 +212,13 @@ class DataLayerSimilarityScriptTests(unittest.TestCase):
         self.assertEqual(layer.read_entities, ["ship_type"])
         self.assertEqual(results["source"], "py-portada-data-layer")
         self.assertEqual(results["entities"]["ship_type"]["status"], "success")
-        self.assertEqual(results["entities"]["ship_type"]["coverage"], 100.0)
+        self.assertNotIn("coverage", results["entities"]["ship_type"])
+        self.assertEqual(
+            results["entities"]["ship_type"]["available_algorithms"],
+            ["levenshtein_ratio", "jaro_winkler", "ngram_3"],
+        )
+        self.assertEqual(results["entities"]["ship_type"]["allowed_algorithms"], ["ngram_3"])
+        self.assertNotIn("classification", results["entities"]["ship_type"]["results"][0])
         self.assertEqual(service.calls[0][0], [{"term": "Vapor", "frequency": 2}])
 
     def test_run_similarity_generation_cleans_entries_before_extracting_citations(self):
