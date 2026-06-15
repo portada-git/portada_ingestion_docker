@@ -11,7 +11,7 @@ services:
       context: .
       dockerfile: portada_backend/Dockerfile
     ports:
-      - "8000:8000"
+      - "8001:8000"
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379

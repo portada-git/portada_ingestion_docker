@@ -17,6 +17,6 @@ rebuild_dev.sh
 dev_help.sh
 DEV_README.md
 .examples
-portada-s-index
+portada-s-index/
 /models/
 portada_backend/models/
