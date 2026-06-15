@@ -158,11 +158,14 @@ def main():
     print("=" * 80)
     
     src_file = "/tmp/similarity_results/similarity_results_datalayer.json"
-    dst_file = results_dir / "similarity_results.json"
+    canonical_dst_file = results_dir / "similarity_results_datalayer.json"
+    legacy_dst_file = results_dir / "similarity_results.json"
     
-    cmd = ["docker", "cp", f"{container_name}:{src_file}", str(dst_file)]
-    if run_command(cmd, "Copiando resultados"):
-        print(f"\n[OK] Resultados guardados en: {dst_file}")
+    cmd = ["docker", "cp", f"{container_name}:{src_file}", str(canonical_dst_file)]
+    if run_command(cmd, "Copiando resultados datalayer"):
+        print(f"\n[OK] Resultados datalayer guardados en: {canonical_dst_file}")
+        legacy_dst_file.write_bytes(canonical_dst_file.read_bytes())
+        print(f"[OK] Copia de compatibilidad guardada en: {legacy_dst_file}")
     else:
         print("\n[ERROR] No se pudieron copiar los resultados")
         print("Verifica que el proceso de generación haya completado exitosamente")
@@ -172,7 +175,7 @@ def main():
     print("\n" + "=" * 80)
     print("PROCESO COMPLETADO EXITOSAMENTE")
     print("=" * 80)
-    print(f"\nResultados disponibles en: {dst_file}")
+    print(f"\nResultados disponibles en: {canonical_dst_file}")
     print("\nPuedes visualizarlos en: http://localhost:5173/similarity-results")
     print("=" * 80 + "\n")
 

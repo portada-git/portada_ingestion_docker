@@ -1,13 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 
+interface AlgorithmScore {
+  algorithm: string;
+  best_voice?: string;
+  best_entity?: string;
+  score?: number;
+  threshold?: number;
+  voted?: boolean;
+  in_gray_zone?: boolean;
+}
+
 interface SimilarityResult {
   term: string;
   frequency: number;
-  classification: string;
+  classification?: string;
   canonical_entity?: string;
+  entity?: string;
+  voice?: string;
   similarity_score?: number;
-  algorithms_votes?: any;
+  votes?: number;
+  exact_match?: boolean;
+  algorithms_votes?: Record<string, unknown>;
+  algorithm_scores?: AlgorithmScore[];
 }
 
 interface EntityData {
@@ -16,41 +31,50 @@ interface EntityData {
   known_voices: number;
   unique_terms: number;
   total_citations: number;
-  coverage: number;
+  coverage?: number;
+  available_algorithms?: string[];
+  allowed_algorithms?: string[];
   results: SimilarityResult[];
 }
 
 interface ResultsData {
   timestamp: string;
+  source?: string;
   total_entries: number;
+  disabled_algorithms?: string[];
   entities: {
     [key: string]: EntityData;
   };
+}
+
+interface ComputedSimilarityResult extends SimilarityResult {
+  computed_classification: string;
+  computed_entity: string;
+  computed_voice: string;
+  computed_votes: number;
+  computed_score?: number;
+  selected_scores: AlgorithmScore[];
+  voted_scores: AlgorithmScore[];
 }
 
 const SimilarityResults: React.FC = () => {
   const [data, setData] = useState<ResultsData | null>(null);
   const [selectedEntity, setSelectedEntity] = useState<string>('');
   const [selectedAlgorithms, setSelectedAlgorithms] = useState<string[]>([]);
+  const [selectedClassification, setSelectedClassification] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const API_BASE = 'http://localhost:8000/api/v1/similarity';
+  const API_BASE = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api/v1'}/similarity`;
 
-  // Algoritmos disponibles
-  const availableAlgorithms = [
-    'levenshtein_ocr',
-    'levenshtein_ratio',
-    'jaro_winkler',
-    'ngram_2',
-    'ngram_3',
-    'ngram_4',
-    'phonetic_dm',
-    'soundex',
-    'semantica',
-    'text2vec',
-    'semantic_model',
-  ];
+  const getAvailableAlgorithms = (): string[] => {
+    if (!data || !selectedEntity) {
+      return [];
+    }
+
+    const entityData = data.entities[selectedEntity];
+    return entityData?.allowed_algorithms || entityData?.available_algorithms || [];
+  };
 
   useEffect(() => {
     loadResults();
@@ -90,76 +114,157 @@ const SimilarityResults: React.FC = () => {
     );
   };
 
-  const getFilteredResults = (): SimilarityResult[] => {
-    if (!data || !selectedEntity) return [];
-    
+  const getSelectedScores = (result: SimilarityResult): AlgorithmScore[] => {
+    if (!Array.isArray(result.algorithm_scores)) {
+      return [];
+    }
+
+    return result.algorithm_scores.filter((score) => selectedAlgorithms.includes(score.algorithm));
+  };
+
+  const requiredConsensusVotes = (scoresCount: number): number => {
+    return Math.floor(scoresCount / 2) + 1;
+  };
+
+  const formatScore = (score?: number): string => {
+    return typeof score === 'number' ? score.toFixed(3) : '-';
+  };
+
+  const getBestScoredVoice = (scores: AlgorithmScore[]): AlgorithmScore | undefined => {
+    return scores
+      .filter((score): score is AlgorithmScore & { score: number } => typeof score.score === 'number')
+      .sort((a, b) => b.score - a.score)[0];
+  };
+
+  const computeResult = (result: SimilarityResult): ComputedSimilarityResult => {
+    const selectedScores = getSelectedScores(result);
+    const votedScores = selectedScores.filter((score) => score.voted);
+    const grayZoneScores = selectedScores.filter((score) => score.in_gray_zone);
+
+    if (result.exact_match) {
+      const bestScore = getBestScoredVoice(selectedScores);
+      return {
+        ...result,
+        computed_classification: 'EXACT',
+        computed_entity: result.entity || result.canonical_entity || bestScore?.best_entity || '-',
+        computed_voice: result.voice || bestScore?.best_voice || '-',
+        computed_votes: votedScores.length,
+        computed_score: bestScore?.score,
+        selected_scores: selectedScores,
+        voted_scores: votedScores,
+      };
+    }
+
+    const votesByEntity = votedScores.reduce<Record<string, AlgorithmScore[]>>((acc, score) => {
+      const entity = score.best_entity || '';
+      if (!entity) {
+        return acc;
+      }
+      acc[entity] = [...(acc[entity] || []), score];
+      return acc;
+    }, {});
+
+    const winningEntity = Object.keys(votesByEntity)
+      .sort((a, b) => votesByEntity[b].length - votesByEntity[a].length)[0];
+
+    if (winningEntity) {
+      const winningScores = votesByEntity[winningEntity];
+      const bestVote = getBestScoredVoice(winningScores);
+      const votesNeeded = requiredConsensusVotes(selectedScores.length);
+
+      if (winningScores.length >= votesNeeded) {
+        return {
+          ...result,
+          computed_classification: 'CONSENSUS',
+          computed_entity: winningEntity,
+          computed_voice: bestVote?.best_voice || '-',
+          computed_votes: winningScores.length,
+          computed_score: bestVote?.score,
+          selected_scores: selectedScores,
+          voted_scores: votedScores,
+        };
+      }
+    }
+
+    if (grayZoneScores.length > 0) {
+      const bestGrayZone = getBestScoredVoice(grayZoneScores);
+      return {
+        ...result,
+        computed_classification: 'GRAY_ZONE',
+        computed_entity: bestGrayZone?.best_entity || '-',
+        computed_voice: bestGrayZone?.best_voice || '-',
+        computed_votes: votedScores.length,
+        computed_score: bestGrayZone?.score,
+        selected_scores: selectedScores,
+        voted_scores: votedScores,
+      };
+    }
+
+    return {
+      ...result,
+      computed_classification: 'REJECTED',
+      computed_entity: '-',
+      computed_voice: '-',
+      computed_votes: votedScores.length,
+      selected_scores: selectedScores,
+      voted_scores: votedScores,
+    };
+  };
+
+  const getComputedResults = (): ComputedSimilarityResult[] => {
+    if (!data || !selectedEntity || selectedAlgorithms.length === 0) return [];
+
     const entityData = data.entities[selectedEntity];
     if (!entityData || !entityData.results) return [];
-    
-    let results = entityData.results;
-    
-    // Filtrar por algoritmos si hay alguno seleccionado
-    if (selectedAlgorithms.length > 0) {
-      results = results.filter(result => {
-        // Si no tiene algorithm_scores, mostrar solo si no hay filtros
-        if (!result.algorithms_votes && !result.algorithm_scores) {
-          return false;
-        }
-        
-        // Buscar en algorithm_scores (array)
-        if (result.algorithm_scores && Array.isArray(result.algorithm_scores)) {
-          return result.algorithm_scores.some((score: any) => 
-            selectedAlgorithms.includes(score.algorithm)
-          );
-        }
-        
-        // Buscar en algorithms_votes (objeto) - por compatibilidad
-        if (result.algorithms_votes) {
-          return selectedAlgorithms.some(alg => 
-            result.algorithms_votes[alg] !== undefined
-          );
-        }
-        
-        return false;
-      });
-    }
-    
-    return results;
+
+    return entityData.results
+      .filter(result => Array.isArray(result.algorithm_scores))
+      .map(computeResult)
+      .filter(result => !selectedClassification || result.computed_classification === selectedClassification);
   };
 
   const exportToExcel = () => {
     if (!data || !selectedEntity) return;
     
-    const results = getFilteredResults();
+    const results = getComputedResults();
     const entityData = data.entities[selectedEntity];
     
     console.log('Exportando:', {
       totalResults: results.length,
       selectedEntity,
-      selectedAlgorithms
+      selectedAlgorithms,
+      selectedClassification
     });
     
-    // Preparar datos para Excel - Hoja de Resultados
+    // Preparar datos para Excel - Hoja de Resultados.
+    // Exporta exactamente el conjunto visible en tabla y añade columnas por algoritmo seleccionado.
     const excelData = results.map(result => {
-      // Obtener los algoritmos que votaron
-      let algorithmsUsed = '';
-      if (result.algorithm_scores && Array.isArray(result.algorithm_scores)) {
-        algorithmsUsed = result.algorithm_scores
-          .filter((s: any) => s.voted)
-          .map((s: any) => s.algorithm)
-          .join(', ');
-      }
-      
-      return {
+      const algorithmsUsed = result.voted_scores
+        .map((score) => `${score.algorithm}: ${formatScore(score.score)}`)
+        .join(', ');
+
+      const row: Record<string, string | number | boolean> = {
         'Término': result.term,
         'Frecuencia': result.frequency,
-        'Clasificación': result.classification,
-        'Entidad Canónica': result.canonical_entity || result.entity || '-',
-        'Voz': result.voice || '-',
-        'Score': result.similarity_score?.toFixed(3) || '-',
-        'Votos': result.votes || 0,
-        'Algoritmos': algorithmsUsed || '-'
+        'Clasificación calculada': result.computed_classification,
+        'Entidad canónica calculada': result.computed_entity,
+        'Voz calculada': result.computed_voice,
+        'Score ganador': result.computed_score?.toFixed(3) || '-',
+        'Votos de algoritmos': result.computed_votes,
+        'Algoritmos que votaron': algorithmsUsed || '-',
       };
+
+      selectedAlgorithms.forEach((algorithm) => {
+        const score = result.selected_scores.find((item) => item.algorithm === algorithm);
+        row[`${algorithm} voto`] = score?.voted ? 'Sí' : 'No';
+        row[`${algorithm} score`] = formatScore(score?.score);
+        row[`${algorithm} threshold`] = formatScore(score?.threshold);
+        row[`${algorithm} zona gris`] = score?.in_gray_zone ? 'Sí' : 'No';
+        row[`${algorithm} entidad sugerida`] = score?.best_entity || '-';
+        row[`${algorithm} voz sugerida`] = score?.best_voice || '-';
+      });
+
+      return row;
     });
     
     console.log('Datos para Excel:', excelData.length, 'filas');
@@ -176,7 +281,8 @@ const SimilarityResults: React.FC = () => {
       ['Citaciones Totales', entityData.total_citations],
       ['Cobertura', `${entityData.coverage}%`],
       [],
-      ['Algoritmos Aplicados', selectedAlgorithms.length > 0 ? selectedAlgorithms.join(', ') : 'Todos'],
+      ['Algoritmos Aplicados', selectedAlgorithms.join(', ')],
+      ['Clasificación Filtrada', selectedClassification || 'Todas'],
       ['Resultados Mostrados', results.length],
     ];
     
@@ -275,7 +381,7 @@ const SimilarityResults: React.FC = () => {
                     fontFamily: 'monospace',
                     fontSize: '0.875rem'
                   }}>
-                    python portada_backend/run_generate_similarity.py
+                    docker compose exec api python /app/scripts/generate_similarity_with_datalayer.py --output-dir /app/similarity_results
                   </div>
                 </div>
                 <button
@@ -309,7 +415,7 @@ const SimilarityResults: React.FC = () => {
 
   const entities = Object.keys(data.entities);
   const currentEntity = selectedEntity ? data.entities[selectedEntity] : null;
-  const filteredResults = getFilteredResults();
+  const computedResults = getComputedResults();
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -326,6 +432,11 @@ const SimilarityResults: React.FC = () => {
             <p className="text-sm text-gray-600">
               Total de entradas: {data.total_entries.toLocaleString()}
             </p>
+            {data.source && (
+              <p className="text-sm text-gray-600">
+                Fuente: {data.source}
+              </p>
+            )}
           </div>
           <div className="flex gap-2">
             <button
@@ -339,7 +450,7 @@ const SimilarityResults: React.FC = () => {
             </button>
             <button
               onClick={exportToExcel}
-              disabled={!selectedEntity || filteredResults.length === 0}
+              disabled={!selectedEntity || computedResults.length === 0}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -354,7 +465,7 @@ const SimilarityResults: React.FC = () => {
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <h2 className="text-lg font-semibold mb-4">Filtros</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
             {/* Selector de Entidad */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -362,7 +473,11 @@ const SimilarityResults: React.FC = () => {
               </label>
               <select
                 value={selectedEntity}
-                onChange={(e) => setSelectedEntity(e.target.value)}
+                onChange={(e) => {
+                  setSelectedEntity(e.target.value);
+                  setSelectedAlgorithms([]);
+                  setSelectedClassification('');
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 {entities.map((entity) => (
@@ -374,12 +489,29 @@ const SimilarityResults: React.FC = () => {
             </div>
 
             {/* Filtros de Algoritmos */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Clasificación
+              </label>
+              <select
+                value={selectedClassification}
+                onChange={(e) => setSelectedClassification(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">Todas</option>
+                <option value="EXACT">EXACT</option>
+                <option value="CONSENSUS">CONSENSUS</option>
+                <option value="GRAY_ZONE">GRAY_ZONE</option>
+                <option value="REJECTED">REJECTED</option>
+              </select>
+            </div>
+
             <div className="md:col-span-3">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Algoritmos
               </label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                {availableAlgorithms.map((algorithm) => (
+                {getAvailableAlgorithms().map((algorithm) => (
                   <label key={algorithm} className="flex items-center space-x-2 text-sm">
                     <input
                       type="checkbox"
@@ -393,8 +525,8 @@ const SimilarityResults: React.FC = () => {
               </div>
               <p className="text-xs text-gray-500 mt-2">
                 {selectedAlgorithms.length === 0
-                  ? 'Mostrando resultados de todos los algoritmos'
-                  : `Filtrando por ${selectedAlgorithms.length} algoritmo(s)`}
+                  ? 'Selecciona uno o más algoritmos para calcular la votación'
+                  : `Calculando votación con ${selectedAlgorithms.length} algoritmo(s)`}
               </p>
             </div>
           </div>
@@ -416,8 +548,8 @@ const SimilarityResults: React.FC = () => {
               <div className="text-sm text-gray-600">Citaciones Totales</div>
             </div>
             <div className="bg-white rounded-lg shadow p-4 text-center">
-              <div className={`text-2xl font-bold ${currentEntity.coverage > 80 ? 'text-green-600' : 'text-yellow-600'}`}>
-                {currentEntity.coverage.toFixed(1)}%
+              <div className={`text-2xl font-bold ${(currentEntity.coverage ?? 0) > 80 ? 'text-green-600' : 'text-yellow-600'}`}>
+                {typeof currentEntity.coverage === 'number' ? `${currentEntity.coverage.toFixed(1)}%` : 'N/A'}
               </div>
               <div className="text-sm text-gray-600">Cobertura</div>
             </div>
@@ -443,7 +575,7 @@ const SimilarityResults: React.FC = () => {
                     Clasificación
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Votos
+                    Votos de algoritmos
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Algoritmos
@@ -451,21 +583,16 @@ const SimilarityResults: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredResults.length === 0 ? (
+                {computedResults.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                      {selectedAlgorithms.length > 0 
-                        ? 'No hay resultados que coincidan con los algoritmos seleccionados'
-                        : 'No hay resultados para mostrar'}
+                      {selectedAlgorithms.length === 0 
+                        ? 'Selecciona uno o más algoritmos para calcular y mostrar resultados'
+                        : 'No hay resultados que coincidan con los filtros seleccionados'}
                     </td>
                   </tr>
                 ) : (
-                  filteredResults.map((result, idx) => {
-                    // Obtener algoritmos que votaron
-                    const votedAlgorithms = result.algorithm_scores && Array.isArray(result.algorithm_scores)
-                      ? result.algorithm_scores.filter((s: any) => s.voted).map((s: any) => s.algorithm)
-                      : [];
-                    
+                  computedResults.map((result, idx) => {
                     return (
                       <tr key={idx} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -475,29 +602,28 @@ const SimilarityResults: React.FC = () => {
                           {result.frequency}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {result.canonical_entity || result.entity || '-'}
+                          {result.computed_entity}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getClassificationColor(result.classification)}`}>
-                            {result.classification}
+                          <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getClassificationColor(result.computed_classification)}`}>
+                            {result.computed_classification}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                          {result.votes || 0}
+                          {result.computed_votes}
                         </td>
                         <td className="px-6 py-4 text-xs text-gray-600">
-                          {votedAlgorithms.length > 0 ? (
+                          {result.voted_scores.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
-                              {votedAlgorithms.slice(0, 3).map((alg: string, i: number) => (
-                                <span key={i} className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">
-                                  {alg}
+                              {result.voted_scores.map((score, i) => (
+                                <span
+                                  key={`${score.algorithm}-${i}`}
+                                  className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded"
+                                  title={`${score.algorithm}: ${formatScore(score.score)} / threshold ${formatScore(score.threshold)}`}
+                                >
+                                  {score.algorithm}: {formatScore(score.score)}
                                 </span>
                               ))}
-                              {votedAlgorithms.length > 3 && (
-                                <span className="px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded">
-                                  +{votedAlgorithms.length - 3}
-                                </span>
-                              )}
                             </div>
                           ) : '-'}
                         </td>
@@ -509,10 +635,10 @@ const SimilarityResults: React.FC = () => {
             </table>
           </div>
           
-          {filteredResults.length > 0 && (
+          {computedResults.length > 0 && (
             <div className="bg-gray-50 px-6 py-3 border-t border-gray-200">
               <p className="text-sm text-gray-600">
-                Mostrando {filteredResults.length} resultado(s)
+                Mostrando {computedResults.length} resultado(s)
               </p>
             </div>
           )}
