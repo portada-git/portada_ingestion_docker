@@ -28,7 +28,9 @@ event_handler = PortadaIngestionEventHandler()
 
 def process_file(path_file, file_type=None, user_or_entity=None):
     if file_type.lower() == "entity":
-        dagster_process_entity(path_file, user_or_entity)        
+        dagster_process_entity(path_file, user_or_entity)   
+    elif file_type.lower() == "reviewed":
+        dagster_process_reviewed(path_file, user_or_entity)
     else:
         dagster_process_entry(path_file, user_or_entity)
 
@@ -58,6 +60,23 @@ def dagster_process_entity(ruta_fitxer, entity_type):
         job_name="entity_ingestion",
         run_config={
             "ops": {"ingested_entity_file": {"config": {"local_path": ruta_fitxer, "entity_type": entity_type}}},
+            "resources": {
+                "datalayer": {
+                    "config": {
+                        "config_path": config_path,
+                        "job_name": "ingestion",
+                    }
+                }
+            }
+        }
+    )
+
+def dagster_process_reviewed(ruta_fitxer, entity_type):
+    client = DagsterGraphQLClient(hostname=host, port_number=3000)
+    client.submit_job_execution(
+        job_name="reviewed_entity_ingestion",
+        run_config={
+            "ops": {"ingested_reviewed_file": {"config": {"local_path": ruta_fitxer, "entity_type": entity_type}}},
             "resources": {
                 "datalayer": {
                     "config": {
