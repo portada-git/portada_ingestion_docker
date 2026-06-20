@@ -52,7 +52,7 @@ ARG CACHE_BUST_LIBS=3
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-ARG CACHE_BUST_OWN_LIBS=30
+ARG CACHE_BUST_OWN_LIBS=40
 # Instal·lem les dependències
 COPY own_requirements.txt .
 RUN pip install --no-cache-dir -r own_requirements.txt
@@ -72,6 +72,8 @@ RUN mkdir -p /opt/dagster/dagster_home && \
     
 # Per escriure logs o dades a /opt/spark
 RUN chown -R spark:spark /opt/spark
+
+RUN chmod -R 1777 /tmp
 
 USER spark
 

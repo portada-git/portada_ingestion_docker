@@ -6,7 +6,7 @@ from dagster_graphql import DagsterGraphQLClient
 
 
 from watchdog.observers import Observer
-from portada_file_monitor.file_event_handler import QueuedPortadaIngestionEventHandler
+from portada_file_monitor.file_event_handler import PortadaIngestionEventHandler
 
 so = platform.system()
 if so == "Darwin":
@@ -22,12 +22,15 @@ path_to_watch =  os.getenv("PATH_TO_WATCH", path_to_watch)
 host = os.getenv("DAGSTER_HOST", "localhost")	
 redis_port=os.getenv("REDIS_PORT", 6379)
 redis_host=os.getenv("REDIS_HOST", "localhost")
-event_handler = QueuedPortadaIngestionEventHandler(host=redis_host, port=redis_port, db=2)
+#event_handler = QueuedPortadaIngestionEventHandler(host=redis_host, port=redis_port, db=2)
+event_handler = PortadaIngestionEventHandler()
 
 
 def process_file(path_file, file_type=None, user_or_entity=None):
     if file_type.lower() == "entity":
-        dagster_process_entity(path_file, user_or_entity)        
+        dagster_process_entity(path_file, user_or_entity)   
+    elif file_type.lower() == "reviewed":
+        dagster_process_reviewed(path_file, user_or_entity)
     else:
         dagster_process_entry(path_file, user_or_entity)
 
@@ -57,6 +60,23 @@ def dagster_process_entity(ruta_fitxer, entity_type):
         job_name="entity_ingestion",
         run_config={
             "ops": {"ingested_entity_file": {"config": {"local_path": ruta_fitxer, "entity_type": entity_type}}},
+            "resources": {
+                "datalayer": {
+                    "config": {
+                        "config_path": config_path,
+                        "job_name": "ingestion",
+                    }
+                }
+            }
+        }
+    )
+
+def dagster_process_reviewed(ruta_fitxer, entity_type):
+    client = DagsterGraphQLClient(hostname=host, port_number=3000)
+    client.submit_job_execution(
+        job_name="reviewed_entity_ingestion",
+        run_config={
+            "ops": {"ingested_reviewed_file": {"config": {"local_path": ruta_fitxer, "entity_type": entity_type}}},
             "resources": {
                 "datalayer": {
                     "config": {

@@ -1,7 +1,7 @@
 delta-spark==3.2.1
 hdfs==2.7.0
-dagster
+dagster>=1.13.2
 dagster-webserver
-dagster_pyspark
+dagster_pyspark>=0.29.2
 redis
 
