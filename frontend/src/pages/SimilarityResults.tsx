@@ -47,15 +47,30 @@ interface ResultsData {
   };
 }
 
+interface ResultsLoadError {
+  title: string;
+  message: string;
+  action?: string;
+  command?: string;
+}
+
 interface ComputedSimilarityResult extends SimilarityResult {
   computed_classification: string;
   computed_entity: string;
   computed_voice: string;
   computed_votes: number;
+  total_votes: number;
+  votes_needed: number;
   computed_score?: number;
   selected_scores: AlgorithmScore[];
   voted_scores: AlgorithmScore[];
 }
+
+const TECHNICAL_ID_PATTERN = /^DM_\d+$/i;
+
+const isTechnicalIdentifierTerm = (term: string): boolean => {
+  return TECHNICAL_ID_PATTERN.test(term.trim());
+};
 
 const SimilarityResults: React.FC = () => {
   const [data, setData] = useState<ResultsData | null>(null);
@@ -63,7 +78,7 @@ const SimilarityResults: React.FC = () => {
   const [selectedAlgorithms, setSelectedAlgorithms] = useState<string[]>([]);
   const [selectedClassification, setSelectedClassification] = useState<string>('');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ResultsLoadError | null>(null);
 
   const API_BASE = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api/v1'}/similarity`;
 
@@ -73,6 +88,15 @@ const SimilarityResults: React.FC = () => {
     }
 
     const entityData = data.entities[selectedEntity];
+    return entityData?.available_algorithms || entityData?.allowed_algorithms || [];
+  };
+
+  const getDefaultAlgorithmsForEntity = (entityName: string, resultsData = data): string[] => {
+    if (!resultsData || !entityName) {
+      return [];
+    }
+
+    const entityData = resultsData.entities[entityName];
     return entityData?.allowed_algorithms || entityData?.available_algorithms || [];
   };
 
@@ -84,23 +108,74 @@ const SimilarityResults: React.FC = () => {
     try {
       setLoading(true);
       const response = await fetch(`${API_BASE}/results`);
-      
+
       if (!response.ok) {
-        throw new Error('No hay resultados disponibles');
+        let detail: unknown;
+        try {
+          detail = await response.json();
+        } catch {
+          detail = null;
+        }
+
+        const apiDetail = typeof detail === 'object' && detail !== null && 'detail' in detail
+          ? (detail as { detail?: unknown }).detail
+          : null;
+        const structuredDetail = typeof apiDetail === 'object' && apiDetail !== null
+          ? apiDetail as { message?: string; action?: string }
+          : null;
+
+        if (response.status === 404) {
+          throw {
+            title: 'No hay resultados disponibles',
+            message: typeof apiDetail === 'string' ? apiDetail : 'El proceso de análisis de similitud no se ha ejecutado todavía.',
+            action: 'Para generar los resultados, ejecuta el siguiente comando en el servidor:',
+            command: 'docker compose exec api python /app/scripts/generate_similarity_with_datalayer.py --output-dir /app/similarity_results',
+          } satisfies ResultsLoadError;
+        }
+
+        if (response.status === 422) {
+          throw {
+            title: 'El archivo de resultados no es válido',
+            message: structuredDetail?.message || 'El backend encontró un JSON de resultados corrupto.',
+            action: structuredDetail?.action || 'Regenera el análisis de similitud para reemplazar el archivo inválido.',
+            command: 'docker compose exec api python /app/scripts/generate_similarity_with_datalayer.py --output-dir /app/similarity_results',
+          } satisfies ResultsLoadError;
+        }
+
+        throw {
+          title: 'No se pudieron cargar los resultados',
+          message: `El backend respondió con HTTP ${response.status}.`,
+          action: 'Revisa los logs del servicio api para ver la causa exacta.',
+        } satisfies ResultsLoadError;
       }
-      
+
       const results = await response.json();
       setData(results);
-      
+
       // Seleccionar primera entidad por defecto
       const entities = Object.keys(results.entities);
       if (entities.length > 0) {
-        setSelectedEntity(entities[0]);
+        const firstEntity = entities[0];
+        setSelectedEntity(firstEntity);
+        setSelectedAlgorithms(getDefaultAlgorithmsForEntity(firstEntity, results));
       }
-      
+
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error desconocido');
+      if (err instanceof TypeError) {
+        setError({
+          title: 'No se puede conectar con la API',
+          message: `No se pudo llamar a ${API_BASE}/results.`,
+          action: 'Comprueba que el contenedor api esté levantado, el puerto sea correcto y no haya bloqueo CORS.',
+        });
+      } else if (typeof err === 'object' && err !== null && 'title' in err && 'message' in err) {
+        setError(err as ResultsLoadError);
+      } else {
+        setError({
+          title: 'Error desconocido',
+          message: err instanceof Error ? err.message : 'No se pudo cargar el resultado.',
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -141,6 +216,8 @@ const SimilarityResults: React.FC = () => {
     const votedScores = selectedScores.filter((score) => score.voted);
     const grayZoneScores = selectedScores.filter((score) => score.in_gray_zone);
 
+    const votesNeeded = requiredConsensusVotes(selectedScores.length);
+
     if (result.exact_match) {
       const bestScore = getBestScoredVoice(selectedScores);
       return {
@@ -149,6 +226,8 @@ const SimilarityResults: React.FC = () => {
         computed_entity: result.entity || result.canonical_entity || bestScore?.best_entity || '-',
         computed_voice: result.voice || bestScore?.best_voice || '-',
         computed_votes: votedScores.length,
+        total_votes: votedScores.length,
+        votes_needed: votesNeeded,
         computed_score: bestScore?.score,
         selected_scores: selectedScores,
         voted_scores: votedScores,
@@ -170,7 +249,6 @@ const SimilarityResults: React.FC = () => {
     if (winningEntity) {
       const winningScores = votesByEntity[winningEntity];
       const bestVote = getBestScoredVoice(winningScores);
-      const votesNeeded = requiredConsensusVotes(selectedScores.length);
 
       if (winningScores.length >= votesNeeded) {
         return {
@@ -179,6 +257,8 @@ const SimilarityResults: React.FC = () => {
           computed_entity: winningEntity,
           computed_voice: bestVote?.best_voice || '-',
           computed_votes: winningScores.length,
+          total_votes: votedScores.length,
+          votes_needed: votesNeeded,
           computed_score: bestVote?.score,
           selected_scores: selectedScores,
           voted_scores: votedScores,
@@ -188,24 +268,33 @@ const SimilarityResults: React.FC = () => {
 
     if (grayZoneScores.length > 0) {
       const bestGrayZone = getBestScoredVoice(grayZoneScores);
+      const grayEntityVotes = bestGrayZone?.best_entity
+        ? votesByEntity[bestGrayZone.best_entity]?.length || 0
+        : 0;
       return {
         ...result,
         computed_classification: 'GRAY_ZONE',
         computed_entity: bestGrayZone?.best_entity || '-',
         computed_voice: bestGrayZone?.best_voice || '-',
-        computed_votes: votedScores.length,
+        computed_votes: grayEntityVotes,
+        total_votes: votedScores.length,
+        votes_needed: votesNeeded,
         computed_score: bestGrayZone?.score,
         selected_scores: selectedScores,
         voted_scores: votedScores,
       };
     }
 
+    const highestVoteCount = winningEntity ? votesByEntity[winningEntity].length : 0;
+
     return {
       ...result,
       computed_classification: 'REJECTED',
       computed_entity: '-',
       computed_voice: '-',
-      computed_votes: votedScores.length,
+      computed_votes: highestVoteCount,
+      total_votes: votedScores.length,
+      votes_needed: votesNeeded,
       selected_scores: selectedScores,
       voted_scores: votedScores,
     };
@@ -218,6 +307,7 @@ const SimilarityResults: React.FC = () => {
     if (!entityData || !entityData.results) return [];
 
     return entityData.results
+      .filter(result => !isTechnicalIdentifierTerm(result.term))
       .filter(result => Array.isArray(result.algorithm_scores))
       .map(computeResult)
       .filter(result => !selectedClassification || result.computed_classification === selectedClassification);
@@ -250,7 +340,8 @@ const SimilarityResults: React.FC = () => {
         'Entidad canónica calculada': result.computed_entity,
         'Voz calculada': result.computed_voice,
         'Score ganador': result.computed_score?.toFixed(3) || '-',
-        'Votos de algoritmos': result.computed_votes,
+        'Votos de consenso': `${result.computed_votes}/${result.votes_needed}`,
+        'Votos totales de algoritmos': result.total_votes,
         'Algoritmos que votaron': algorithmsUsed || '-',
       };
 
@@ -363,26 +454,27 @@ const SimilarityResults: React.FC = () => {
               </div>
               <div className="ml-3 flex-1">
                 <h3 style={{ color: '#991b1b', fontWeight: '600', fontSize: '1.125rem', marginBottom: '0.5rem' }}>
-                  No hay resultados disponibles
+                  {error.title}
                 </h3>
                 <div style={{ color: '#7f1d1d', marginBottom: '1rem' }}>
-                  <p style={{ marginBottom: '0.75rem' }}>{error}</p>
-                  <p style={{ fontSize: '0.875rem', marginBottom: '0.5rem' }}>
-                    El proceso de análisis de similitud no se ha ejecutado todavía.
-                  </p>
-                  <p style={{ fontSize: '0.875rem' }}>
-                    Para generar los resultados, ejecuta el siguiente comando en el servidor:
-                  </p>
-                  <div style={{ 
-                    backgroundColor: '#fee2e2', 
-                    padding: '0.75rem', 
-                    borderRadius: '0.375rem',
-                    marginTop: '0.75rem',
-                    fontFamily: 'monospace',
-                    fontSize: '0.875rem'
-                  }}>
-                    docker compose exec api python /app/scripts/generate_similarity_with_datalayer.py --output-dir /app/similarity_results
-                  </div>
+                  <p style={{ marginBottom: '0.75rem' }}>{error.message}</p>
+                  {error.action && (
+                    <p style={{ fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+                      {error.action}
+                    </p>
+                  )}
+                  {error.command && (
+                    <div style={{
+                      backgroundColor: '#fee2e2',
+                      padding: '0.75rem',
+                      borderRadius: '0.375rem',
+                      marginTop: '0.75rem',
+                      fontFamily: 'monospace',
+                      fontSize: '0.875rem'
+                    }}>
+                      {error.command}
+                    </div>
+                  )}
                 </div>
                 <button
                   onClick={loadResults}
@@ -474,8 +566,9 @@ const SimilarityResults: React.FC = () => {
               <select
                 value={selectedEntity}
                 onChange={(e) => {
-                  setSelectedEntity(e.target.value);
-                  setSelectedAlgorithms([]);
+                  const nextEntity = e.target.value;
+                  setSelectedEntity(nextEntity);
+                  setSelectedAlgorithms(getDefaultAlgorithmsForEntity(nextEntity));
                   setSelectedClassification('');
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -526,7 +619,7 @@ const SimilarityResults: React.FC = () => {
               <p className="text-xs text-gray-500 mt-2">
                 {selectedAlgorithms.length === 0
                   ? 'Selecciona uno o más algoritmos para calcular la votación'
-                  : `Calculando votación con ${selectedAlgorithms.length} algoritmo(s)`}
+                  : `Calculando votación con ${selectedAlgorithms.length} algoritmo(s). Los permitidos por configuración vienen seleccionados por defecto.`}
               </p>
             </div>
           </div>
@@ -575,7 +668,7 @@ const SimilarityResults: React.FC = () => {
                     Clasificación
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Votos de algoritmos
+                    Votos de consenso
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Algoritmos
@@ -609,8 +702,14 @@ const SimilarityResults: React.FC = () => {
                             {result.computed_classification}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                          {result.computed_votes}
+                        <td
+                          className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right"
+                          title={`${result.total_votes} algoritmo(s) votaron; ${result.computed_votes} apuntan a la entidad ganadora. Se necesitan ${result.votes_needed}.`}
+                        >
+                          {result.computed_votes}/{result.votes_needed}
+                          <div className="text-xs text-gray-400">
+                            total: {result.total_votes}
+                          </div>
                         </td>
                         <td className="px-6 py-4 text-xs text-gray-600">
                           {result.voted_scores.length > 0 ? (
@@ -619,9 +718,10 @@ const SimilarityResults: React.FC = () => {
                                 <span
                                   key={`${score.algorithm}-${i}`}
                                   className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded"
-                                  title={`${score.algorithm}: ${formatScore(score.score)} / threshold ${formatScore(score.threshold)}`}
+                                  title={`${score.algorithm}: ${formatScore(score.score)} / threshold ${formatScore(score.threshold)} / entidad ${score.best_entity || '-'} / voz ${score.best_voice || '-'}`}
                                 >
                                   {score.algorithm}: {formatScore(score.score)}
+                                  {score.best_voice ? ` → ${score.best_voice}` : ''}
                                 </span>
                               ))}
                             </div>

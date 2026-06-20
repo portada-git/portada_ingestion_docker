@@ -196,6 +196,58 @@ class DataLayerSimilarityScriptTests(unittest.TestCase):
             ],
         )
 
+
+    def test_normalize_citation_removes_document_ids_and_bad_ship_type_roles(self):
+        module = load_module()
+
+        self.assertEqual(module.normalize_citation_for_entity("ship_type", "DM_0000003992"), "")
+        self.assertEqual(module.normalize_citation_for_entity("ship_type", "teniente de navio"), "")
+        self.assertEqual(module.normalize_citation_for_entity("ship_type", "del segundo berg"), "berg")
+        self.assertEqual(module.normalize_citation_for_entity("ship_type", "gol."), "gol")
+
+    def test_counter_from_rows_applies_entity_specific_citation_cleanup(self):
+        module = load_module()
+        rows = [
+            FakeRow(citation="DM_0000003992"),
+            FakeRow(citation="teniente de navio"),
+            FakeRow(citation="del segundo berg"),
+            FakeRow(citation="gol."),
+        ]
+
+        counter = module._counter_from_rows(rows, entity_name="ship_type")
+
+        self.assertEqual(counter, {"berg": 1, "gol": 1})
+
+    def test_disable_unavailable_optional_algorithms_removes_missing_fasttext_model(self):
+        module = load_module()
+        config = {
+            "algorithms": {
+                "fasttext": {
+                    "enabled": True,
+                    "params": {"model_path": "models/fasttext/missing.bin"},
+                },
+                "levenshtein_ratio": {"enabled": True, "params": {}},
+            },
+            "algorithm_per_entity": {
+                "ship_type": ["levenshtein_ratio", "fasttext"],
+            },
+        }
+
+        disabled = module.disable_unavailable_optional_algorithms(
+            config,
+            available_modules={
+                "text2vec": False,
+                "sentence_transformers": False,
+                "fasttext": True,
+                "transformers": False,
+                "torch": False,
+            },
+        )
+
+        self.assertIn("fasttext", disabled)
+        self.assertNotIn("fasttext", config["algorithms"])
+        self.assertEqual(config["algorithm_per_entity"]["ship_type"], ["levenshtein_ratio"])
+
     def test_run_similarity_generation_reads_entries_and_known_voices_from_datalayer(self):
         module = load_module()
         layer = FakeLayer()

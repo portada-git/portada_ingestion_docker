@@ -7,6 +7,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pathlib import Path
 import json
+from json import JSONDecodeError
 import io
 import pandas as pd
 from typing import List, Dict, Optional
@@ -26,6 +27,13 @@ CANONICAL_RESULTS_FILE = "similarity_results_datalayer.json"
 LEGACY_RESULTS_FILE = "similarity_results.json"
 
 
+class InvalidResultsFileError(Exception):
+    def __init__(self, file_name: str, message: str) -> None:
+        self.file_name = file_name
+        self.message = message
+        super().__init__(message)
+
+
 def get_results_file() -> Path:
     """Return the canonical datalayer output, falling back to the legacy file."""
     canonical_file = RESULTS_DIR / CANONICAL_RESULTS_FILE
@@ -33,6 +41,23 @@ def get_results_file() -> Path:
         return canonical_file
 
     return RESULTS_DIR / LEGACY_RESULTS_FILE
+
+
+def load_results_data() -> Dict:
+    results_file = get_results_file()
+
+    if not results_file.exists():
+        raise FileNotFoundError(results_file)
+
+    try:
+        with open(results_file, encoding="utf-8") as f:
+            return json.load(f)
+    except JSONDecodeError as exc:
+        raise InvalidResultsFileError(
+            results_file.name,
+            f"Archivo de resultados inválido: {exc.msg} "
+            f"(línea {exc.lineno}, columna {exc.colno}).",
+        ) from exc
 
 # ═══════════════════════════════════════════════════════════════════════════
 # MODELOS
@@ -73,18 +98,22 @@ async def get_all_results():
     """
     Obtiene el archivo completo de resultados JSON
     """
-    results_file = get_results_file()
-
-    if not results_file.exists():
+    try:
+        return load_results_data()
+    except FileNotFoundError:
         raise HTTPException(
             status_code=404,
-            detail="No hay resultados disponibles. Ejecuta el proceso de análisis primero."
+            detail="No hay resultados disponibles. Ejecuta el proceso de análisis primero.",
         )
-    
-    with open(results_file, encoding="utf-8") as f:
-        data = json.load(f)
-    
-    return data
+    except InvalidResultsFileError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "message": exc.message,
+                "file": exc.file_name,
+                "action": "Regenera el análisis de similitud; el archivo actual no es JSON válido.",
+            },
+        )
 
 @router.get("/status")
 async def get_status():
@@ -96,18 +125,26 @@ async def get_status():
     if not results_file.exists():
         return {
             "has_results": False,
-            "message": "No hay resultados disponibles. Ejecuta: docker compose exec api python /app/scripts/generate_similarity_with_datalayer.py --output-dir /app/similarity_results"
+            "message": "No hay resultados disponibles. Ejecuta: docker compose exec api python /app/scripts/generate_similarity_with_datalayer.py --output-dir /app/similarity_results",
         }
 
-    with open(results_file, encoding="utf-8") as f:
-        data = json.load(f)
+    try:
+        data = load_results_data()
+    except InvalidResultsFileError as exc:
+        return {
+            "has_results": False,
+            "invalid_results_file": True,
+            "results_file": exc.file_name,
+            "message": exc.message,
+            "action": "Regenera el análisis de similitud; el archivo actual no es JSON válido.",
+        }
 
     return {
         "has_results": True,
         "source": data.get("source"),
         "results_file": results_file.name,
         "timestamp": data.get("timestamp"),
-        "total_entries": data.get("total_entries")
+        "total_entries": data.get("total_entries"),
     }
 
 @router.get("/entities", response_model=List[EntityInfo])
