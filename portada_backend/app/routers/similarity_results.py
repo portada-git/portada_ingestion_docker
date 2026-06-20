@@ -14,9 +14,25 @@ from pydantic import BaseModel
 
 router = APIRouter(prefix="/api/v1/similarity", tags=["similarity"])
 
-# La ruta debe apuntar a donde está montado el volumen en el contenedor
-# O usar una ruta relativa desde el archivo
-RESULTS_DIR = Path(__file__).parent.parent.parent / "similarity_results"
+# The datalayer generator is the canonical source for similarity results.
+# Container path: /app/similarity_results
+# Local development path: portada_backend/similarity_results
+if Path("/app/similarity_results").exists():
+    RESULTS_DIR = Path("/app/similarity_results")
+else:
+    RESULTS_DIR = Path(__file__).parent.parent.parent / "similarity_results"
+
+CANONICAL_RESULTS_FILE = "similarity_results_datalayer.json"
+LEGACY_RESULTS_FILE = "similarity_results.json"
+
+
+def get_results_file() -> Path:
+    """Return the canonical datalayer output, falling back to the legacy file."""
+    canonical_file = RESULTS_DIR / CANONICAL_RESULTS_FILE
+    if canonical_file.exists():
+        return canonical_file
+
+    return RESULTS_DIR / LEGACY_RESULTS_FILE
 
 # ═══════════════════════════════════════════════════════════════════════════
 # MODELOS
@@ -57,8 +73,8 @@ async def get_all_results():
     """
     Obtiene el archivo completo de resultados JSON
     """
-    results_file = RESULTS_DIR / "similarity_results.json"
-    
+    results_file = get_results_file()
+
     if not results_file.exists():
         raise HTTPException(
             status_code=404,
@@ -75,19 +91,21 @@ async def get_status():
     """
     Verifica si hay resultados disponibles
     """
-    summary_file = RESULTS_DIR / "summary.json"
-    
-    if not summary_file.exists():
+    results_file = get_results_file()
+
+    if not results_file.exists():
         return {
             "has_results": False,
-            "message": "No hay resultados disponibles. Ejecuta: run_similarity_analysis.bat"
+            "message": "No hay resultados disponibles. Ejecuta: docker compose exec api python /app/scripts/generate_similarity_with_datalayer.py --output-dir /app/similarity_results"
         }
-    
-    with open(summary_file, encoding="utf-8") as f:
+
+    with open(results_file, encoding="utf-8") as f:
         data = json.load(f)
-    
+
     return {
         "has_results": True,
+        "source": data.get("source"),
+        "results_file": results_file.name,
         "timestamp": data.get("timestamp"),
         "total_entries": data.get("total_entries")
     }

@@ -1,0 +1,505 @@
+{
+  "timestamp": "2026-05-27T05:46:36.435886Z",
+  "max_terms_per_entity": 80,
+  "input_results_path": "/app/similarity_results/similarity_results.json",
+  "algorithms_declared": [
+    "levenshtein_ratio",
+    "jaro_winkler",
+    "ngram_2",
+    "ngram_3",
+    "ngram_4",
+    "phonetic_dm",
+    "semantica",
+    "text2vec",
+    "fasttext",
+    "byt5",
+    "semantic_model"
+  ],
+  "entities": {
+    "port": {
+      "terms_count": 80,
+      "known_entities_count": 4909,
+      "all_enabled": {
+        "ok": false,
+        "error": {
+          "message": "Got unsupported ScalarType BFloat16",
+          "traceback": "Traceback (most recent call last):\n  File \"/app/run_all_algorithms_diagnostics.py\", line 105, in main\n    _ = service_all.evaluate(terms, voice_list)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/service.py\", line 126, in evaluate\n    matrix = algorithm.process(preprocessed)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 207, in process\n    term_vecs = self._encode(data.terms)  # shape: (n_terms, dim)\n                ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 432, in _encode\n    vecs = outputs.last_hidden_state.mean(dim=1).cpu().numpy()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: Got unsupported ScalarType BFloat16\n"
+        }
+      },
+      "per_algorithm": {
+        "levenshtein_ratio": {
+          "ok": true,
+          "results_count": 80
+        },
+        "jaro_winkler": {
+          "ok": true,
+          "results_count": 80
+        },
+        "ngram_2": {
+          "ok": true,
+          "results_count": 80
+        },
+        "ngram_3": {
+          "ok": true,
+          "results_count": 80
+        },
+        "ngram_4": {
+          "ok": true,
+          "results_count": 80
+        },
+        "phonetic_dm": {
+          "ok": true,
+          "results_count": 80
+        },
+        "semantica": {
+          "ok": true,
+          "results_count": 80
+        },
+        "text2vec": {
+          "ok": true,
+          "results_count": 80
+        },
+        "fasttext": {
+          "ok": true,
+          "results_count": 80
+        },
+        "byt5": {
+          "ok": false,
+          "error": {
+            "message": "Got unsupported ScalarType BFloat16",
+            "traceback": "Traceback (most recent call last):\n  File \"/app/run_all_algorithms_diagnostics.py\", line 121, in main\n    res = service_one.evaluate(terms, voice_list)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/service.py\", line 126, in evaluate\n    matrix = algorithm.process(preprocessed)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 207, in process\n    term_vecs = self._encode(data.terms)  # shape: (n_terms, dim)\n                ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 432, in _encode\n    vecs = outputs.last_hidden_state.mean(dim=1).cpu().numpy()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: Got unsupported ScalarType BFloat16\n"
+          }
+        },
+        "semantic_model": {
+          "ok": true,
+          "results_count": 80
+        }
+      }
+    },
+    "ship_type": {
+      "terms_count": 80,
+      "known_entities_count": 71,
+      "all_enabled": {
+        "ok": false,
+        "error": {
+          "message": "Got unsupported ScalarType BFloat16",
+          "traceback": "Traceback (most recent call last):\n  File \"/app/run_all_algorithms_diagnostics.py\", line 105, in main\n    _ = service_all.evaluate(terms, voice_list)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/service.py\", line 126, in evaluate\n    matrix = algorithm.process(preprocessed)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 207, in process\n    term_vecs = self._encode(data.terms)  # shape: (n_terms, dim)\n                ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 432, in _encode\n    vecs = outputs.last_hidden_state.mean(dim=1).cpu().numpy()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: Got unsupported ScalarType BFloat16\n"
+        }
+      },
+      "per_algorithm": {
+        "levenshtein_ratio": {
+          "ok": true,
+          "results_count": 80
+        },
+        "jaro_winkler": {
+          "ok": true,
+          "results_count": 80
+        },
+        "ngram_2": {
+          "ok": true,
+          "results_count": 80
+        },
+        "ngram_3": {
+          "ok": true,
+          "results_count": 80
+        },
+        "ngram_4": {
+          "ok": true,
+          "results_count": 80
+        },
+        "phonetic_dm": {
+          "ok": true,
+          "results_count": 80
+        },
+        "semantica": {
+          "ok": true,
+          "results_count": 80
+        },
+        "text2vec": {
+          "ok": true,
+          "results_count": 80
+        },
+        "fasttext": {
+          "ok": true,
+          "results_count": 80
+        },
+        "byt5": {
+          "ok": false,
+          "error": {
+            "message": "Got unsupported ScalarType BFloat16",
+            "traceback": "Traceback (most recent call last):\n  File \"/app/run_all_algorithms_diagnostics.py\", line 121, in main\n    res = service_one.evaluate(terms, voice_list)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/service.py\", line 126, in evaluate\n    matrix = algorithm.process(preprocessed)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 207, in process\n    term_vecs = self._encode(data.terms)  # shape: (n_terms, dim)\n                ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 432, in _encode\n    vecs = outputs.last_hidden_state.mean(dim=1).cpu().numpy()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: Got unsupported ScalarType BFloat16\n"
+          }
+        },
+        "semantic_model": {
+          "ok": true,
+          "results_count": 80
+        }
+      }
+    },
+    "flag": {
+      "terms_count": 80,
+      "known_entities_count": 131,
+      "all_enabled": {
+        "ok": false,
+        "error": {
+          "message": "Got unsupported ScalarType BFloat16",
+          "traceback": "Traceback (most recent call last):\n  File \"/app/run_all_algorithms_diagnostics.py\", line 105, in main\n    _ = service_all.evaluate(terms, voice_list)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/service.py\", line 126, in evaluate\n    matrix = algorithm.process(preprocessed)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 207, in process\n    term_vecs = self._encode(data.terms)  # shape: (n_terms, dim)\n                ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 432, in _encode\n    vecs = outputs.last_hidden_state.mean(dim=1).cpu().numpy()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: Got unsupported ScalarType BFloat16\n"
+        }
+      },
+      "per_algorithm": {
+        "levenshtein_ratio": {
+          "ok": true,
+          "results_count": 80
+        },
+        "jaro_winkler": {
+          "ok": true,
+          "results_count": 80
+        },
+        "ngram_2": {
+          "ok": true,
+          "results_count": 80
+        },
+        "ngram_3": {
+          "ok": true,
+          "results_count": 80
+        },
+        "ngram_4": {
+          "ok": true,
+          "results_count": 80
+        },
+        "phonetic_dm": {
+          "ok": true,
+          "results_count": 80
+        },
+        "semantica": {
+          "ok": true,
+          "results_count": 80
+        },
+        "text2vec": {
+          "ok": true,
+          "results_count": 80
+        },
+        "fasttext": {
+          "ok": true,
+          "results_count": 80
+        },
+        "byt5": {
+          "ok": false,
+          "error": {
+            "message": "Got unsupported ScalarType BFloat16",
+            "traceback": "Traceback (most recent call last):\n  File \"/app/run_all_algorithms_diagnostics.py\", line 121, in main\n    res = service_one.evaluate(terms, voice_list)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/service.py\", line 126, in evaluate\n    matrix = algorithm.process(preprocessed)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 207, in process\n    term_vecs = self._encode(data.terms)  # shape: (n_terms, dim)\n                ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 432, in _encode\n    vecs = outputs.last_hidden_state.mean(dim=1).cpu().numpy()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: Got unsupported ScalarType BFloat16\n"
+          }
+        },
+        "semantic_model": {
+          "ok": true,
+          "results_count": 80
+        }
+      }
+    },
+    "ship_tons": {
+      "terms_count": 25,
+      "known_entities_count": 1,
+      "all_enabled": {
+        "ok": false,
+        "error": {
+          "message": "Got unsupported ScalarType BFloat16",
+          "traceback": "Traceback (most recent call last):\n  File \"/app/run_all_algorithms_diagnostics.py\", line 105, in main\n    _ = service_all.evaluate(terms, voice_list)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/service.py\", line 126, in evaluate\n    matrix = algorithm.process(preprocessed)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 207, in process\n    term_vecs = self._encode(data.terms)  # shape: (n_terms, dim)\n                ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 432, in _encode\n    vecs = outputs.last_hidden_state.mean(dim=1).cpu().numpy()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: Got unsupported ScalarType BFloat16\n"
+        }
+      },
+      "per_algorithm": {
+        "levenshtein_ratio": {
+          "ok": true,
+          "results_count": 25
+        },
+        "jaro_winkler": {
+          "ok": true,
+          "results_count": 25
+        },
+        "ngram_2": {
+          "ok": true,
+          "results_count": 25
+        },
+        "ngram_3": {
+          "ok": true,
+          "results_count": 25
+        },
+        "ngram_4": {
+          "ok": true,
+          "results_count": 25
+        },
+        "phonetic_dm": {
+          "ok": true,
+          "results_count": 25
+        },
+        "semantica": {
+          "ok": true,
+          "results_count": 25
+        },
+        "text2vec": {
+          "ok": true,
+          "results_count": 25
+        },
+        "fasttext": {
+          "ok": true,
+          "results_count": 25
+        },
+        "byt5": {
+          "ok": false,
+          "error": {
+            "message": "Got unsupported ScalarType BFloat16",
+            "traceback": "Traceback (most recent call last):\n  File \"/app/run_all_algorithms_diagnostics.py\", line 121, in main\n    res = service_one.evaluate(terms, voice_list)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/service.py\", line 126, in evaluate\n    matrix = algorithm.process(preprocessed)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 207, in process\n    term_vecs = self._encode(data.terms)  # shape: (n_terms, dim)\n                ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 432, in _encode\n    vecs = outputs.last_hidden_state.mean(dim=1).cpu().numpy()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: Got unsupported ScalarType BFloat16\n"
+          }
+        },
+        "semantic_model": {
+          "ok": true,
+          "results_count": 25
+        }
+      }
+    },
+    "travel_duration": {
+      "terms_count": 4,
+      "known_entities_count": 2,
+      "all_enabled": {
+        "ok": false,
+        "error": {
+          "message": "Got unsupported ScalarType BFloat16",
+          "traceback": "Traceback (most recent call last):\n  File \"/app/run_all_algorithms_diagnostics.py\", line 105, in main\n    _ = service_all.evaluate(terms, voice_list)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/service.py\", line 126, in evaluate\n    matrix = algorithm.process(preprocessed)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 207, in process\n    term_vecs = self._encode(data.terms)  # shape: (n_terms, dim)\n                ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 432, in _encode\n    vecs = outputs.last_hidden_state.mean(dim=1).cpu().numpy()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: Got unsupported ScalarType BFloat16\n"
+        }
+      },
+      "per_algorithm": {
+        "levenshtein_ratio": {
+          "ok": true,
+          "results_count": 4
+        },
+        "jaro_winkler": {
+          "ok": true,
+          "results_count": 4
+        },
+        "ngram_2": {
+          "ok": true,
+          "results_count": 4
+        },
+        "ngram_3": {
+          "ok": true,
+          "results_count": 4
+        },
+        "ngram_4": {
+          "ok": true,
+          "results_count": 4
+        },
+        "phonetic_dm": {
+          "ok": true,
+          "results_count": 4
+        },
+        "semantica": {
+          "ok": true,
+          "results_count": 4
+        },
+        "text2vec": {
+          "ok": true,
+          "results_count": 4
+        },
+        "fasttext": {
+          "ok": true,
+          "results_count": 4
+        },
+        "byt5": {
+          "ok": false,
+          "error": {
+            "message": "Got unsupported ScalarType BFloat16",
+            "traceback": "Traceback (most recent call last):\n  File \"/app/run_all_algorithms_diagnostics.py\", line 121, in main\n    res = service_one.evaluate(terms, voice_list)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/service.py\", line 126, in evaluate\n    matrix = algorithm.process(preprocessed)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 207, in process\n    term_vecs = self._encode(data.terms)  # shape: (n_terms, dim)\n                ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 432, in _encode\n    vecs = outputs.last_hidden_state.mean(dim=1).cpu().numpy()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: Got unsupported ScalarType BFloat16\n"
+          }
+        },
+        "semantic_model": {
+          "ok": true,
+          "results_count": 4
+        }
+      }
+    },
+    "master_role": {
+      "terms_count": 80,
+      "known_entities_count": 9,
+      "all_enabled": {
+        "ok": false,
+        "error": {
+          "message": "Got unsupported ScalarType BFloat16",
+          "traceback": "Traceback (most recent call last):\n  File \"/app/run_all_algorithms_diagnostics.py\", line 105, in main\n    _ = service_all.evaluate(terms, voice_list)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/service.py\", line 126, in evaluate\n    matrix = algorithm.process(preprocessed)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 207, in process\n    term_vecs = self._encode(data.terms)  # shape: (n_terms, dim)\n                ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 432, in _encode\n    vecs = outputs.last_hidden_state.mean(dim=1).cpu().numpy()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: Got unsupported ScalarType BFloat16\n"
+        }
+      },
+      "per_algorithm": {
+        "levenshtein_ratio": {
+          "ok": true,
+          "results_count": 80
+        },
+        "jaro_winkler": {
+          "ok": true,
+          "results_count": 80
+        },
+        "ngram_2": {
+          "ok": true,
+          "results_count": 80
+        },
+        "ngram_3": {
+          "ok": true,
+          "results_count": 80
+        },
+        "ngram_4": {
+          "ok": true,
+          "results_count": 80
+        },
+        "phonetic_dm": {
+          "ok": true,
+          "results_count": 80
+        },
+        "semantica": {
+          "ok": true,
+          "results_count": 80
+        },
+        "text2vec": {
+          "ok": true,
+          "results_count": 80
+        },
+        "fasttext": {
+          "ok": true,
+          "results_count": 80
+        },
+        "byt5": {
+          "ok": false,
+          "error": {
+            "message": "Got unsupported ScalarType BFloat16",
+            "traceback": "Traceback (most recent call last):\n  File \"/app/run_all_algorithms_diagnostics.py\", line 121, in main\n    res = service_one.evaluate(terms, voice_list)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/service.py\", line 126, in evaluate\n    matrix = algorithm.process(preprocessed)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 207, in process\n    term_vecs = self._encode(data.terms)  # shape: (n_terms, dim)\n                ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 432, in _encode\n    vecs = outputs.last_hidden_state.mean(dim=1).cpu().numpy()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: Got unsupported ScalarType BFloat16\n"
+          }
+        },
+        "semantic_model": {
+          "ok": true,
+          "results_count": 80
+        }
+      }
+    },
+    "comodity": {
+      "terms_count": 80,
+      "known_entities_count": 3216,
+      "all_enabled": {
+        "ok": false,
+        "error": {
+          "message": "Got unsupported ScalarType BFloat16",
+          "traceback": "Traceback (most recent call last):\n  File \"/app/run_all_algorithms_diagnostics.py\", line 105, in main\n    _ = service_all.evaluate(terms, voice_list)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/service.py\", line 126, in evaluate\n    matrix = algorithm.process(preprocessed)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 207, in process\n    term_vecs = self._encode(data.terms)  # shape: (n_terms, dim)\n                ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 432, in _encode\n    vecs = outputs.last_hidden_state.mean(dim=1).cpu().numpy()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: Got unsupported ScalarType BFloat16\n"
+        }
+      },
+      "per_algorithm": {
+        "levenshtein_ratio": {
+          "ok": true,
+          "results_count": 80
+        },
+        "jaro_winkler": {
+          "ok": true,
+          "results_count": 80
+        },
+        "ngram_2": {
+          "ok": true,
+          "results_count": 80
+        },
+        "ngram_3": {
+          "ok": true,
+          "results_count": 80
+        },
+        "ngram_4": {
+          "ok": true,
+          "results_count": 80
+        },
+        "phonetic_dm": {
+          "ok": true,
+          "results_count": 80
+        },
+        "semantica": {
+          "ok": true,
+          "results_count": 80
+        },
+        "text2vec": {
+          "ok": true,
+          "results_count": 80
+        },
+        "fasttext": {
+          "ok": true,
+          "results_count": 80
+        },
+        "byt5": {
+          "ok": false,
+          "error": {
+            "message": "Got unsupported ScalarType BFloat16",
+            "traceback": "Traceback (most recent call last):\n  File \"/app/run_all_algorithms_diagnostics.py\", line 121, in main\n    res = service_one.evaluate(terms, voice_list)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/service.py\", line 126, in evaluate\n    matrix = algorithm.process(preprocessed)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 207, in process\n    term_vecs = self._encode(data.terms)  # shape: (n_terms, dim)\n                ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 432, in _encode\n    vecs = outputs.last_hidden_state.mean(dim=1).cpu().numpy()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: Got unsupported ScalarType BFloat16\n"
+          }
+        },
+        "semantic_model": {
+          "ok": true,
+          "results_count": 80
+        }
+      }
+    },
+    "unit": {
+      "terms_count": 80,
+      "known_entities_count": 156,
+      "all_enabled": {
+        "ok": false,
+        "error": {
+          "message": "Got unsupported ScalarType BFloat16",
+          "traceback": "Traceback (most recent call last):\n  File \"/app/run_all_algorithms_diagnostics.py\", line 105, in main\n    _ = service_all.evaluate(terms, voice_list)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/service.py\", line 126, in evaluate\n    matrix = algorithm.process(preprocessed)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 207, in process\n    term_vecs = self._encode(data.terms)  # shape: (n_terms, dim)\n                ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 432, in _encode\n    vecs = outputs.last_hidden_state.mean(dim=1).cpu().numpy()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: Got unsupported ScalarType BFloat16\n"
+        }
+      },
+      "per_algorithm": {
+        "levenshtein_ratio": {
+          "ok": true,
+          "results_count": 80
+        },
+        "jaro_winkler": {
+          "ok": true,
+          "results_count": 80
+        },
+        "ngram_2": {
+          "ok": true,
+          "results_count": 80
+        },
+        "ngram_3": {
+          "ok": true,
+          "results_count": 80
+        },
+        "ngram_4": {
+          "ok": true,
+          "results_count": 80
+        },
+        "phonetic_dm": {
+          "ok": true,
+          "results_count": 80
+        },
+        "semantica": {
+          "ok": true,
+          "results_count": 80
+        },
+        "text2vec": {
+          "ok": true,
+          "results_count": 80
+        },
+        "fasttext": {
+          "ok": true,
+          "results_count": 80
+        },
+        "byt5": {
+          "ok": false,
+          "error": {
+            "message": "Got unsupported ScalarType BFloat16",
+            "traceback": "Traceback (most recent call last):\n  File \"/app/run_all_algorithms_diagnostics.py\", line 121, in main\n    res = service_one.evaluate(terms, voice_list)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/service.py\", line 126, in evaluate\n    matrix = algorithm.process(preprocessed)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 207, in process\n    term_vecs = self._encode(data.terms)  # shape: (n_terms, dim)\n                ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/portada_s_index/algorithms/semantic.py\", line 432, in _encode\n    vecs = outputs.last_hidden_state.mean(dim=1).cpu().numpy()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: Got unsupported ScalarType BFloat16\n"
+          }
+        },
+        "semantic_model": {
+          "ok": true,
+          "results_count": 80
+        }
+      }
+    }
+  },
+  "summary": {
+    "all_enabled_ok_entities": 0,
+    "all_enabled_failed_entities": 8,
+    "single_algo_failures": 8
+  }
+}

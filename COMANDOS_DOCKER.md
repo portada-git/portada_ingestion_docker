@@ -4,16 +4,16 @@
 
 ```bash
 # Detener y eliminar el contenedor actual
-docker-compose down
+docker compose down
 
 # Reconstruir la imagen (forzando rebuild sin cache)
-docker-compose build --no-cache api
+docker compose build --no-cache api
 
 # O reconstruir todo
-docker-compose build --no-cache
+docker compose build --no-cache
 
 # Levantar los servicios
-docker-compose up -d
+docker compose up -d
 ```
 
 ## 2. Verificar que el contenedor está corriendo
@@ -40,19 +40,20 @@ python3 portada_backend/run_generate_similarity.py
 
 ```bash
 # 1. Copiar archivos de configuración
+docker exec -u root portada_ingestion_docker-api-1 python -m pip install --no-cache-dir --upgrade --no-deps portada-s-index==0.2.0
 docker cp .examples/portada-s-index/config_jsons_delcorreo/schema.json portada_ingestion_docker-api-1:/app/config/schema.json
 docker cp .examples/portada-s-index/config_jsons_delcorreo/mapping_to_clean_chars.json portada_ingestion_docker-api-1:/app/config/mapping_to_clean_chars.json
-docker cp .examples/portada-s-index/config_jsons_delcorreo/delta_data_layer_config.json portada_ingestion_docker-api-1:/app/config/delta_data_layer_config.json
-docker cp .examples/portada-s-index/test_posrtada_s_index/config.json portada_ingestion_docker-api-1:/app/config/config_similarity.json
+docker cp data_layer_config/delta_data_layer_config.json portada_ingestion_docker-api-1:/app/config/delta_data_layer_config.json
+docker cp data_layer_config/config_similarity.json portada_ingestion_docker-api-1:/app/config/config_similarity.json
 
-# 2. Copiar script
-docker cp portada_backend/scripts/generate_similarity_results.py portada_ingestion_docker-api-1:/app/generate_similarity_results.py
+# 2. Copiar script datalayer
+docker cp portada_backend/scripts/generate_similarity_with_datalayer.py portada_ingestion_docker-api-1:/app/generate_similarity_with_datalayer.py
 
 # 3. Ejecutar dentro del contenedor
-docker exec -it portada_ingestion_docker-api-1 python /app/generate_similarity_results.py
+docker exec -it portada_ingestion_docker-api-1 python /app/generate_similarity_with_datalayer.py
 
 # 4. Copiar resultados al host
-docker cp portada_ingestion_docker-api-1:/tmp/similarity_results/similarity_results.json portada_backend/similarity_results/similarity_results.json
+docker cp portada_ingestion_docker-api-1:/tmp/similarity_results/similarity_results_datalayer.json portada_backend/similarity_results/similarity_results.json
 ```
 
 ## 4. Verificar los resultados
@@ -84,7 +85,7 @@ Abre tu navegador en: `http://localhost:5173/similarity-results`
 ### Si el contenedor no está corriendo:
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 ### Si hay problemas de permisos:
