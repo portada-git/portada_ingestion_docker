@@ -1,0 +1,162 @@
+{
+  "purpose": "Validation catalog for a requirements-extraction agent. Each dataset type contains 4-5 compact inputs and documents the expected answer so the agent can be tested for extraction quality, ambiguity handling, conflict detection, scope control, and traceability.",
+  "response_contract": {
+    "language": "es",
+    "minimum_expected_sections": [
+      "requisitos_detectados",
+      "supuestos",
+      "preguntas_abiertas",
+      "riesgos_o_conflictos",
+      "trazabilidad"
+    ],
+    "rule": "The agent should extract only requirements supported by evidence, mark assumptions explicitly, and explain why each item was classified that way. It should not invent implementation details when the source text is ambiguous. Esto es CLAVE: sin trazabilidad, no estamos validando extracción; estamos validando imaginación."
+  },
+  "dataset_types": [
+    {
+      "id": "happy_path_explicit_requirements",
+      "name": "Requisitos explícitos y verificables",
+      "behavior_validated": "Extracción directa de requisitos funcionales y no funcionales cuando el texto ya es claro.",
+      "items": [
+        "El sistema debe permitir subir ficheros JSON de entradas históricas.",
+        "La carga debe rechazar archivos que no sean JSON.",
+        "Cada subida debe quedar asociada al usuario que envía la API key.",
+        "La respuesta debe incluir el número total de archivos aceptados.",
+        "La API debe responder en menos de 3 segundos para lotes de hasta 20 archivos."
+      ],
+      "expected_response": {
+        "should_extract": [
+          "Permitir la subida de ficheros JSON de entradas históricas.",
+          "Rechazar archivos con formato distinto de JSON.",
+          "Asociar cada subida al usuario identificado por API key.",
+          "Informar el número total de archivos aceptados.",
+          "Cumplir un límite de rendimiento de menos de 3 segundos para hasta 20 archivos."
+        ],
+        "should_not_do": [
+          "No debe inventar autenticación OAuth, roles o permisos no mencionados.",
+          "No debe transformar el requisito de rendimiento en una garantía para cualquier tamaño de lote."
+        ],
+        "why": "Todos los requisitos usan lenguaje normativo claro: 'debe permitir', 'debe rechazar', 'debe incluir'. El límite de 20 archivos delimita el alcance del requisito de rendimiento."
+      }
+    },
+    {
+      "id": "ambiguous_business_rules",
+      "name": "Reglas de negocio ambiguas",
+      "behavior_validated": "Detección de ambigüedad y generación de preguntas sin inventar reglas.",
+      "items": [
+        "Si el fichero parece duplicado, el sistema debería avisar al usuario.",
+        "Algunos duplicados se pueden aceptar si vienen de otra publicación.",
+        "La interfaz tiene que mostrar el estado de procesamiento.",
+        "Cuando haya muchos errores, conviene resumirlos.",
+        "Los administradores necesitan revisar casos problemáticos."
+      ],
+      "expected_response": {
+        "should_extract": [
+          "Avisar al usuario cuando un fichero parezca duplicado.",
+          "Mostrar el estado de procesamiento en la interfaz.",
+          "Resumir errores cuando haya un volumen alto de errores.",
+          "Permitir revisión administrativa de casos problemáticos."
+        ],
+        "should_mark_as_open_questions": [
+          "Qué significa exactamente 'parece duplicado'.",
+          "Qué criterio permite aceptar duplicados de otra publicación.",
+          "Qué umbral define 'muchos errores'.",
+          "Qué acciones puede realizar un administrador durante la revisión."
+        ],
+        "should_not_do": [
+          "No debe fijar un umbral arbitrario, por ejemplo 10 errores, si el texto no lo dice.",
+          "No debe decidir automáticamente que los duplicados entre publicaciones siempre son válidos."
+        ],
+        "why": "El texto contiene intención de producto, pero varias condiciones están indefinidas. Un buen agente separa requisito candidato de decisión pendiente."
+      }
+    },
+    {
+      "id": "conflicting_requirements",
+      "name": "Requisitos contradictorios",
+      "behavior_validated": "Identificación de conflictos internos antes de proponer una solución.",
+      "items": [
+        "El sistema debe guardar todos los registros recibidos aunque tengan errores.",
+        "Los registros con errores críticos no deben persistirse en el lago de datos.",
+        "El usuario debe poder descargar un informe con los registros rechazados.",
+        "La auditoría debe conservar la causa de rechazo de cada registro.",
+        "No se debe almacenar información de registros inválidos después del procesamiento."
+      ],
+      "expected_response": {
+        "should_extract": [
+          "Guardar registros recibidos o, como mínimo, conservar evidencia de procesamiento.",
+          "Evitar persistir registros con errores críticos en el lago de datos.",
+          "Permitir descarga de un informe de registros rechazados.",
+          "Conservar la causa de rechazo para auditoría."
+        ],
+        "should_flag_conflicts": [
+          "Guardar todos los registros vs no persistir registros con errores críticos.",
+          "Conservar causa de rechazo vs no almacenar información de registros inválidos después del procesamiento."
+        ],
+        "should_not_do": [
+          "No debe resolver el conflicto eligiendo una política sin pedir decisión.",
+          "No debe ocultar la contradicción bajo una redacción genérica."
+        ],
+        "why": "Hay requisitos incompatibles sobre persistencia y auditoría. El comportamiento correcto es explicitar el conflicto y pedir una regla de retención."
+      }
+    },
+    {
+      "id": "mixed_scope_noise",
+      "name": "Ruido, contexto y requisitos mezclados",
+      "behavior_validated": "Filtrado de información contextual que no debe convertirse en requisito.",
+      "items": [
+        "El equipo está cansado de revisar hojas de cálculo manualmente.",
+        "Sería ideal ver una tabla con filtros por entidad, clasificación y fecha.",
+        "El logo actual no nos gusta demasiado.",
+        "La exportación a Excel debe incluir las puntuaciones de cada algoritmo.",
+        "Ayer falló Docker en una máquina local."
+      ],
+      "expected_response": {
+        "should_extract": [
+          "Mostrar una tabla con filtros por entidad, clasificación y fecha.",
+          "Exportar a Excel incluyendo puntuaciones de cada algoritmo."
+        ],
+        "should_classify_as_context_or_noise": [
+          "El cansancio del equipo es contexto del problema, no requisito verificable por sí solo.",
+          "El disgusto con el logo es feedback visual fuera del alcance funcional descrito.",
+          "El fallo de Docker local es una incidencia técnica, no requisito del producto salvo que se pida soporte de entorno."
+        ],
+        "should_not_do": [
+          "No debe crear requisitos sobre rediseño de marca o soporte Docker sin evidencia suficiente."
+        ],
+        "why": "El dataset fuerza al agente a distinguir necesidad, solución solicitada, comentario subjetivo e incidencia operacional. Ahí se ve si entiende el dominio o solo copia frases."
+      }
+    },
+    {
+      "id": "edge_cases_and_acceptance_criteria",
+      "name": "Casos límite y criterios de aceptación",
+      "behavior_validated": "Extracción de criterios comprobables y manejo de edge cases.",
+      "items": [
+        "Si no hay resultados de similitud, la pantalla debe mostrar un mensaje vacío y no romper.",
+        "Si el JSON de resultados está corrupto, la API debe responder con un error claro y no con un 500 genérico.",
+        "Cuando un algoritmo no esté disponible, el sistema debe desactivarlo y seguir con los demás.",
+        "La tabla debe seguir funcionando con más de 10.000 filas.",
+        "Los términos técnicos con formato DM_0000000000 no deben aparecer como entidades rechazadas."
+      ],
+      "expected_response": {
+        "should_extract": [
+          "Mostrar estado vacío estable cuando no haya resultados de similitud.",
+          "Responder con error claro ante JSON corrupto, evitando un 500 genérico.",
+          "Desactivar algoritmos no disponibles sin detener el procesamiento completo.",
+          "Mantener la tabla operativa con más de 10.000 filas.",
+          "Filtrar identificadores técnicos DM_* para que no aparezcan como entidades rechazadas."
+        ],
+        "should_identify_acceptance_criteria": [
+          "Sin resultados: se muestra mensaje vacío y no hay crash.",
+          "JSON corrupto: respuesta de error específica, no 500 genérico.",
+          "Algoritmo no disponible: procesamiento continúa con los restantes.",
+          "Más de 10.000 filas: la tabla permanece usable.",
+          "DM_*: no aparecen en resultados rechazados visibles."
+        ],
+        "should_not_do": [
+          "No debe tratar DM_* como entidad de negocio.",
+          "No debe asumir que todos los algoritmos son obligatorios."
+        ],
+        "why": "Este dataset valida robustez: estados vacíos, datos corruptos, degradación parcial, volumen alto y limpieza de ruido técnico. Son comportamientos donde un agente mediocre suele quedarse en requisitos felices y se le escapan los bordes."
+      }
+    }
+  ]
+}

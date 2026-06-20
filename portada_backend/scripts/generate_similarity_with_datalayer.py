@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import importlib.util
+import re
 import time
 from collections import Counter
 from datetime import datetime
@@ -79,6 +80,20 @@ def disable_unavailable_optional_algorithms(
 
     disabled: list[str] = []
     algorithms = similarity_config.get("algorithms", {})
+
+    def disable_algorithm(algorithm_name: str, reason: str) -> None:
+        algorithm_config = algorithms.get(algorithm_name)
+        if algorithm_config is not None:
+            algorithm_config["enabled"] = False
+            algorithm_config["disabled_reason"] = reason
+        if similarity_config.get("algorithm_per_entity"):
+            algorithms.pop(algorithm_name, None)
+            for names in similarity_config["algorithm_per_entity"].values():
+                while algorithm_name in names:
+                    names.remove(algorithm_name)
+        if algorithm_name not in disabled:
+            disabled.append(algorithm_name)
+
     # Si falta dependencia opcional, desactivamos ese algoritmo para no romper evaluate().
     for algorithm_name, dependency_name in dependency_by_algorithm.items():
         algorithm_config = algorithms.get(algorithm_name)
@@ -91,29 +106,27 @@ def disable_unavailable_optional_algorithms(
             else available_modules.get(dependency_name, False)
         )
         if not dependency_available:
-            algorithm_config["enabled"] = False
-            algorithm_config["disabled_reason"] = f"Dependencia opcional no instalada: {dependency_name}"
-            if similarity_config.get("algorithm_per_entity"):
-                algorithms.pop(algorithm_name, None)
-                for names in similarity_config["algorithm_per_entity"].values():
-                    while algorithm_name in names:
-                        names.remove(algorithm_name)
-            disabled.append(algorithm_name)
+            disable_algorithm(
+                algorithm_name,
+                f"Dependencia opcional no instalada: {dependency_name}",
+            )
 
     if "semantic_model" in algorithms and not (
         available_modules.get("text2vec", False)
         or available_modules.get("sentence_transformers", False)
     ):
-        algorithms["semantic_model"]["enabled"] = False
-        algorithms["semantic_model"]["disabled_reason"] = (
-            "Dependencia opcional no instalada: text2vec o sentence_transformers"
+        disable_algorithm(
+            "semantic_model",
+            "Dependencia opcional no instalada: text2vec o sentence_transformers",
         )
-        if similarity_config.get("algorithm_per_entity"):
-            algorithms.pop("semantic_model", None)
-            for names in similarity_config["algorithm_per_entity"].values():
-                while "semantic_model" in names:
-                    names.remove("semantic_model")
-        disabled.append("semantic_model")
+
+    fasttext_config = algorithms.get("fasttext")
+    if fasttext_config:
+        model_path = fasttext_config.get("params", {}).get("model_path")
+        if model_path:
+            candidates = [Path(model_path), Path("/app") / model_path]
+            if not any(candidate.exists() for candidate in candidates):
+                disable_algorithm("fasttext", f"Modelo FastText no encontrado: {model_path}")
 
     return disabled
 
@@ -254,7 +267,37 @@ def collect_known_voices(
     return voices
 
 
-def _counter_from_rows(rows: Iterable[Any], field: str = "citation") -> Counter:
+DOCUMENT_ID_PATTERN = re.compile(r"^DM_\d+$", re.IGNORECASE)
+SHIP_TYPE_TOKEN_PATTERN = re.compile(
+    r"\b(berg(?:antin)?|frag(?:ata)?|gol(?:eta)?|paq(?:uete)?|vapor|pol(?:acra)?|bric|barca|balandra|pailebot|mistico|lugre|zumaca)\b",
+    re.IGNORECASE,
+)
+MASTER_ROLE_TOKEN_PATTERN = re.compile(
+    r"\b(teniente|capitan|cap\.?|patron|maestre|piloto|contramaestre|alferez)\b",
+    re.IGNORECASE,
+)
+
+
+def normalize_citation_for_entity(entity_name: str, citation: str) -> str:
+    """Remove obvious extraction noise before similarity scoring."""
+    cleaned = citation.strip().strip('.,;:')
+    if not cleaned or DOCUMENT_ID_PATTERN.match(cleaned):
+        return ""
+
+    if entity_name == "ship_type":
+        lowered = cleaned.lower()
+        if MASTER_ROLE_TOKEN_PATTERN.search(lowered) and not SHIP_TYPE_TOKEN_PATTERN.search(lowered):
+            return ""
+
+        if lowered.startswith(("del ", "de la ", "de el ", "segundo ", "primer ")):
+            match = SHIP_TYPE_TOKEN_PATTERN.search(lowered)
+            if match:
+                return match.group(1)
+
+    return cleaned
+
+
+def _counter_from_rows(rows: Iterable[Any], field: str = "citation", entity_name: str = "") -> Counter:
     # Calcula frecuencia por citación (la usa SimilarityService).
     counter: Counter = Counter()
     for row in rows:
@@ -263,6 +306,7 @@ def _counter_from_rows(rows: Iterable[Any], field: str = "citation") -> Counter:
         if citation is None and data:
             citation = next(iter(data.values()))
         citation = "" if citation is None else str(citation).strip()
+        citation = normalize_citation_for_entity(entity_name, citation)
         if citation and citation.lower() not in {"null", "none", "n/a"}:
             counter[citation] += 1
     return counter
@@ -317,7 +361,7 @@ def collect_citations(layer: Any, df_entries: Any, entity_name: str) -> Counter:
     if df_citations is None or df_citations.count() == 0:
         log_step(f"[{entity_name}] Sin citaciones ({format_seconds(step_start)})")
         return Counter()
-    counter = _counter_from_rows(df_citations.collect())
+    counter = _counter_from_rows(df_citations.collect(), entity_name=entity_name)
     log_step(f"[{entity_name}] Citaciones extraídas: {sum(counter.values())} totales, {len(counter)} únicas ({format_seconds(step_start)})")
     return counter
 
@@ -460,11 +504,15 @@ def main() -> int:
     results["disabled_algorithms"] = disabled_algorithms
     results["runtime_device_changes"] = runtime_device_changes
 
-    # Persistencia del resultado agregado
+    # Persistencia del resultado agregado. Escribimos primero a un archivo temporal
+    # y luego reemplazamos de forma atómica para evitar JSON parcial o corrupto.
     output_path = output_dir / args.output_file
+    temp_output_path = output_path.with_suffix(f"{output_path.suffix}.tmp")
     log_step(f"Escribiendo JSON final: {output_path}")
-    with open(output_path, "w", encoding="utf-8") as f:
+    with open(temp_output_path, "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+    temp_output_path.replace(output_path)
     log_step(f"JSON final escrito: {output_path}")
 
     # Cierre ordenado de sesión Spark
