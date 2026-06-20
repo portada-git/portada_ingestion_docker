@@ -24,7 +24,7 @@ RUN pip install --no-cache-dir --timeout=300 --retries=5 -r requirements-base.tx
 
 # Install application dependencies and the published portada-s-index package.
 ARG CACHE_BUST_OWN_LIBS=10
-ARG PORTADA_S_INDEX_VERSION=0.2.0
+ARG PORTADA_S_INDEX_VERSION=0.2.1
 COPY portada_backend/requirements.txt .
 # Install PyTorch CPU-only version (much smaller than CUDA version)
 RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
