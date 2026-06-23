@@ -37,9 +37,10 @@ interface FileUploadItem {
 }
 
 interface UnifiedFileUploadProps {
-  ingestionType: "extraction_data" | "known_entities";
+  ingestionType: "extraction_data" | "known_entities" | "reviewed_entries";
   publication?: string;
   entityName?: string;
+  reviewedEntryType?: "ship_entries" | "cargo_ship_entries";
   maxConcurrentUploads?: number;
   onUploadComplete?: (stats: any) => void;
   onFileProcessed?: (file: FileUploadItem) => void;
@@ -49,6 +50,7 @@ const UnifiedFileUpload: React.FC<UnifiedFileUploadProps> = ({
   ingestionType,
   publication,
   entityName,
+  reviewedEntryType,
   maxConcurrentUploads = 5,
   onUploadComplete,
   onFileProcessed,
@@ -101,7 +103,11 @@ const UnifiedFileUpload: React.FC<UnifiedFileUploadProps> = ({
     }
 
     const validExtensions =
-      ingestionType === "extraction_data" ? [".json"] : [".yaml", ".yml"];
+      ingestionType === "extraction_data"
+        ? [".json"]
+        : ingestionType === "reviewed_entries"
+          ? [".csv"]
+          : [".yaml", ".yml"];
     const extension = "." + file.name.split(".").pop()?.toLowerCase();
     if (!validExtensions.includes(extension)) {
       return t("notifications.invalidFormat", {
@@ -160,6 +166,8 @@ const UnifiedFileUpload: React.FC<UnifiedFileUploadProps> = ({
     accept:
       ingestionType === "extraction_data"
         ? { "application/json": [".json"] }
+        : ingestionType === "reviewed_entries"
+          ? { "text/csv": [".csv"], "application/vnd.ms-excel": [".csv"] }
         : {
             "application/x-yaml": [".yaml", ".yml"],
             "text/yaml": [".yaml", ".yml"],
@@ -194,6 +202,7 @@ const UnifiedFileUpload: React.FC<UnifiedFileUploadProps> = ({
           publication,
           currentEntityName, // Use the current value from ref
           undefined,
+          reviewedEntryType,
           onProgress,
         );
       });

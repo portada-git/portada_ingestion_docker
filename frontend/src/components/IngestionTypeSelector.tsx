@@ -7,7 +7,7 @@ import React from 'react';
 import { FileText, Database, Lock } from 'lucide-react';
 import clsx from 'clsx';
 
-export type IngestionType = 'extraction_data' | 'known_entities';
+export type IngestionType = 'extraction_data' | 'known_entities' | 'reviewed_entries';
 
 interface IngestionTypeSelectorProps {
   selectedType: IngestionType;

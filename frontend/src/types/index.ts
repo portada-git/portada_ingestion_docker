@@ -30,10 +30,11 @@ export interface LoginResponse {
 
 export interface UploadRequest {
   file: File;
-  ingestion_type: 'extraction_data' | 'known_entities';
+  ingestion_type: 'extraction_data' | 'known_entities' | 'reviewed_entries';
   publication?: string;
   entity_name?: string;
   data_path_delta_lake?: string;
+  reviewed_entry_type?: 'ship_entries' | 'cargo_ship_entries';
 }
 
 export interface IngestionResponse {

@@ -151,6 +151,54 @@ async def upload_entity(
         "stored_filename": random_filename
     }
 
+
+@router.post("/reviewed")
+async def upload_reviewed(
+    type: str = Query(..., description="Reviewed Entry Type"),
+    file: UploadFile = File(...),
+    user: str = Depends(get_current_user_name),
+    r: redis.Redis = Depends(get_redis)
+):
+    if not file.filename.endswith(".csv"):
+        raise HTTPException(status_code=400, detail="CSV files allowed for reviewed entries")
+
+    if type not in {"ship_entries", "cargo_ship_entries"}:
+        raise HTTPException(status_code=400, detail="Invalid reviewed entry type")
+
+    random_filename = f"{uuid.uuid4()}.csv"
+    directory = os.path.join(BASE_FILE_PATH, "reviewed_entries", type)
+    os.makedirs(directory, exist_ok=True)
+
+    file_path = os.path.join(directory, random_filename)
+
+    try:
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"File save error: {str(e)}")
+
+    metadata = {
+        "original_filename": file.filename,
+        "stored_filename": random_filename,
+        "file_path": file_path,
+        "file_type": f"reviewed_{type}",
+        "status": "0",
+        "user": user,
+        "timestamp": str(time.time())
+    }
+
+    file_key = random_filename.replace(".csv", "")
+    r.hset(f"file:{file_key}", mapping=metadata)
+    r.rpush("files:all", file_key)
+    r.rpush(f"files:user:{user}", file_key)
+
+    return {
+        "message": "Reviewed entries uploaded successfully",
+        "file_key": file_key,
+        "original_filename": file.filename,
+        "stored_filename": random_filename
+    }
+
 # Auth endpoints
 @router.post("/auth/me")
 async def auth_me(user: str = Depends(get_current_user_name)):

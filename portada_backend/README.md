@@ -18,6 +18,43 @@ chmod +x portada_backend/test_api.sh
 ./portada_backend/test_api.sh
 ```
 
+## Regenerar resultados de similitud con data-layer
+
+Usa este flujo para validar cambios en `portada-s-index` o en el generador canónico:
+
+```bash
+# 1) Rebuild/recreate del API si cambió portada-s-index o el Dockerfile
+docker compose build api
+docker compose up -d api
+
+# 2) Copiar el script canónico al contenedor
+docker cp \
+  portada_backend/scripts/generate_similarity_with_datalayer.py \
+  portada_ingestion_docker-api-1:/tmp/generate_similarity_with_datalayer.py
+
+# 3) Ejecutar el cálculo y escribir el JSON donde el backend lo lee
+docker exec -it portada_ingestion_docker-api-1 python \
+  /tmp/generate_similarity_with_datalayer.py \
+  --output-dir /app/similarity_results \
+  --output-file similarity_results_datalayer.json
+```
+
+Resultado esperado:
+
+- Host: `portada_backend/similarity_results/similarity_results_datalayer.json`
+- Contenedor: `/app/similarity_results/similarity_results_datalayer.json`
+- UI: http://localhost:5173/similarity-results
+
+Para una validación rápida de pocas entidades:
+
+```bash
+docker exec -it portada_ingestion_docker-api-1 python \
+  /tmp/generate_similarity_with_datalayer.py \
+  --output-dir /app/similarity_results \
+  --output-file similarity_results_datalayer.json \
+  --entities port comodity unit
+```
+
 ## Endpoints Principales
 
 ### Queries
