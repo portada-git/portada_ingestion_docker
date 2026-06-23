@@ -15,7 +15,7 @@ export interface UploadTask {
   status: 'pending' | 'uploading' | 'processing' | 'completed' | 'failed' | 'cancelled';
   progress: number;
   message: string;
-  ingestionType: 'extraction_data' | 'known_entities';
+  ingestionType: 'extraction_data' | 'known_entities' | 'reviewed_entries';
   publication?: string;
   entityName?: string;
   recordsProcessed?: number;
