@@ -39,6 +39,14 @@ docker exec -it portada_ingestion_docker-api-1 python \
   --output-file similarity_results_datalayer.json
 ```
 
+El script usa `REDIS_HOST`, `REDIS_PORT` y opcionalmente `REDIS_DB` desde el
+contenedor para inicializar la metadata del data-layer. En Docker Compose ya
+vienen definidos para el servicio API.
+
+El generador lee las entradas raw con `force_all=True` para evitar depender de
+`states/ship_entries`; esa carpeta puede quedar con parquets obsoletos después
+de ingestas o reconstrucciones y no debe limitar el cálculo global de similitud.
+
 Resultado esperado:
 
 - Host: `portada_backend/similarity_results/similarity_results_datalayer.json`
