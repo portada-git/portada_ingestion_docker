@@ -1,199 +1,185 @@
 {
-    "version":  2,
-    "normalize":  false,
-    "consensus":  {
-                      "min_votes":  "dynamic",
-                      "require_algorithm":  false
-                  },
-    "algorithms":  {
-                       "levenshtein_ratio":  {
-                                                 "threshold":  0.75,
-                                                 "gray_zone":  [
-                                                                   0.55,
-                                                                   0.75
-                                                               ],
-                                                 "params":  {
-
-                                                            }
-                                             },
-                       "jaro_winkler":  {
-                                            "threshold":  0.90,
-                                            "gray_zone":  [
-                                                              0.70,
-                                                              0.90
-                                                          ],
-                                            "params":  {
-
-                                                       }
-                                        },
-                       "ngram_2":  {
-                                       "threshold":  0.75,
-                                       "gray_zone":  [
-                                                         0.55,
-                                                         0.75
-                                                     ],
-                                       "params":  {
-
-                                                  }
-                                   },
-                       "ngram_3":  {
-                                       "threshold":  0.75,
-                                       "gray_zone":  [
-                                                         0.55,
-                                                         0.75
-                                                     ],
-                                       "params":  {
-
-                                                  }
-                                   },
-                       "ngram_4":  {
-                                       "threshold":  0.75,
-                                       "gray_zone":  [
-                                                         0.55,
-                                                         0.75
-                                                     ],
-                                       "params":  {
-
-                                                  }
-                                   },
-                       "phonetic_dm":  {
-                                           "threshold":  0.80,
-                                           "gray_zone":  [
-                                                             0.60,
-                                                             0.80
-                                                         ],
-                                           "params":  {
-
-                                                      }
-                                       },
-                       "semantica":  {
-                                         "threshold":  0.65,
-                                         "gray_zone":  [
-                                                           0.35,
-                                                           0.65
-                                                       ],
-                                         "params":  {
-
-                                                    }
-                                     },
-                       "text2vec":  {
-                                        "threshold":  0.75,
-                                        "gray_zone":  [
-                                                          0.55,
-                                                          0.75
-                                                      ],
-                                        "params":  {
-                                                       "n":  3
-                                                   }
-                                    },
-                       "fasttext":  {
-                                        "threshold":  0.80,
-                                        "gray_zone":  [
-                                                          0.60,
-                                                          0.80
-                                                      ],
-                                        "params":  {
-                                                       "model_path":  "models/fasttext/cc.es.300.bin"
-                                                   }
-                                    },
-                       "byt5":  {
-                                    "threshold":  0.90,
-                                    "gray_zone":  [
-                                                      0.70,
-                                                      0.90
-                                                  ],
-                                    "params":  {
-                                                   "model":  "agusnieto77/byt5-portada-contrastivo",
-                                                   "device":  "cuda",
-                                                   "torch_dtype":  "bfloat16",
-                                                   "max_length":  128
-                                               }
-                                },
-                       "semantic_model":  {
-                                              "threshold":  0.95,
-                                              "gray_zone":  [
-                                                                0.70,
-                                                                0.95
-                                                            ],
-                                              "params":  {
-                                                             "backend":  "auto",
-                                                             "model":  "shibing624/text2vec-base-multilingual",
-                                                             "device":  "cuda"
-                                                         }
-                                          }
-                   },
-    "algorithm_per_entity":  {
-                                 "port":  [
-                                              "levenshtein_ratio",
-                                              "jaro_winkler",
-                                              "ngram_3",
-                                              "phonetic_dm",
-                                              "text2vec",
-                                              "fasttext",
-                                              "byt5"
-                                          ],
-                                 "flag":  [
-                                              "levenshtein_ratio",
-                                              "jaro_winkler",
-                                              "ngram_3",
-                                              "phonetic_dm",
-                                              "text2vec",
-                                              "fasttext",
-                                              "byt5"
-                                          ],
-                                 "travel_duration":  [
-                                                         "levenshtein_ratio",
-                                                         "jaro_winkler",
-                                                         "byt5"
-                                                     ],
-                                 "ship_tons":  [
-                                                   "levenshtein_ratio",
-                                                   "jaro_winkler",
-                                                   "byt5"
-                                               ],
-                                 "comodity":  [
-                                                  "levenshtein_ratio",
-                                                  "jaro_winkler",
-                                                  "ngram_3",
-                                                  "phonetic_dm",
-                                                  "text2vec",
-                                                  "fasttext",
-                                                  "byt5"
-                                              ],
-                                 "ship_type":  [
-                                                   "levenshtein_ratio",
-                                                   "jaro_winkler",
-                                                   "phonetic_dm",
-                                                   "byt5"
-                                               ],
-                                 "unit":  [
-                                              "levenshtein_ratio",
-                                              "jaro_winkler",
-                                              "byt5"
-                                          ],
-                                 "master_role":  [
-                                                     "levenshtein_ratio",
-                                                     "jaro_winkler",
-                                                     "phonetic_dm",
-                                                     "byt5"
-                                                 ],
-                                 "master_people":  [
-                                                       "levenshtein_ratio",
-                                                       "jaro_winkler",
-                                                       "ngram_3",
-                                                       "phonetic_dm",
-                                                       "text2vec",
-                                                       "fasttext",
-                                                       "byt5"
-                                                   ],
-                                 "ship":  [
-                                              "levenshtein_ratio",
-                                              "jaro_winkler",
-                                              "ngram_3",
-                                              "phonetic_dm",
-                                              "text2vec",
-                                              "fasttext",
-                                              "byt5"
-                                          ]
-                             }
+    "version": 2,
+    "normalize": false,
+    "consensus": {
+        "min_votes": "dynamic",
+        "require_algorithm": false
+    },
+    "algorithms": {
+        "levenshtein_ratio": {
+            "threshold": 0.75,
+            "gray_zone": [
+                0.55,
+                0.75
+            ],
+            "params": {}
+        },
+        "jaro_winkler": {
+            "threshold": 0.90,
+            "gray_zone": [
+                0.70,
+                0.90
+            ],
+            "params": {}
+        },
+        "ngram_2": {
+            "threshold": 0.75,
+            "gray_zone": [
+                0.55,
+                0.75
+            ],
+            "params": {}
+        },
+        "ngram_3": {
+            "threshold": 0.75,
+            "gray_zone": [
+                0.55,
+                0.75
+            ],
+            "params": {}
+        },
+        "ngram_4": {
+            "threshold": 0.75,
+            "gray_zone": [
+                0.55,
+                0.75
+            ],
+            "params": {}
+        },
+        "phonetic_dm": {
+            "threshold": 0.80,
+            "gray_zone": [
+                0.60,
+                0.80
+            ],
+            "params": {}
+        },
+        "semantica": {
+            "threshold": 0.65,
+            "gray_zone": [
+                0.35,
+                0.65
+            ],
+            "params": {}
+        },
+        "text2vec": {
+            "threshold": 0.75,
+            "gray_zone": [
+                0.55,
+                0.75
+            ],
+            "params": {
+                "n": 3
+            }
+        },
+        "fasttext": {
+            "threshold": 0.80,
+            "gray_zone": [
+                0.60,
+                0.80
+            ],
+            "params": {
+                "model_path": "models/fasttext/cc.es.300.bin"
+            }
+        },
+        "byt5": {
+            "threshold": 0.90,
+            "gray_zone": [
+                0.70,
+                0.90
+            ],
+            "params": {
+                "model": "agusnieto77/byt5-portada-contrastivo",
+                "device": "cpu",
+                "torch_dtype": "bfloat16",
+                "max_length": 128
+            }
+        },
+        "semantic_model": {
+            "threshold": 0.95,
+            "gray_zone": [
+                0.70,
+                0.95
+            ],
+            "params": {
+                "backend": "auto",
+                "model": "shibing624/text2vec-base-multilingual",
+                "device": "cpu"
+            }
+        }
+    },
+    "algorithm_per_entity": {
+        "port": [
+            "levenshtein_ratio",
+            "jaro_winkler",
+            "ngram_3",
+            "phonetic_dm",
+            "text2vec",
+            "fasttext",
+            "byt5"
+        ],
+        "flag": [
+            "levenshtein_ratio",
+            "jaro_winkler",
+            "ngram_3",
+            "phonetic_dm",
+            "text2vec",
+            "fasttext",
+            "byt5"
+        ],
+        "travel_duration": [
+            "levenshtein_ratio",
+            "jaro_winkler",
+            "byt5"
+        ],
+        "ship_tons": [
+            "levenshtein_ratio",
+            "jaro_winkler",
+            "byt5"
+        ],
+        "comodity": [
+            "levenshtein_ratio",
+            "jaro_winkler",
+            "ngram_3",
+            "phonetic_dm",
+            "text2vec",
+            "fasttext",
+            "byt5"
+        ],
+        "ship_type": [
+            "levenshtein_ratio",
+            "jaro_winkler",
+            "phonetic_dm",
+            "byt5"
+        ],
+        "unit": [
+            "levenshtein_ratio",
+            "jaro_winkler",
+            "byt5"
+        ],
+        "master_role": [
+            "levenshtein_ratio",
+            "jaro_winkler",
+            "phonetic_dm",
+            "byt5"
+        ],
+        "master_people": [
+            "levenshtein_ratio",
+            "jaro_winkler",
+            "ngram_3",
+            "phonetic_dm",
+            "text2vec",
+            "fasttext",
+            "byt5"
+        ],
+        "ship": [
+            "levenshtein_ratio",
+            "jaro_winkler",
+            "ngram_3",
+            "phonetic_dm",
+            "text2vec",
+            "fasttext",
+            "byt5"
+        ]
+    }
 }
