@@ -9,7 +9,7 @@ import sys
 import os
 from pathlib import Path
 
-PORTADA_S_INDEX_VERSION = "0.2.0"
+PORTADA_S_INDEX_VERSION = "0.2.3"
 
 def run_command(cmd, description):
     """Ejecuta un comando y muestra el resultado"""

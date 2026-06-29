@@ -388,6 +388,16 @@ def clean_entries_for_similarity(layer: Any, df_entries: Any) -> Any:
     return normalized
 
 
+def read_all_raw_entries(layer: Any) -> Any:
+    """Lee todo el corpus RAW con compatibilidad para versiones antiguas del data-layer."""
+    try:
+        return layer.read_raw_entries(force_all=True)
+    except TypeError as exc:
+        if "force_all" not in str(exc):
+            raise
+        return layer.read_raw_entries()
+
+
 def run_similarity_generation(
     layer: Any,
     service: Any,
@@ -401,7 +411,7 @@ def run_similarity_generation(
     # For similarity generation we need the complete raw corpus. The default
     # data-layer path filters out entries already present in states/ship_entries,
     # which can fail if state parquet metadata is stale after ingestion/rebuilds.
-    df_entries = layer.read_raw_entries(force_all=True)
+    df_entries = read_all_raw_entries(layer)
     if df_entries is None:
         raise RuntimeError("No se pudieron leer entradas RAW desde py-portada-data-layer")
 

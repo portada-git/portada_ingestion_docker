@@ -40,7 +40,7 @@ python3 portada_backend/run_generate_similarity.py
 
 ```bash
 # 1. Copiar archivos de configuración
-docker exec -u root portada_ingestion_docker-api-1 python -m pip install --no-cache-dir --upgrade --no-deps portada-s-index==0.2.0
+docker exec -u root portada_ingestion_docker-api-1 python -m pip install --no-cache-dir --upgrade --no-deps portada-s-index==0.2.3
 docker cp .examples/portada-s-index/config_jsons_delcorreo/schema.json portada_ingestion_docker-api-1:/app/config/schema.json
 docker cp .examples/portada-s-index/config_jsons_delcorreo/mapping_to_clean_chars.json portada_ingestion_docker-api-1:/app/config/mapping_to_clean_chars.json
 docker cp data_layer_config/delta_data_layer_config.json portada_ingestion_docker-api-1:/app/config/delta_data_layer_config.json

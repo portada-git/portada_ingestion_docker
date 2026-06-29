@@ -99,53 +99,78 @@ open http://localhost:3000       # Dagster UI
 
 ---
 
-## Running the Disambiguation Script
+## Running Similarity Results in Spark/Delta
 
-The script `portada_backend/scripts/generate_similarity_with_datalayer.py` reads raw entries from Delta Lake, runs multi-algorithm similarity scoring via `portada-s-index`, and writes results to JSON. The API and frontend consume that JSON.
+The current scalable flow writes similarity results into Delta Lake, not a monolithic JSON file. The frontend/API read the Delta tables with pagination.
 
-### Step-by-step
+Physical output path is resolved from `data_layer_config/delta_data_layer_config.json`:
+
+```text
+<base_path>/<project_data_name>/similarity_results
+```
+
+With the default config this is:
+
+```text
+./delta_lake/portada_project/similarity_results
+```
+
+### Quick path
 
 ```bash
-# 1. Make sure the api container is running
+# 1. Make sure the api container is rebuilt and running
+docker compose build api
 docker compose up -d api
 
-# 2. Copy config files into the container (only needed once, or after config changes)
-docker cp data_layer_config/delta_data_layer_config.json \
-  portada_ingestion_docker-api-1:/app/config/delta_data_layer_config.json
+# 2. Run one entity first for a safe validation
+docker compose exec api python /app/scripts/generate_similarity_delta_results.py \
+  --entities ship_type
 
-docker cp data_layer_config/config_similarity.json \
-  portada_ingestion_docker-api-1:/app/config/config_similarity.json
+# 3. Check generated Delta runs
+curl http://localhost:8001/api/v1/similarity/runs
 
-docker cp data_layer_config/schema.json \
-  portada_ingestion_docker-api-1:/app/config/schema.json
-
-docker cp data_layer_config/mapping_to_clean_chars.json \
-  portada_ingestion_docker-api-1:/app/config/mapping_to_clean_chars.json
-
-# 3. Copy the script into the container
-docker cp portada_backend/scripts/generate_similarity_with_datalayer.py \
-  portada_ingestion_docker-api-1:/tmp/generate_similarity_with_datalayer.py
-
-# 4. Run the full disambiguation (all entities)
-docker exec -it portada_ingestion_docker-api-1 python \
-  /tmp/generate_similarity_with_datalayer.py \
-  --output-dir /app/similarity_results \
-  --output-file similarity_results_datalayer.json
+# 4. Query paginated results
+curl "http://localhost:8001/api/v1/similarity/results?entity=ship_type&limit=50"
 ```
 
-Results are written to `/app/similarity_results/similarity_results_datalayer.json` inside the container, which is the path the API reads. They are also visible in the frontend at `http://localhost:5173/similarity-results`.
-
-### Run only specific entities
+### Run all entities
 
 ```bash
-docker exec -it portada_ingestion_docker-api-1 python \
-  /tmp/generate_similarity_with_datalayer.py \
-  --output-dir /app/similarity_results \
-  --output-file similarity_results_datalayer.json \
-  --entities port flag ship_type
+docker compose exec api python /app/scripts/generate_similarity_delta_results.py
 ```
 
-Available entities: `port`, `ship_type`, `flag`, `ship_tons`, `travel_duration`, `master_role`, `comodity`, `unit`
+Available entities: `port`, `ship_type`, `flag`, `ship_tons`, `travel_duration`, `master_role`, `comodity`, `unit`.
+
+### RAM logging while the script runs
+
+The Delta script logs memory usage while it runs. This matters because PySpark uses both Python and JVM processes.
+
+By default, memory is logged every 30 seconds:
+
+```text
+[memory] periodic: process_tree_rss=2.4 GiB container_usage=3.1 GiB
+```
+
+| Metric | Meaning |
+|---|---|
+| `process_tree_rss` | RSS of the Python process plus child processes, including Spark/JVM |
+| `container_usage` | Total memory reported by Docker/cgroup for the container |
+
+Change the interval:
+
+```bash
+docker compose exec api python /app/scripts/generate_similarity_delta_results.py \
+  --entities ship_type \
+  --memory-log-interval-seconds 10
+```
+
+Disable periodic memory logs:
+
+```bash
+docker compose exec api python /app/scripts/generate_similarity_delta_results.py \
+  --entities ship_type \
+  --memory-log-interval-seconds 0
+```
 
 ### Script arguments
 
@@ -155,18 +180,56 @@ Available entities: `port`, `ship_type`, `flag`, `ship_tons`, `travel_duration`,
 | `--similarity-config` | `/app/config/config_similarity.json` | Similarity algorithm config |
 | `--schema` | `/app/config/schema.json` | Cleaning schema |
 | `--mapping` | `/app/config/mapping_to_clean_chars.json` | Char normalization mapping |
-| `--output-dir` | `/tmp/similarity_results` | Output directory |
-| `--output-file` | `similarity_results_datalayer.json` | Output filename |
 | `--known-entities` | `/app/known_entities.json` | Fallback known entities JSON |
 | `--entities` | all 8 entities | Space-separated list to restrict processing |
+| `--results-dir-name` | `similarity_results` | Folder under `<base_path>/<project_data_name>` |
+| `--memory-log-interval-seconds` | `30` | RAM log interval; `0` disables periodic logs |
 
-### What the script does internally
+### What the Delta script does internally
 
-1. Initializes `BoatFactCleaning` (py-portada-data-layer) and starts a Spark session
-2. Reads all raw entries from Delta Lake with `force_all=True` (bypasses stale state parquet)
-3. Runs the cleaning pipeline in memory (no writes to Delta)
-4. For each entity: reads known canonical voices from Delta (falls back to `known_entities.json`), extracts citations from the cleaned entries, runs `SimilarityService.evaluate()` with all configured algorithms
-5. Writes a single aggregated JSON with results per entity
+1. Initializes `BoatFactCleaning` and starts Spark.
+2. Reads all raw entries from Delta Lake.
+3. Runs the cleaning pipeline before extracting citations.
+4. For each entity, reads known voices from the existing data-layer source; it does **not** duplicate them into a `similarity_known_voices` table.
+5. Runs all configured algorithms except `semantic_model`.
+6. Writes Delta tables under `similarity_results`:
+   - `similarity_runs`
+   - `similarity_terms`
+   - `similarity_entity_summaries`
+   - `similarity_results`
+   - `similarity_algorithm_scores`
+
+### API endpoints for Delta similarity results
+
+```bash
+# Execution history
+curl http://localhost:8001/api/v1/similarity/runs
+curl http://localhost:8001/api/v1/similarity/runs/latest
+
+# Paginated results
+curl "http://localhost:8001/api/v1/similarity/results?entity=ship_type&limit=50"
+
+# Entity-specific paginated results
+curl "http://localhost:8001/api/v1/similarity/results/ship_type?limit=50"
+```
+
+Pagination uses `next_cursor` from the response:
+
+```bash
+curl "http://localhost:8001/api/v1/similarity/results?entity=ship_type&limit=50&cursor=<next_cursor>"
+```
+
+### Legacy JSON generator
+
+The old JSON flow still exists for fallback/debugging:
+
+```bash
+docker compose exec api python /app/scripts/generate_similarity_with_datalayer.py \
+  --output-dir /app/similarity_results \
+  --output-file similarity_results_datalayer.json
+```
+
+For scale testing and frontend usage, prefer the Delta script above.
 
 ---
 

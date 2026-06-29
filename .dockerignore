@@ -20,6 +20,8 @@ portada_backend/similarity_results/
 # Heavy local package artifacts.
 portada-s-index/.venv/
 portada-s-index/dist/
+!portada-s-index/dist/
+!portada-s-index/dist/*.whl
 portada-s-index/build/
 portada-s-index/**/__pycache__/
 portada-s-index/*.egg-info/
