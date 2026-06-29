@@ -20,3 +20,5 @@ DEV_README.md
 portada-s-index/
 /models/
 portada_backend/models/
+
+.playwright-cli/
