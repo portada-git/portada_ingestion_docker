@@ -358,6 +358,7 @@ def _result_records(
     records: list[dict[str, Any]] = []
     for result in results_list:
         scores = result.get("algorithm_scores", []) or []
+        scores = [_normalize_algorithm_score(score) for score in scores]
         voted_scores = [s for s in scores if bool(s.get("voted"))]
         best_score = max((float(s.get("score", 0.0)) for s in scores), default=0.0)
         best = max(scores, key=lambda s: float(s.get("score", 0.0)), default={})
@@ -388,7 +389,8 @@ def _score_records(
         term = str(result.get("term", ""))
         normalized = str(result.get("normalized", ""))
         frequency = int(result.get("frequency", 0) or 0)
-        for score in result.get("algorithm_scores", []) or []:
+        for raw_score in result.get("algorithm_scores", []) or []:
+            score = _normalize_algorithm_score(raw_score)
             records.append({
                 "run_id": run_id,
                 "entity_type": entity_name,
@@ -404,6 +406,13 @@ def _score_records(
                 "in_gray_zone": bool(score.get("in_gray_zone", False)),
             })
     return records
+
+
+def _normalize_algorithm_score(score: dict[str, Any]) -> dict[str, Any]:
+    normalized = dict(score)
+    if normalized.get("algorithm") == "semantica":
+        normalized["algorithm"] = "token_jaccard"
+    return normalized
 
 
 def _term_records(*, run_id: str, entity_name: str, citations_counter: Any) -> list[dict[str, Any]]:

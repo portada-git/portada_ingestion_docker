@@ -67,7 +67,7 @@
       ],
       "params": {}
     },
-    "semantica": {
+    "token_jaccard": {
       "enabled": false,
       "threshold": 0.72,
       "gray_zone": [

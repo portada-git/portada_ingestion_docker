@@ -78,7 +78,7 @@ ALGORITHM_DEFAULTS: Dict[str, Dict[str, Any]] = {
         "gray_zone": [0.8, 0.849],
         "params": {},
     },
-    "semantica": {
+    "token_jaccard": {
         "enabled": False,
         "threshold": 0.72,
         "gray_zone": [0.65, 0.719],
@@ -285,7 +285,9 @@ class SimilarityService:
             "ngram_3": self._algo_ngram,
             "ngram_4": self._algo_ngram,
             "phonetic_dm": self._algo_phonetic_dm,
-            "semantica": self._algo_semantica,
+            "token_jaccard": self._algo_token_jaccard,
+            # Backward-compatible alias for old configs.
+            "semantica": self._algo_token_jaccard,
             "text2vec": self._algo_text2vec,
             "byt5_semantic": self._algo_byt5_semantic,
         }
@@ -560,8 +562,12 @@ class SimilarityService:
                 payload.get("min_votes_consensus", normalized["consensus"]["min_votes"])
             )
 
+        input_algorithms = payload.get("algorithms", {})
+        if isinstance(input_algorithms, dict) and "semantica" in input_algorithms and "token_jaccard" not in input_algorithms:
+            input_algorithms = {**input_algorithms, "token_jaccard": input_algorithms["semantica"]}
+
         for algo_key, algo_default in ALGORITHM_DEFAULTS.items():
-            source = payload.get("algorithms", {}).get(algo_key, {})
+            source = input_algorithms.get(algo_key, {}) if isinstance(input_algorithms, dict) else {}
 
             if not source and "thresholds" in payload:
                 if algo_key in payload.get("thresholds", {}):
@@ -1007,7 +1013,7 @@ class SimilarityService:
             return 1.0
         return levenshtein_ratio(code_left, code_right)
 
-    def _algo_semantica(self, left: str, right: str, params: Dict[str, Any]) -> float:
+    def _algo_token_jaccard(self, left: str, right: str, params: Dict[str, Any]) -> float:
         mode = params.get("mode", "token_jaccard")
         if mode == "char_cosine":
             return char_cosine(left, right, n=int(params.get("n", 3)))

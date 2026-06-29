@@ -36,7 +36,7 @@
       "gray_zone": [0.6, 0.8],
       "params": {}
     },
-    "semantica": {
+    "token_jaccard": {
       "threshold": 0.65,
       "gray_zone": [0.35, 0.65],
       "params": {}

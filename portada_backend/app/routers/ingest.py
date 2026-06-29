@@ -166,7 +166,7 @@ async def upload_reviewed(
         raise HTTPException(status_code=400, detail="Invalid reviewed entry type")
 
     random_filename = f"{uuid.uuid4()}.csv"
-    directory = os.path.join(BASE_FILE_PATH, "reviewed_entries", type)
+    directory = os.path.join(BASE_FILE_PATH, "reviews", type)
     os.makedirs(directory, exist_ok=True)
 
     file_path = os.path.join(directory, random_filename)
@@ -181,7 +181,11 @@ async def upload_reviewed(
         "original_filename": file.filename,
         "stored_filename": random_filename,
         "file_path": file_path,
-        "file_type": f"reviewed_{type}",
+        # The monitor dispatches reviewed ingestion from the top-level type.
+        # Keep the reviewed subtype separately so the Dagster job still
+        # receives ship_entries/cargo_ship_entries.
+        "file_type": "reviews",
+        "reviewed_type": type,
         "status": "0",
         "user": user,
         "timestamp": str(time.time())

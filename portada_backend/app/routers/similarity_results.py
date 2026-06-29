@@ -224,6 +224,43 @@ def get_latest_delta_run_id() -> Optional[str]:
     return str(rows[0]["run_id"]) if rows else None
 
 
+def get_latest_delta_run_id_for_entity(entity: str) -> Optional[str]:
+    """Return the latest successful run that produced results for one entity."""
+    if not delta_table_exists("similarity_entity_summaries"):
+        return get_latest_delta_run_id()
+
+    rows = (
+        read_delta_table("similarity_entity_summaries")
+        .alias("summary")
+        .join(read_delta_table("similarity_runs").alias("run"), "run_id")
+        .where(F.col("summary.entity_type") == entity)
+        .where(F.col("summary.status") == "success")
+        .orderBy(F.desc("run.created_at"))
+        .select("run_id")
+        .limit(1)
+        .collect()
+    )
+    return str(rows[0]["run_id"]) if rows else None
+
+
+def latest_successful_entity_runs_df():
+    """DataFrame with the latest successful run_id for each entity."""
+    summaries = read_delta_table("similarity_entity_summaries").alias("summary")
+    runs = read_delta_table("similarity_runs").select("run_id", "created_at").alias("run")
+    window = Window.partitionBy("summary.entity_type").orderBy(F.desc("run.created_at"))
+    return (
+        summaries
+        .join(runs, "run_id")
+        .where(F.col("summary.status") == "success")
+        .withColumn("_entity_run_rank", F.row_number().over(window))
+        .where(F.col("_entity_run_rank") == 1)
+        .select(
+            F.col("summary.entity_type").alias("entity_type"),
+            F.col("run_id").alias("run_id"),
+        )
+    )
+
+
 def query_delta_results(
     *,
     run_id: Optional[str],
@@ -233,12 +270,22 @@ def query_delta_results(
     page: Optional[int],
     q: Optional[str],
 ) -> Dict:
-    resolved_run_id = run_id or get_latest_delta_run_id()
-    if not resolved_run_id:
+    resolved_run_id = run_id or (get_latest_delta_run_id_for_entity(entity) if entity else get_latest_delta_run_id())
+    if not resolved_run_id and (run_id or entity):
         raise FileNotFoundError(delta_table_path("similarity_runs"))
 
     safe_limit = max(1, min(int(limit), 500))
-    df = read_delta_table("similarity_results").where(F.col("run_id") == resolved_run_id)
+    df = read_delta_table("similarity_results")
+    if run_id or entity:
+        df = df.where(F.col("run_id") == resolved_run_id)
+    elif not delta_table_exists("similarity_entity_summaries"):
+        resolved_run_id = get_latest_delta_run_id()
+        if not resolved_run_id:
+            raise FileNotFoundError(delta_table_path("similarity_runs"))
+        df = df.where(F.col("run_id") == resolved_run_id)
+    else:
+        latest_entities = latest_successful_entity_runs_df()
+        df = df.join(latest_entities, ["run_id", "entity_type"], "inner")
     if entity:
         df = df.where(F.col("entity_type") == entity)
     if q:
@@ -358,7 +405,8 @@ def compute_export_result(row: Dict, selected_algorithms: List[str]) -> Dict:
         "computed_entity": computed_entity,
         "computed_voice": computed_voice,
         "computed_score": computed_score if computed_score is not None else "",
-        "consensus_votes": f"{computed_votes}/{votes_needed}",
+        "consensus_votes": f"{computed_votes}/{len(selected_scores)}",
+        "consensus_votes_required": votes_needed,
         "total_algorithm_votes": len(voted_scores),
     }
 
@@ -416,7 +464,7 @@ def csv_stream(rows: Iterable[Dict], selected_algorithms: List[str], classificat
 
 
 def query_delta_export_rows(*, run_id: Optional[str], entity: str, q: Optional[str]):
-    resolved_run_id = run_id or get_latest_delta_run_id()
+    resolved_run_id = run_id or get_latest_delta_run_id_for_entity(entity)
     if not resolved_run_id:
         raise FileNotFoundError(delta_table_path("similarity_runs"))
 
@@ -617,20 +665,16 @@ async def list_entities():
     }
 
     if delta_table_exists("similarity_entity_summaries"):
-        latest_run_id = get_latest_delta_run_id()
-        if not latest_run_id:
-            return []
         rows = (
-            read_delta_table("similarity_entity_summaries")
-            .where(F.col("run_id") == latest_run_id)
-            .select("entity_type", "status")
+            latest_successful_entity_runs_df()
+            .select("entity_type")
             .collect()
         )
         entities = [
             {
                 "name": row["entity_type"],
                 "display_name": entity_names.get(row["entity_type"], str(row["entity_type"]).title()),
-                "has_results": row["status"] == "success",
+                "has_results": True,
             }
             for row in rows
         ]
