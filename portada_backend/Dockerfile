@@ -26,10 +26,12 @@ RUN pip install --no-cache-dir --timeout=300 --retries=5 -r requirements-base.tx
 ARG CACHE_BUST_OWN_LIBS=10
 ARG PORTADA_S_INDEX_VERSION=0.2.2
 COPY portada_backend/requirements.txt .
+COPY portada-s-index/dist/ /tmp/portada-s-index-dist/
 # Install PyTorch CPU-only version (much smaller than CUDA version)
 RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
-    pip install --no-cache-dir "portada-s-index[all]==${PORTADA_S_INDEX_VERSION}" && \
+    pip install --no-cache-dir --find-links=/tmp/portada-s-index-dist "portada-s-index[all]==${PORTADA_S_INDEX_VERSION}" && \
     pip install --no-cache-dir --timeout=300 --retries=5 -r requirements.txt && \
+    rm -rf /tmp/portada-s-index-dist && \
     rm -rf /root/.cache/pip && \
     find /usr/local/lib/python3.12 -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true && \
     find /usr/local/lib/python3.12 -type f -name "*.pyc" -delete

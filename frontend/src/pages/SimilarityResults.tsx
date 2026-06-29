@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import * as XLSX from 'xlsx';
 
 interface AlgorithmScore {
   algorithm: string;
@@ -47,6 +46,45 @@ interface ResultsData {
   };
 }
 
+interface ApiEntitySummary {
+  name: string;
+  display_name?: string;
+  has_results?: boolean;
+}
+
+interface ApiRunSummary {
+  created_at?: string;
+  total_entries?: number;
+  disabled_algorithms?: string[];
+}
+
+interface ApiDeltaResultRow {
+  entity_type?: string;
+  term: string;
+  frequency?: number;
+  exact_match?: boolean;
+  best_entity?: string;
+  best_voice?: string;
+  best_score?: number;
+  votes_approval?: number;
+  algorithm_scores_json?: string;
+  algorithm_scores?: AlgorithmScore[];
+}
+
+interface ApiDeltaResultsResponse {
+  source?: string;
+  run_id?: string;
+  entity?: string | null;
+  limit?: number;
+  page?: number;
+  page_size?: number;
+  total_count?: number;
+  total_pages?: number;
+  has_next?: boolean;
+  next_cursor?: string | null;
+  results: ApiDeltaResultRow[];
+}
+
 interface ResultsLoadError {
   title: string;
   message: string;
@@ -67,6 +105,7 @@ interface ComputedSimilarityResult extends SimilarityResult {
 }
 
 const TECHNICAL_ID_PATTERN = /^DM_\d+$/i;
+const PAGE_SIZE_OPTIONS = [25, 50, 100, 250, 500];
 
 const isTechnicalIdentifierTerm = (term: string): boolean => {
   return TECHNICAL_ID_PATTERN.test(term.trim());
@@ -77,7 +116,13 @@ const SimilarityResults: React.FC = () => {
   const [selectedEntity, setSelectedEntity] = useState<string>('');
   const [selectedAlgorithms, setSelectedAlgorithms] = useState<string[]>([]);
   const [selectedClassification, setSelectedClassification] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalResults, setTotalResults] = useState(0);
+  const [pageSize, setPageSize] = useState(100);
   const [loading, setLoading] = useState(true);
+  const [tableLoading, setTableLoading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState<ResultsLoadError | null>(null);
 
   const API_BASE = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api/v1'}/similarity`;
@@ -104,10 +149,112 @@ const SimilarityResults: React.FC = () => {
     loadResults();
   }, []);
 
-  const loadResults = async () => {
+  const parseAlgorithmScores = (row: ApiDeltaResultRow): AlgorithmScore[] => {
+    if (Array.isArray(row.algorithm_scores)) {
+      return row.algorithm_scores;
+    }
+
+    if (!row.algorithm_scores_json) {
+      return [];
+    }
+
     try {
-      setLoading(true);
-      const response = await fetch(`${API_BASE}/results`);
+      const parsed = JSON.parse(row.algorithm_scores_json);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const toSimilarityResult = (row: ApiDeltaResultRow): SimilarityResult => ({
+    term: row.term,
+    frequency: row.frequency || 0,
+    entity: row.best_entity,
+    canonical_entity: row.best_entity,
+    voice: row.best_voice,
+    similarity_score: row.best_score,
+    votes: row.votes_approval,
+    exact_match: row.exact_match,
+    algorithm_scores: parseAlgorithmScores(row),
+  });
+
+  const buildResultsData = (
+    payload: ApiDeltaResultsResponse,
+    entities: ApiEntitySummary[],
+    latestRun?: ApiRunSummary,
+  ): ResultsData => {
+    const rows = payload.results || [];
+    const entityNames = entities.length > 0
+      ? entities.map((entity) => entity.name)
+      : Array.from(new Set(rows.map((row) => row.entity_type).filter(Boolean))) as string[];
+
+    const entitiesData = entityNames.reduce<ResultsData['entities']>((acc, entityName) => {
+      const entityRows = rows.filter((row) => (row.entity_type || payload.entity || entityName) === entityName);
+      const results = entityRows.map(toSimilarityResult);
+      const algorithms = Array.from(new Set(
+        results.flatMap((result) => result.algorithm_scores || []).map((score) => score.algorithm)
+      ));
+      const knownVoices = new Set(results.map((result) => result.voice).filter(Boolean)).size;
+      const totalCitations = results.reduce((sum, result) => sum + (result.frequency || 0), 0);
+
+      acc[entityName] = {
+        name: entityName,
+        status: 'success',
+        known_voices: knownVoices,
+        unique_terms: results.length,
+        total_citations: totalCitations,
+        coverage: undefined,
+        available_algorithms: algorithms,
+        allowed_algorithms: algorithms,
+        results,
+      };
+      return acc;
+    }, {});
+
+    return {
+      timestamp: latestRun?.created_at || new Date().toISOString(),
+      source: payload.source,
+      total_entries: latestRun?.total_entries || rows.length,
+      disabled_algorithms: latestRun?.disabled_algorithms,
+      entities: entitiesData,
+    };
+  };
+
+  const loadResults = async (entityName?: string, page = 1, requestedPageSize = pageSize) => {
+    const initialLoad = !data;
+    try {
+      if (initialLoad) {
+        setLoading(true);
+      } else {
+        setTableLoading(true);
+      }
+      const [entitiesResponse, runResponse] = await Promise.all([
+        fetch(`${API_BASE}/entities`),
+        fetch(`${API_BASE}/runs/latest`),
+      ]);
+
+      if (!entitiesResponse.ok) {
+        throw {
+          title: 'No se pudieron cargar las entidades',
+          message: `El backend respondió con HTTP ${entitiesResponse.status}.`,
+          action: 'Revisa los logs del servicio api para ver la causa exacta.',
+        } satisfies ResultsLoadError;
+      }
+
+      const entities = await entitiesResponse.json() as ApiEntitySummary[];
+      const latestRun = runResponse.ok ? await runResponse.json() as ApiRunSummary : undefined;
+      const targetEntity = entityName || selectedEntity || entities.find((entity) => entity.has_results)?.name || entities[0]?.name;
+      const targetPage = Math.max(1, page);
+      const params = new URLSearchParams({
+        limit: String(requestedPageSize),
+        page: String(targetPage),
+      });
+
+      const response = await fetch(
+        targetEntity
+          ? `${API_BASE}/results/${encodeURIComponent(targetEntity)}?${params.toString()}`
+          : `${API_BASE}/results?${params.toString()}`
+      );
 
       if (!response.ok) {
         let detail: unknown;
@@ -129,16 +276,16 @@ const SimilarityResults: React.FC = () => {
             title: 'No hay resultados disponibles',
             message: typeof apiDetail === 'string' ? apiDetail : 'El proceso de análisis de similitud no se ha ejecutado todavía.',
             action: 'Para generar los resultados, ejecuta el siguiente comando en el servidor:',
-            command: 'docker compose exec api python /app/scripts/generate_similarity_with_datalayer.py --output-dir /app/similarity_results',
+            command: 'docker compose exec api python /app/scripts/generate_similarity_delta_results.py --entities ship_type',
           } satisfies ResultsLoadError;
         }
 
         if (response.status === 422) {
           throw {
-            title: 'El archivo de resultados no es válido',
-            message: structuredDetail?.message || 'El backend encontró un JSON de resultados corrupto.',
-            action: structuredDetail?.action || 'Regenera el análisis de similitud para reemplazar el archivo inválido.',
-            command: 'docker compose exec api python /app/scripts/generate_similarity_with_datalayer.py --output-dir /app/similarity_results',
+            title: 'Los resultados no son válidos',
+            message: structuredDetail?.message || 'El backend encontró resultados corruptos.',
+            action: structuredDetail?.action || 'Regenera el análisis de similitud para reemplazar los datos inválidos.',
+            command: 'docker compose exec api python /app/scripts/generate_similarity_delta_results.py --entities ship_type',
           } satisfies ResultsLoadError;
         }
 
@@ -149,15 +296,24 @@ const SimilarityResults: React.FC = () => {
         } satisfies ResultsLoadError;
       }
 
-      const results = await response.json();
-      setData(results);
+      const payload = await response.json() as ApiDeltaResultsResponse | ResultsData;
+      const results = 'entities' in payload
+        ? payload
+        : buildResultsData(payload, entities, latestRun);
 
-      // Seleccionar primera entidad por defecto
-      const entities = Object.keys(results.entities);
-      if (entities.length > 0) {
-        const firstEntity = entities[0];
-        setSelectedEntity(firstEntity);
-        setSelectedAlgorithms(getDefaultAlgorithmsForEntity(firstEntity, results));
+      setData(results);
+      if ('total_pages' in payload) {
+        setTotalPages(payload.total_pages || 0);
+        setTotalResults(payload.total_count || 0);
+        setCurrentPage(payload.page || targetPage);
+        setPageSize(payload.page_size || payload.limit || pageSize);
+      }
+
+      const entityKeys = Object.keys(results.entities);
+      const nextSelectedEntity = targetEntity && results.entities[targetEntity] ? targetEntity : entityKeys[0];
+      if (nextSelectedEntity) {
+        setSelectedEntity(nextSelectedEntity);
+        setSelectedAlgorithms(getDefaultAlgorithmsForEntity(nextSelectedEntity, results));
       }
 
       setError(null);
@@ -178,6 +334,7 @@ const SimilarityResults: React.FC = () => {
       }
     } finally {
       setLoading(false);
+      setTableLoading(false);
     }
   };
 
@@ -313,86 +470,70 @@ const SimilarityResults: React.FC = () => {
       .filter(result => !selectedClassification || result.computed_classification === selectedClassification);
   };
 
-  const exportToExcel = () => {
-    if (!data || !selectedEntity) return;
-    
-    const results = getComputedResults();
-    const entityData = data.entities[selectedEntity];
-    
-    console.log('Exportando:', {
-      totalResults: results.length,
-      selectedEntity,
-      selectedAlgorithms,
-      selectedClassification
-    });
-    
-    // Preparar datos para Excel - Hoja de Resultados.
-    // Exporta exactamente el conjunto visible en tabla y añade columnas por algoritmo seleccionado.
-    const excelData = results.map(result => {
-      const algorithmsUsed = result.voted_scores
-        .map((score) => `${score.algorithm}: ${formatScore(score.score)}`)
-        .join(', ');
+  const exportToCsv = async () => {
+    if (!selectedEntity) return;
 
-      const row: Record<string, string | number | boolean> = {
-        'Término': result.term,
-        'Frecuencia': result.frequency,
-        'Clasificación calculada': result.computed_classification,
-        'Entidad canónica calculada': result.computed_entity,
-        'Voz calculada': result.computed_voice,
-        'Score ganador': result.computed_score?.toFixed(3) || '-',
-        'Votos de consenso': `${result.computed_votes}/${result.votes_needed}`,
-        'Votos totales de algoritmos': result.total_votes,
-        'Algoritmos que votaron': algorithmsUsed || '-',
-      };
+    try {
+      setIsExporting(true);
+      const params = new URLSearchParams();
+      if (selectedAlgorithms.length > 0) {
+        params.set('algorithms', selectedAlgorithms.join(','));
+      }
+      if (selectedClassification) {
+        params.set('classification', selectedClassification);
+      }
 
-      selectedAlgorithms.forEach((algorithm) => {
-        const score = result.selected_scores.find((item) => item.algorithm === algorithm);
-        row[`${algorithm} voto`] = score?.voted ? 'Sí' : 'No';
-        row[`${algorithm} score`] = formatScore(score?.score);
-        row[`${algorithm} threshold`] = formatScore(score?.threshold);
-        row[`${algorithm} zona gris`] = score?.in_gray_zone ? 'Sí' : 'No';
-        row[`${algorithm} entidad sugerida`] = score?.best_entity || '-';
-        row[`${algorithm} voz sugerida`] = score?.best_voice || '-';
+      const response = await fetch(`${API_BASE}/export/${encodeURIComponent(selectedEntity)}?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `similitud_${selectedEntity}_${Date.now()}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setError({
+        title: 'No se pudo exportar el CSV',
+        message: err instanceof Error ? err.message : 'El backend no pudo generar la exportación.',
+        action: 'Revisa los logs del servicio api para ver la causa exacta.',
       });
-
-      return row;
-    });
-    
-    console.log('Datos para Excel:', excelData.length, 'filas');
-    
-    // Crear workbook
-    const wb = XLSX.utils.book_new();
-    
-    // Hoja 1: Resumen
-    const summary = [
-      ['Entidad', selectedEntity],
-      ['Fecha', new Date(data.timestamp).toLocaleString()],
-      ['Voces Conocidas', entityData.known_voices],
-      ['Términos Únicos', entityData.unique_terms],
-      ['Citaciones Totales', entityData.total_citations],
-      ['Cobertura', `${entityData.coverage}%`],
-      [],
-      ['Algoritmos Aplicados', selectedAlgorithms.join(', ')],
-      ['Clasificación Filtrada', selectedClassification || 'Todas'],
-      ['Resultados Mostrados', results.length],
-    ];
-    
-    const wsSummary = XLSX.utils.aoa_to_sheet(summary);
-    XLSX.utils.book_append_sheet(wb, wsSummary, 'Resumen');
-    
-    // Hoja 2: Resultados
-    if (excelData.length > 0) {
-      const ws = XLSX.utils.json_to_sheet(excelData);
-      XLSX.utils.book_append_sheet(wb, ws, 'Resultados');
-      console.log('Hoja Resultados agregada con', excelData.length, 'filas');
-    } else {
-      console.warn('No hay datos para la hoja de Resultados');
+    } finally {
+      setIsExporting(false);
     }
-    
-    // Descargar
-    const fileName = `similitud_${selectedEntity}_${Date.now()}.xlsx`;
-    XLSX.writeFile(wb, fileName);
-    console.log('Archivo descargado:', fileName);
+  };
+
+  const getVisiblePages = (): number[] => {
+    if (totalPages <= 1) return [1];
+
+    const firstPage = Math.max(1, currentPage - 2);
+    const lastPage = Math.min(totalPages, currentPage + 2);
+    const pages: number[] = [];
+
+    for (let pageNumber = firstPage; pageNumber <= lastPage; pageNumber += 1) {
+      pages.push(pageNumber);
+    }
+
+    if (!pages.includes(1)) {
+      pages.unshift(1);
+    }
+    if (!pages.includes(totalPages)) {
+      pages.push(totalPages);
+    }
+
+    return pages;
+  };
+
+  const handlePageSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const nextPageSize = Number(event.target.value);
+    setPageSize(nextPageSize);
+    setCurrentPage(1);
+    loadResults(selectedEntity, 1, nextPageSize);
   };
 
   const getClassificationColor = (classification: string) => {
@@ -477,7 +618,7 @@ const SimilarityResults: React.FC = () => {
                   )}
                 </div>
                 <button
-                  onClick={loadResults}
+                  onClick={() => loadResults(selectedEntity, currentPage)}
                   style={{
                     backgroundColor: '#dc2626',
                     color: 'white',
@@ -532,7 +673,7 @@ const SimilarityResults: React.FC = () => {
           </div>
           <div className="flex gap-2">
             <button
-              onClick={loadResults}
+              onClick={() => loadResults(selectedEntity, currentPage)}
               className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -541,14 +682,14 @@ const SimilarityResults: React.FC = () => {
               Recargar
             </button>
             <button
-              onClick={exportToExcel}
-              disabled={!selectedEntity || computedResults.length === 0}
+              onClick={exportToCsv}
+              disabled={!selectedEntity || totalResults === 0 || isExporting}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              Exportar a Excel
+              {isExporting ? 'Exportando...' : 'Exportar CSV'}
             </button>
           </div>
         </div>
@@ -570,6 +711,8 @@ const SimilarityResults: React.FC = () => {
                   setSelectedEntity(nextEntity);
                   setSelectedAlgorithms(getDefaultAlgorithmsForEntity(nextEntity));
                   setSelectedClassification('');
+                  setCurrentPage(1);
+                  loadResults(nextEntity, 1);
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
@@ -650,7 +793,14 @@ const SimilarityResults: React.FC = () => {
         )}
 
         {/* Tabla de Resultados */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white rounded-lg shadow overflow-hidden relative">
+          {tableLoading && (
+            <div className="absolute inset-0 bg-white/70 z-10 flex items-center justify-center">
+              <div className="px-4 py-2 bg-white border border-gray-200 rounded-lg shadow text-sm text-gray-700">
+                Cargando página...
+              </div>
+            </div>
+          )}
           <div className="overflow-x-auto" style={{ maxHeight: '600px' }}>
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50 sticky top-0">
@@ -737,9 +887,55 @@ const SimilarityResults: React.FC = () => {
           
           {computedResults.length > 0 && (
             <div className="bg-gray-50 px-6 py-3 border-t border-gray-200">
-              <p className="text-sm text-gray-600">
-                Mostrando {computedResults.length} resultado(s)
-              </p>
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <p className="text-sm text-gray-600">
+                    Mostrando {computedResults.length} de {totalResults.toLocaleString()} resultado(s). Página {currentPage} de {totalPages || 1}.
+                  </p>
+                  <label className="flex items-center gap-2 text-sm text-gray-600">
+                    Mostrar
+                    <select
+                      value={pageSize}
+                      onChange={handlePageSizeChange}
+                      disabled={tableLoading}
+                      className="px-2 py-1 border border-gray-300 rounded-lg bg-white text-gray-700 disabled:opacity-50"
+                    >
+                      {PAGE_SIZE_OPTIONS.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                    por página
+                  </label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => loadResults(selectedEntity, currentPage - 1)}
+                    disabled={tableLoading || currentPage <= 1}
+                    className="px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-white text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Anterior
+                  </button>
+                  {getVisiblePages().map((pageNumber) => (
+                    <button
+                      key={pageNumber}
+                      onClick={() => loadResults(selectedEntity, pageNumber)}
+                      disabled={tableLoading || pageNumber === currentPage}
+                      className={`px-3 py-1.5 border rounded-lg text-sm ${pageNumber === currentPage ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-300 hover:bg-white'}`}
+                    >
+                      {pageNumber}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => loadResults(selectedEntity, currentPage + 1)}
+                    disabled={tableLoading || currentPage >= totalPages}
+                    className="px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-white text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Siguiente
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>

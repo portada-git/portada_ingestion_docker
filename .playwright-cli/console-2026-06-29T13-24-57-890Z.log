@@ -1,0 +1,29 @@
+[      17ms] [INFO] 🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙 @ http://localhost:5173/assets/index-6864858d.js:66
+[      22ms] [ERROR] Error decoding token: InvalidCharacterError: Failed to execute 'atob' on 'Window': The string to be decoded is not correctly encoded.
+    at http://localhost:5173/assets/index-6864858d.js:83:19484
+    at http://localhost:5173/assets/index-6864858d.js:83:19684
+    at ov (http://localhost:5173/assets/index-6864858d.js:83:20773)
+    at jw (http://localhost:5173/assets/index-6864858d.js:371:73452)
+    at lc (http://localhost:5173/assets/index-6864858d.js:38:17006)
+    at Yf (http://localhost:5173/assets/index-6864858d.js:40:44027)
+    at Vf (http://localhost:5173/assets/index-6864858d.js:40:39763)
+    at Tx (http://localhost:5173/assets/index-6864858d.js:40:39691)
+    at ss (http://localhost:5173/assets/index-6864858d.js:40:39545)
+    at Uf (http://localhost:5173/assets/index-6864858d.js:40:34629) @ http://localhost:5173/assets/index-6864858d.js:82
+[    5025ms] [ERROR] Error decoding token: InvalidCharacterError: Failed to execute 'atob' on 'Window': The string to be decoded is not correctly encoded.
+    at http://localhost:5173/assets/index-6864858d.js:83:19484
+    at http://localhost:5173/assets/index-6864858d.js:83:19684
+    at http://localhost:5173/assets/index-6864858d.js:83:20214
+    at http://localhost:5173/assets/index-6864858d.js:83:20557 @ http://localhost:5173/assets/index-6864858d.js:82
+[  600025ms] [ERROR] Error decoding token: InvalidCharacterError: Failed to execute 'atob' on 'Window': The string to be decoded is not correctly encoded.
+    at http://localhost:5173/assets/index-6864858d.js:83:19484
+    at http://localhost:5173/assets/index-6864858d.js:83:19684
+    at http://localhost:5173/assets/index-6864858d.js:83:20214 @ http://localhost:5173/assets/index-6864858d.js:82
+[ 1200025ms] [ERROR] Error decoding token: InvalidCharacterError: Failed to execute 'atob' on 'Window': The string to be decoded is not correctly encoded.
+    at http://localhost:5173/assets/index-6864858d.js:83:19484
+    at http://localhost:5173/assets/index-6864858d.js:83:19684
+    at http://localhost:5173/assets/index-6864858d.js:83:20214 @ http://localhost:5173/assets/index-6864858d.js:82
+[ 1800025ms] [ERROR] Error decoding token: InvalidCharacterError: Failed to execute 'atob' on 'Window': The string to be decoded is not correctly encoded.
+    at http://localhost:5173/assets/index-6864858d.js:83:19484
+    at http://localhost:5173/assets/index-6864858d.js:83:19684
+    at http://localhost:5173/assets/index-6864858d.js:83:20214 @ http://localhost:5173/assets/index-6864858d.js:82

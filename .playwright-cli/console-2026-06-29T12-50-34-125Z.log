@@ -1,0 +1,23 @@
+[     121ms] [INFO] 🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙 @ http://localhost:5173/assets/index-45c5cb07.js:66
+[   16617ms] [ERROR] Error decoding token: InvalidCharacterError: Failed to execute 'atob' on 'Window': The string to be decoded is not correctly encoded.
+    at http://localhost:5173/assets/index-45c5cb07.js:83:19484
+    at http://localhost:5173/assets/index-45c5cb07.js:83:19684
+    at xE (http://localhost:5173/assets/index-45c5cb07.js:83:20773)
+    at _D (http://localhost:5173/assets/index-45c5cb07.js:465:72157)
+    at jd (http://localhost:5173/assets/index-45c5cb07.js:38:17017)
+    at _f (http://localhost:5173/assets/index-45c5cb07.js:40:3139)
+    at wx (http://localhost:5173/assets/index-45c5cb07.js:40:44830)
+    at xx (http://localhost:5173/assets/index-45c5cb07.js:40:39787)
+    at Bw (http://localhost:5173/assets/index-45c5cb07.js:40:39715)
+    at ql (http://localhost:5173/assets/index-45c5cb07.js:40:39568) @ http://localhost:5173/assets/index-45c5cb07.js:82
+[   16620ms] [ERROR] Error decoding token: InvalidCharacterError: Failed to execute 'atob' on 'Window': The string to be decoded is not correctly encoded.
+    at http://localhost:5173/assets/index-45c5cb07.js:83:19484
+    at http://localhost:5173/assets/index-45c5cb07.js:83:19684
+    at xE (http://localhost:5173/assets/index-45c5cb07.js:83:20773)
+    at _D (http://localhost:5173/assets/index-45c5cb07.js:465:72157)
+    at jd (http://localhost:5173/assets/index-45c5cb07.js:38:17017)
+    at _f (http://localhost:5173/assets/index-45c5cb07.js:40:3139)
+    at wx (http://localhost:5173/assets/index-45c5cb07.js:40:44830)
+    at xx (http://localhost:5173/assets/index-45c5cb07.js:40:39787)
+    at Bw (http://localhost:5173/assets/index-45c5cb07.js:40:39715)
+    at ql (http://localhost:5173/assets/index-45c5cb07.js:40:39568) @ http://localhost:5173/assets/index-45c5cb07.js:82
