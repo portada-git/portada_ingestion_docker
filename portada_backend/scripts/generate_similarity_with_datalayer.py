@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import importlib.util
+import os
 import re
 import time
 from collections import Counter
@@ -190,6 +191,15 @@ def build_layer(
     config_layer = read_json(data_layer_config_path)
     builder = PortadaBuilder(config_layer)
     layer = BoatFactCleaning(builder=builder)
+    redis_host = os.getenv("REDIS_HOST")
+    redis_port = os.getenv("REDIS_PORT")
+    redis_db = int(os.getenv("REDIS_DB", "3"))
+    if redis_host and redis_port and hasattr(layer, "set_redis_params"):
+        log_step(f"Configurando metadata Redis para data-layer: {redis_host}:{redis_port}/{redis_db}")
+        layer.set_redis_params(host=redis_host, port=int(redis_port), db=redis_db)
+    elif hasattr(builder, "use_redis_metadata"):
+        log_step("Redis no configurado; desactivando metadata Redis para ejecución local")
+        builder.use_redis_metadata(False)
     log_step("Arrancando sesión Spark/data-layer")
     layer.start_session()
 
@@ -388,7 +398,10 @@ def run_similarity_generation(
     run_start = time.perf_counter()
     # 1) Entradas RAW desde Delta
     log_step("Leyendo entradas RAW desde py-portada-data-layer")
-    df_entries = layer.read_raw_entries()
+    # For similarity generation we need the complete raw corpus. The default
+    # data-layer path filters out entries already present in states/ship_entries,
+    # which can fail if state parquet metadata is stale after ingestion/rebuilds.
+    df_entries = layer.read_raw_entries(force_all=True)
     if df_entries is None:
         raise RuntimeError("No se pudieron leer entradas RAW desde py-portada-data-layer")
 
