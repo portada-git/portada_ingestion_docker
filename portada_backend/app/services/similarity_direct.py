@@ -3,9 +3,7 @@ Servicio de similitud que extrae datos directamente de JSONs
 sin usar la capa de datos (que se cuelga con patches).
 """
 
-import json
 import os
-from collections import Counter
 from pathlib import Path
 from typing import Dict, List
 
@@ -181,13 +179,8 @@ def run_similarity_direct(
     total_terms = len(terms)
     total_occurrences = sum(t["frequency"] for t in terms)
     
-    classification_counts = Counter(r.get("classification") for r in results)
-    
-    consensuado = classification_counts.get("CONSENSUADO", 0)
-    consensuado_debil = classification_counts.get("CONSENSUADO_DEBIL", 0)
-    
-    strict_match_pct = round((consensuado / total_terms * 100) if total_terms > 0 else 0, 2)
-    fuzzy_match_pct = round(((consensuado + consensuado_debil) / total_terms * 100) if total_terms > 0 else 0, 2)
+    available_algorithms = service.active_algorithms
+    allowed_algorithms = service.config.allowed_names_for_entity(entity)
 
     return {
         "input": {
@@ -199,9 +192,8 @@ def run_similarity_direct(
             "terms_count": total_terms,
             "total_occurrences": total_occurrences,
             "voices_count": len(voice_list.all_voices()),
-            "strict_match_percentage": strict_match_pct,
-            "fuzzy_match_percentage": fuzzy_match_pct,
-            "classification_distribution": dict(classification_counts),
+            "available_algorithms": available_algorithms,
+            "allowed_algorithms": allowed_algorithms,
         },
         "results": results,
     }

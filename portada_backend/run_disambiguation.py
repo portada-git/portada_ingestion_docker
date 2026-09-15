@@ -14,7 +14,6 @@ import argparse
 import json
 import os
 import sys
-from collections import Counter
 from pathlib import Path
 from typing import Dict, List
 
@@ -212,12 +211,15 @@ def run_disambiguation(
 
     print(f"        → {len(results)} resultados generados")
 
-    # Calcular distribución de clasificaciones
-    classification_dist = Counter(r.get("classification") for r in results)
-    
-    print(f"\n  Distribución de clasificaciones:")
-    for classification, count in classification_dist.most_common():
-        print(f"    - {classification}: {count}")
+    available_algorithms = service.active_algorithms
+    allowed_algorithms = service.config.allowed_names_for_entity(entity)
+
+    print("\n  Algoritmos calculados:")
+    for algorithm in available_algorithms:
+        print(f"    - {algorithm}")
+    print("  Algoritmos filtrables en frontend:")
+    for algorithm in allowed_algorithms:
+        print(f"    - {algorithm}")
 
     return {
         "entity": entity,
@@ -228,7 +230,8 @@ def run_disambiguation(
             "total_voices": total_voices,
             "unique_terms": len(terms),
             "total_citations": sum(t["frequency"] for t in terms),
-            "classification_distribution": dict(classification_dist),
+            "available_algorithms": available_algorithms,
+            "allowed_algorithms": allowed_algorithms,
         },
         "results": results,
     }

@@ -9,7 +9,7 @@ import { useNotificationStore } from '../store/useStore';
 import { IngestionResponse } from '../types';
 
 interface UseUploadIntegrationProps {
-  ingestionType: 'extraction_data' | 'known_entities';
+  ingestionType: 'extraction_data' | 'known_entities' | 'reviewed_entries';
   publication?: string;
   entityName?: string;
 }

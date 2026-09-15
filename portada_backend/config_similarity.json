@@ -2,21 +2,9 @@
   "version": 2,
   "normalize": true,
   "consensus": {
-    "min_votes": 2,
-    "require_levenshtein_ocr": true
+    "min_votes": 2
   },
   "algorithms": {
-    "levenshtein_ocr": {
-      "enabled": true,
-      "threshold": 0.75,
-      "gray_zone": [
-        0.71,
-        0.749
-      ],
-      "params": {
-        "confusion_cost": 0.4
-      }
-    },
     "levenshtein_ratio": {
       "enabled": false,
       "threshold": 0.75,
@@ -79,16 +67,7 @@
       ],
       "params": {}
     },
-    "soundex": {
-      "enabled": false,
-      "threshold": 0.9,
-      "gray_zone": [
-        0.8,
-        0.899
-      ],
-      "params": {}
-    },
-    "semantica": {
+    "token_jaccard": {
       "enabled": false,
       "threshold": 0.72,
       "gray_zone": [

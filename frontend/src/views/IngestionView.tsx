@@ -7,12 +7,13 @@
 import React, { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
-import { FileText, Database, AlertCircle, Clock } from "lucide-react";
+import { FileText, Database, AlertCircle, Clock, Ship } from "lucide-react";
 import { useNotificationStore } from "../store/useStore";
 import UnifiedFileUpload from "../components/BulkFileUpload";
 import clsx from "clsx";
 
-type IngestionType = "extraction_data" | "known_entities";
+type IngestionType = "extraction_data" | "known_entities" | "reviewed_entries";
+type ReviewedEntryType = "ship_entries" | "cargo_ship_entries";
 
 const IngestionView: React.FC = () => {
   const { t } = useTranslation();
@@ -26,6 +27,7 @@ const IngestionView: React.FC = () => {
     publication: "",
     entityName: "flag",
     dataPathDeltaLake: "ship_entries",
+    reviewedEntryType: "ship_entries" as ReviewedEntryType,
   });
 
   const handleTypeChange = (type: IngestionType) => {
@@ -136,6 +138,35 @@ const IngestionView: React.FC = () => {
               </div>
             </div>
           </button>
+
+          <button
+            onClick={() => handleTypeChange("reviewed_entries")}
+            className={clsx(
+              "p-4 border-2 rounded-lg text-left transition-colors",
+              selectedType === "reviewed_entries"
+                ? "border-primary-500 bg-primary-50"
+                : "border-gray-200 hover:border-gray-300",
+            )}
+          >
+            <div className="flex items-center">
+              <Ship
+                className={clsx(
+                  "w-6 h-6 mr-3",
+                  selectedType === "reviewed_entries"
+                    ? "text-primary-600"
+                    : "text-gray-400",
+                )}
+              />
+              <div>
+                <h3 className="font-medium text-gray-900">
+                  Datos revisados y desambiguados
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Archivos CSV revisados para ship_entries o cargo_ship_entries
+                </p>
+              </div>
+            </div>
+          </button>
         </div>
       </div>
 
@@ -179,6 +210,32 @@ const IngestionView: React.FC = () => {
         </div>
       )}
 
+      {selectedType === "reviewed_entries" && (
+        <div className="card">
+          <h2 className="text-lg font-medium text-gray-900 mb-4">
+            Datos revisados y desambiguados
+          </h2>
+          <div>
+            <label
+              htmlFor="reviewedEntryType"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Tipo de fichero
+            </label>
+            <select
+              id="reviewedEntryType"
+              name="reviewedEntryType"
+              value={formData.reviewedEntryType}
+              onChange={handleInputChange}
+              className="input"
+            >
+              <option value="ship_entries">ship_entries</option>
+              <option value="cargo_ship_entries">cargo_ship_entries</option>
+            </select>
+          </div>
+        </div>
+      )}
+
       {/* Unified File Upload */}
       <div className="card">
         <UnifiedFileUpload
@@ -192,6 +249,11 @@ const IngestionView: React.FC = () => {
           }
           entityName={
             selectedType === "known_entities" ? formData.entityName : undefined
+          }
+          reviewedEntryType={
+            selectedType === "reviewed_entries"
+              ? formData.reviewedEntryType
+              : undefined
           }
           maxConcurrentUploads={5}
           onUploadComplete={handleUploadComplete}

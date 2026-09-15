@@ -5,7 +5,6 @@
   "voices_signature": "89707583f65759b58eec029e9c8fcb95272014430734f76accc410f93ef0d233",
   "trained_at": "2026-03-04T13:20:25.010684+00:00",
   "algorithms": [
-    "levenshtein_ocr",
     "jaro_winkler",
     "ngram_2"
   ]

@@ -26,7 +26,7 @@ import { apiService } from "../services/api";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 type FilterStatus = "all" | "queue" | "completed" | "error";
-type FilterType = "all" | "entry" | "entity";
+type FilterType = "all" | "entry" | "entity" | "reviews";
 type TabType = "queue" | "completed";
 
 interface RedisFile {
@@ -179,6 +179,8 @@ const ProcessDashboardView: React.FC = () => {
         filtered = filtered.filter((file) => file.file_type === "entry");
       } else if (filterType === "entity") {
         filtered = filtered.filter((file) => file.file_type.startsWith("entity_"));
+      } else if (filterType === "reviews") {
+        filtered = filtered.filter((file) => file.file_type === "reviews" || file.file_type === "reviewed");
       }
     }
 
@@ -267,6 +269,7 @@ const ProcessDashboardView: React.FC = () => {
 
   const getFileTypeLabel = (fileType: string) => {
     if (fileType === "entry") return "Entrada de Barco";
+    if (fileType === "reviews" || fileType === "reviewed") return "Reviews";
     if (fileType.startsWith("entity_")) {
       const entityType = fileType.replace("entity_", "");
       return `Entidad: ${entityType}`;
@@ -452,6 +455,7 @@ const ProcessDashboardView: React.FC = () => {
               <option value="all">Todos los tipos</option>
               <option value="entry">Entradas de Barco</option>
               <option value="entity">Entidades</option>
+              <option value="reviews">Reviews</option>
             </select>
 
             <div className="relative">

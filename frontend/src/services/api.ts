@@ -482,10 +482,11 @@ class ApiService {
   // Ingestion
   async uploadFile(
     file: File, 
-    ingestionType: 'extraction_data' | 'known_entities',
+    ingestionType: 'extraction_data' | 'known_entities' | 'reviewed_entries',
     _publication?: string,
     entityName?: string,
     _dataPathDeltaLake?: string,
+    reviewedEntryType?: 'ship_entries' | 'cargo_ship_entries',
     onProgress?: (progress: number) => void
   ): Promise<IngestionResponse> {
     const formData = new FormData();
@@ -496,6 +497,10 @@ class ApiService {
         // Backend /ingest/entry
         formData.append('files', file);
         endpoint = '/ingest/entry';
+    } else if (ingestionType === 'reviewed_entries') {
+        formData.append('file', file);
+        const typeParam = reviewedEntryType || 'ship_entries';
+        endpoint = `/ingest/reviewed?type=${encodeURIComponent(typeParam)}`;
     } else {
         // Backend /ingest/entity
         formData.append('file', file);

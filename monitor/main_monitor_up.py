@@ -29,7 +29,7 @@ event_handler = PortadaIngestionEventHandler()
 def process_file(path_file, file_type=None, user_or_entity=None):
     if file_type.lower() == "entity":
         dagster_process_entity(path_file, user_or_entity)   
-    elif file_type.lower() == "reviewed":
+    elif file_type.lower() in {"reviews", "reviewed"}:
         dagster_process_reviewed(path_file, user_or_entity)
     else:
         dagster_process_entry(path_file, user_or_entity)
@@ -118,5 +118,4 @@ except AttributeError:
     except KeyboardInterrupt:
         event_handler.stop()
         print("\nMonitorització aturada.")
-
 

@@ -77,6 +77,35 @@ class DataLayerService:
 
         logger.info("Data layers initialized successfully")
 
+    def shutdown(self):
+        """Cierra todas las sesiones de Spark y libera recursos"""
+        try:
+            if self.boat_layer:
+                logger.info("Cerrando sesión de boat_layer...")
+                # Intentar cerrar la sesión de Spark del boat_layer
+                if hasattr(self.boat_layer, 'end_session'):
+                    self.boat_layer.end_session()
+                elif hasattr(self.boat_layer, 'stop_session'):
+                    self.boat_layer.stop_session()
+                elif hasattr(self.boat_layer, 'spark') and self.boat_layer.spark:
+                    self.boat_layer.spark.stop()
+                logger.info("✓ Sesión de boat_layer cerrada")
+            
+            if self.entities_layer:
+                logger.info("Cerrando sesión de entities_layer...")
+                # Intentar cerrar la sesión de Spark del entities_layer
+                if hasattr(self.entities_layer, 'end_session'):
+                    self.entities_layer.end_session()
+                elif hasattr(self.entities_layer, 'stop_session'):
+                    self.entities_layer.stop_session()
+                elif hasattr(self.entities_layer, 'spark') and self.entities_layer.spark:
+                    self.entities_layer.spark.stop()
+                logger.info("✓ Sesión de entities_layer cerrada")
+            
+            logger.info("✓ Todas las sesiones de Spark cerradas correctamente")
+        except Exception as e:
+            logger.error(f"Error al cerrar sesiones de Spark: {str(e)}")
+
     @classmethod
     def get_instance(cls):
         if cls._instance is None:
