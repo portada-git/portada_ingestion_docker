@@ -1,13 +1,13 @@
+.DS_Store
+delta_lake*
 delta_lake/
 dades_persistents/
 ingestion_zone
 __pycache__
-.DS_Store
 demo/
 .vscode/
 .redis/
 .env
-
 # Archivos de desarrollo local (no subir a GitHub)
 docker-compose.dev.yml
 start_dev.sh
