@@ -88,6 +88,12 @@ docker compose exec api python /app/scripts/generate_similarity_delta_results.py
   --memory-log-interval-seconds 0
 ```
 
+Ejecutar todos los algoritmos a todas las entidades 
+
+```bash
+docker compose exec api python /app/scripts/generate_similarity_delta_results.py
+```
+
 ### Flujo JSON legacy
 
 El generador JSON antiguo sigue disponible como fallback/debug:

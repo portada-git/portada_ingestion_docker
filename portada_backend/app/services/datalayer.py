@@ -66,6 +66,14 @@ class DataLayerService:
             PortadaBuilder.KNOWN_ENTITIES_TYPE
         )
 
+        redis_host = os.getenv("REDIS_HOST")
+        redis_port = os.getenv("REDIS_PORT")
+        if not redis_host or not redis_port:
+            raise RuntimeError(
+                "REDIS_HOST and REDIS_PORT must be configured before starting the boat data layer."
+            )
+        self.boat_layer.set_sequencer_params(host=redis_host, port=redis_port)
+
         # Start sessions
         self.boat_layer.start_session()
         self.entities_layer.start_session()
